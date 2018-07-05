@@ -1,4 +1,7 @@
-    
+from __future__ import division
+import numpy as np
+import scipy as sp
+
 def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
   ''' Calculate the Tropopause Height in isobaric coordinates 
 
@@ -21,47 +24,73 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
   Ht(lat) or Ht(lon,lat) = the field Z evaluated at the tropopause. For Z=geopotential heigt, Ht is the tropopause altitude in m '''
 
 
-  Rd=287.04
-  Cpd=1005.7
+  Rd = 287.04
+  Cpd = 1005.7
+  g = 9.80616
+  k = Rd/Cpd
+  PI = (np.linspace(1000,1,1000)*100)**k
+  Factor = g/Cpd * 1000
+  
+  # make latitude vector monotonically increasing
+  if P[-1] > P[0]:
+      P = np.flip(P,0)
+      if len(np.shape(T)) == 3:
+        T = np.flip(T,2)
+        Z = np.flip(Z,2)
+      else:
+        T = np.flip(T,1)
+
+
+  if len(np.shape(T)) == 2:
+    T = np.expand_dims(T, axis=0)
+    Z = np.expand_dims(Z, axis=0)
+
+  Pk = np.tile((P*100)**k, (np.shape(T)[0], np.shape(T)[1], 1))
+  Pk2 = (Pk[:,:,:-1] + Pk[:,:,1:])/2
+  
+  T2 = (T[:,:,:-1] + T[:,:,1:])/2
+  Pk1 = np.squeeze(Pk2[0,0,:])
+
+  Gamma = (T[:,:,1:] - T[:,:,:-1])/(Pk[:,:,1:] - Pk[:,:,:-1]) *\
+          Pk2 / T2 * Factor
+  Gamma = np.reshape(Gamma, (np.shape(Gamma)[0]*np.shape(Gamma)[1], np.shape(Gamma)[2]))
+
+  T2 = np.reshape(T2, (np.shape(Gamma)[0], np.shape(Gamma)[1]))
+  
+  Pt = np.zeros((np.shape(T)[0]*np.shape(T)[1], 1))
+
+  for j in range(np.shape(Gamma)[0]):
+    G_f = sp.interpolate.interp1d(Pk1, Gamma[j,:], kind='linear', fill_value='extrapolate')
+    G1 = G_f(PI)
+    T2_f = sp.interpolate.interp1d(Pk1,T2[j,:], kind='linear', fill_value='extrapolate')
+    T1 = T2_f(PI)
+    idx = np.squeeze(np.where((G1 <=2) & (PI < (550*100)**k) & (PI > (75*100)**k)))
+    Pidx = PI[idx]  
+    if np.size(Pidx):
+      for c in range(len(Pidx)):
+        dpk_2km =  -2000 * k * g / Rd / T1[c] * Pidx[c]
+        idx2 = np.where(Pidx[c:] < Pidx[c] + dpk_2km)[0][0]
+        if sum(G1[idx[c]:idx[c]+idx2-1] <= 2) == idx2-1:
+          Pt[j]=Pidx[c]
+          break
+    else:
+      Pt[j] = np.nan
+  
+  Pt = Pt ** (1 / k) / 100
     
-    Pk=repmat(reshape((dot(P,100)) ** k,1,1,length(P)),concat([size(T,1),size(T,2),1]))
-    Pk2=(Pk(arange(),arange(),arange(1,end() - 1)) + Pk(arange(),arange(),arange(2,end()))) / 2
+  Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
+  
+  if Z:
+    Zt =  np.reshape(Z, (np.shape(Z)[0]*np.shape(Z)[1], np.shape(Z)[2]))
+    Ht =  np.zeros(np.shape(T)[0], np.shape(T)[1], np.shape(T)[2])
+
+    for j in range(np.shape(Ht)[0]):
+      Ht[j] = np.interp1(Pt[j], Zt[j,:], P)
     
-    T2=(T(arange(),arange(),arange(1,end() - 1)) + T(arange(),arange(),arange(2,end()))) / 2
-    Pk1=squeeze(Pk2(1,1,arange()))
-    Gamma=reshape(multiply(multiply((T(arange(),arange(),arange(2,end())) - T(arange(),arange(),arange(1,end() - 1))) / (Pk(arange(),arange(),arange(2,end())) - Pk(arange(),arange(),arange(1,end() - 1))),Pk2) / T2,Factor),dot(size(T,1),size(T,2)),size(T,3) - 1)
-    
-    T2=reshape(T2,dot(size(T,1),size(T,2)),size(T,3) - 1)
-    
-    Pt=zeros(dot(size(T,1),size(T,2)),1)
-    for j in arange(1,size(Gamma,1)).reshape(-1):
-        G1=interp1(Pk1,double(Gamma(j,arange()).T),PI,'linear','extrap')
-        T1=interp1(Pk1,double(T2(j,arange()).T),PI,'linear','extrap')
-        idx=find(G1 <= logical_and(2,PI) < logical_and((dot(550,100)) ** k,PI) > (dot(75,100)) ** k)
-        Pidx=PI(idx)
-        if isempty(Pidx):
-            Pt[j]=nan
-        else:
-            for c in arange(1,length(Pidx)).reshape(-1):
-                dpk_2km=multiply(dot(dot(- 2000,k),g) / Rd / T1(c),Pidx(c))
-                idx2=dsearchn(Pidx(arange(c,end())).T,Pidx(c) + dpk_2km)
-                if sum(G1(arange(idx(c),idx(c) + idx2 - 1)) <= 2) == idx2:
-                    Pt[j]=Pidx(c)
-                    break
-                else:
-                    continue
-    
-    Pt=Pt ** (1 / k) / 100
-    if nargin > 2:
-        if isequal(size(T),size(Z)):
-            Zt=reshape(Z,dot(size(Z,1),size(Z,2)),size(Z,3))
-            Ht=zeros(dot(size(T,1),size(T,2)),1)
-            for j in arange(1,size(Ht,1)).reshape(-1):
-                Ht[j]=interp1(P,Zt(j,arange()).T,Pt(j))
-            Ht=reshape(Ht,size(T,1),size(T,2))
-        else:
-            disp('TropD_Calculate_TropopauseHeight: ERROR :  T and Z must have the same dimensions')
-            Ht=[]
-    
-    Pt=reshape(Pt,size(T,1),size(T,2))
-    
+    Ht = np.reshape(Ht, (np.shape(T)[0], np.shape(T)[1]))
+    return Pt, Ht
+        #disp('TropD_Calculate_TropopauseHeight: ERROR :  T and Z must have the same dimensions')
+  else:
+    return Pt
+
+
