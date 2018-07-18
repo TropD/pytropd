@@ -1,8 +1,9 @@
 from __future__ import division
 import numpy as np
 import scipy as sp
+from scipy import interpolate 
 
-def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
+def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
   ''' Calculate the Tropopause Height in isobaric coordinates 
 
   Written by Ori Adam Mar.17.2017 as part of TropD package
@@ -31,19 +32,16 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
   PI = (np.linspace(1000,1,1000)*100)**k
   Factor = g/Cpd * 1000
   
-  # make latitude vector monotonically increasing
-  if P[-1] > P[0]:
-      P = np.flip(P,0)
-      if len(np.shape(T)) == 3:
-        T = np.flip(T,2)
-        Z = np.flip(Z,2)
-      else:
-        T = np.flip(T,1)
-
 
   if len(np.shape(T)) == 2:
     T = np.expand_dims(T, axis=0)
     Z = np.expand_dims(Z, axis=0)
+  # make P monotonically decreasing
+  if P[-1] > P[0]:
+    P = np.flip(P,0)
+    T = np.flip(T,2)
+    if Z.any():
+      Z = np.flip(Z,2)
 
   Pk = np.tile((P*100)**k, (np.shape(T)[0], np.shape(T)[1], 1))
   Pk2 = (Pk[:,:,:-1] + Pk[:,:,1:])/2
@@ -56,20 +54,24 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
   Gamma = np.reshape(Gamma, (np.shape(Gamma)[0]*np.shape(Gamma)[1], np.shape(Gamma)[2]))
 
   T2 = np.reshape(T2, (np.shape(Gamma)[0], np.shape(Gamma)[1]))
-  
   Pt = np.zeros((np.shape(T)[0]*np.shape(T)[1], 1))
-
+  
   for j in range(np.shape(Gamma)[0]):
     G_f = sp.interpolate.interp1d(Pk1, Gamma[j,:], kind='linear', fill_value='extrapolate')
     G1 = G_f(PI)
     T2_f = sp.interpolate.interp1d(Pk1,T2[j,:], kind='linear', fill_value='extrapolate')
     T1 = T2_f(PI)
     idx = np.squeeze(np.where((G1 <=2) & (PI < (550*100)**k) & (PI > (75*100)**k)))
-    Pidx = PI[idx]  
+    Pidx = PI[idx] 
+
     if np.size(Pidx):
       for c in range(len(Pidx)):
         dpk_2km =  -2000 * k * g / Rd / T1[c] * Pidx[c]
-        idx2 = np.where(Pidx[c:] < Pidx[c] + dpk_2km)[0][0]
+        try:
+          idx2 = np.where(Pidx[c:] < Pidx[c] + dpk_2km)[0][0]
+        except IndexError:
+          idx2 = len(Pidx[c:])
+
         if sum(G1[idx[c]:idx[c]+idx2-1] <= 2) == idx2-1:
           Pt[j]=Pidx[c]
           break
@@ -78,19 +80,21 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None,*args,**kwargs):
   
   Pt = Pt ** (1 / k) / 100
     
-  Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
-  
-  if Z:
-    Zt =  np.reshape(Z, (np.shape(Z)[0]*np.shape(Z)[1], np.shape(Z)[2]))
-    Ht =  np.zeros(np.shape(T)[0], np.shape(T)[1], np.shape(T)[2])
 
-    for j in range(np.shape(Ht)[0]):
-      Ht[j] = np.interp1(Pt[j], Zt[j,:], P)
+  if Z.any():
+    Zt =  np.reshape(Z, (np.shape(Z)[0]*np.shape(Z)[1], np.shape(Z)[2]))
+    Ht =  np.zeros((np.shape(T)[0]*np.shape(T)[1]))
     
+    for j in range(np.shape(Ht)[0]):
+      f = sp.interpolate.interp1d(P, Zt[j,:])
+      Ht[j] = f(Pt[j])
+
     Ht = np.reshape(Ht, (np.shape(T)[0], np.shape(T)[1]))
+    Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
     return Pt, Ht
         #disp('TropD_Calculate_TropopauseHeight: ERROR :  T and Z must have the same dimensions')
+  
   else:
+    Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
     return Pt
-
 

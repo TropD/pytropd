@@ -30,7 +30,12 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', Lat_Uncertainty = 0,*args,**kwargs):
+def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', Lat_Uncertainty = 0):
+  try:
+    assert (Lat_Uncertainty >= 0)  
+  except AssertionError:
+    print 'TropD_Metric_PSI: ERROR : Lat_Uncertainty must be >= 0'
+    
     
   if len(lev) > 1:
     uas = U[:,find_nearest(lev, 850)]

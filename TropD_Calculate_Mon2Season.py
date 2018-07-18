@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy as np
 
-def TropD_Calculate_Mon2Season(Fm, Season=np.arange(12), m=0,*args,**kwargs):
+def TropD_Calculate_Mon2Season(Fm, Season=np.arange(12), m=0):
   ''' Calculate seasonal means from monthly time series
   Written by Ori Adam Mar.17.2017 as part of TropD package
   Converted to python by Alison Ming Jul.4.2017

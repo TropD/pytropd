@@ -21,16 +21,16 @@ def TropD_Calculate_StreamFunction(V, lat, lev, *args,**kwargs):
   psi -- the streamfunction psi(lat,lev) '''
 
     
-  EarthRadius=6371220.0
-  EarthGrav=9.80616
+  EarthRadius = 6371220.0
+  EarthGrav = 9.80616
   B = np.ones(np.shape(V)) 
   # B = 0 for subsurface data
   B[np.isnan(V)]=0
   psi = np.zeros(np.shape(V))
 
-  COS = np.repeat(np.cos(lat), len(lev), axis=0).reshape(len(lat),len(lev))
+  COS = np.repeat(np.cos(lat*np.pi/180), len(lev), axis=0).reshape(len(lat),len(lev))
 
-  psi[:,1:] = (EarthRadius/EarthGrav) * 2 * np.pi \
-       * sp.integrate.cumtrapz(B * V * COS, lev*100, 1) 
+  psi = (EarthRadius/EarthGrav) * 2 * np.pi \
+       * sp.integrate.cumtrapz(B * V * COS, lev*100, axis=1, initial=0) 
   
   return psi
