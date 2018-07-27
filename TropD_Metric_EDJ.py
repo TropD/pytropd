@@ -18,8 +18,13 @@
 from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
     
-def TropD_Metric_EDJ(u, lat, lev=np.array([1]), method='max', n=0):
+def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
     
   try:
     assert (not hasattr(n, "__len__") and n >= 0)  
@@ -30,9 +35,9 @@ def TropD_Metric_EDJ(u, lat, lev=np.array([1]), method='max', n=0):
   polar_boundary=60
   
   if len(lev) > 1:
-    uas = u[:,find_nearest(lev, 850)]
+    u = U[:,find_nearest(lev, 850)]
   else:
-    uas = np.copy(u)
+    u = np.copy(U)
     
   if 'max' == method:
     if n:
@@ -61,7 +66,7 @@ def TropD_Metric_EDJ(u, lat, lev=np.array([1]), method='max', n=0):
   else:
     print 'TropD_Metric_EDJ: ERROR: unrecognized method ',method
 
-  return PhiNH, PhiSH
+  return PhiSH, PhiNH
 
 
 

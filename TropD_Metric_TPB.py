@@ -28,6 +28,7 @@ from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
 from TropD_Calculate_TropopauseHeight import TropD_Calculate_TropopauseHeight 
+from TropD_Calculate_ZeroCrossing import TropD_Calculate_ZeroCrossing
 
 def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*1000):
 
@@ -81,13 +82,14 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
     
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
-      Ht = np.flip(Ht)
-      lat = np.flip(lat)
-      polar_boundary = 60
+      Ht = np.flip(Ht,1)
+      lat = np.flip(lat,0)
+    
+    polar_boundary = 60
       
-      PhiNH = TropD_Calculate_ZeroCrossing(Ht[(lat > 0) & (lat < polar_boundary)] - Cutoff,
+    PhiNH = TropD_Calculate_ZeroCrossing(Ht[:,(lat > 0) & (lat < polar_boundary)] - Cutoff,
               lat[(lat > 0) & (lat < polar_boundary)])
-      PhiSH = TropD_Calculate_ZeroCrossing(np.flip(Ht[(lat < 0) & (lat > -polar_boundary)]) - Cutoff,
+    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(Ht[:,(lat < 0) & (lat > -polar_boundary)], 1) - Cutoff,
               np.flip(lat[(lat < 0) & (lat > -polar_boundary)], 0))
   
   else:

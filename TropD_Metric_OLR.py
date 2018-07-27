@@ -35,6 +35,11 @@ def TropD_Metric_OLR(olr, lat, method='250W', Cutoff='DEFAULT'):
     assert (not hasattr(Cutoff, "__len__") and Cutoff >= 1)  
   except AssertionError:
     print 'TropD_Metric_OLR: ERROR : the Cutoff must be >= 1'
+  
+  # make latitude vector monotonically increasing
+  if lat[-1] < lat[0]:
+    olr = np.flip(olr,0)
+    lat = np.flip(lat,0)
     
   eq_boundary=5
   subpolar_boundary=40
@@ -96,5 +101,5 @@ def TropD_Metric_OLR(olr, lat, method='250W', Cutoff='DEFAULT'):
     PhiNH = np.empty(0)
     PhiSH = np.empty(0)
   
-  return PhiNH,PhiSH
+  return PhiSH, PhiNH
     

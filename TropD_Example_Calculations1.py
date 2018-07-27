@@ -48,7 +48,15 @@ import scipy as sp
 from scipy.io import netcdf
 from TropD_Metric_PSI import TropD_Metric_PSI 
 from TropD_Metric_TPB import TropD_Metric_TPB 
+from TropD_Metric_STJ import TropD_Metric_STJ
+from TropD_Metric_EDJ import TropD_Metric_EDJ
+from TropD_Metric_PE import TropD_Metric_PE
+from TropD_Metric_UAS import TropD_Metric_UAS
+from TropD_Metric_PSL import TropD_Metric_PSL
+from TropD_Metric_OLR import TropD_Metric_OLR
+
 from TropD_Calculate_Mon2Season import TropD_Calculate_Mon2Season
+
 
 ## 1) PSI -- Streamfunction zero crossing
 f_V = netcdf.netcdf_file('../ValidationData/va.nc','r')
@@ -156,207 +164,214 @@ for j in range(np.shape(T_ANN)[0]):
   Phi_tpbZ_sh_ANN[j],Phi_tpbZ_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='cutoff',\
                                                            Z=Z_ANN[j,:,:,], Cutoff=15*1000)
 
-#Working up to here
 
-figure
-subplot('211')
-plot(time,Phi_tpb_nh,'-','linewidth',1,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_nh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_nh_ANN,'--','linewidth',1,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_nh_ANN,'--','linewidth',1,'color',red_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick5,'yticklabels',YtickLabels5)
-ylabel(cellarray([['NH tropopause break'],['latitude']]))
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of tropopause break from monthly mean T -- potential temperature difference','Latitude of tropopause break from annual mean T -- maximal gradient','Latitude of tropopause break from annual mean T -- 15km cutoff height','Latitude of tropopause break from annual mean T -- potential temperature difference','Latitude of tropopause break from annual mean of monthly metric values -- potential temperature difference')
-set(l,'box','off','location','north')
-subplot('212')
-plot(time,Phi_tpb_sh,'-','linewidth',1,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_sh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_sh_ANN,'--','linewidth',1,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_sh_ANN,'--','linewidth',1,'color',red_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel(cellarray([['SH tropopause break'],['latitude']]))
-## 3) OLR -- OLR cutoff
-#te: OLR is assumed to be positive upwards and in units of W/m^2
-olr=- ncread('../ValidationData/rlnt.nc','rlnt')
+#figure
+#subplot('211')
+#plot(time,Phi_tpb_nh,'-','linewidth',1,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_nh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_nh_ANN,'--','linewidth',1,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_nh_ANN,'--','linewidth',1,'color',red_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick5,'yticklabels',YtickLabels5)
+#ylabel(cellarray([['NH tropopause break'],['latitude']]))
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of tropopause break from monthly mean T -- potential temperature difference','Latitude of tropopause break from annual mean T -- maximal gradient','Latitude of tropopause break from annual mean T -- 15km cutoff height','Latitude of tropopause break from annual mean T -- potential temperature difference','Latitude of tropopause break from annual mean of monthly metric values -- potential temperature difference')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(time,Phi_tpb_sh,'-','linewidth',1,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_sh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_sh_ANN,'--','linewidth',1,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_sh_ANN,'--','linewidth',1,'color',red_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel(cellarray([['SH tropopause break'],['latitude']]))
 
-olrcs=- ncread('../ValidationData/rlntcs.nc','rlntcs')
+##3) OLR -- OLR cutoff
+#Note: OLR is assumed to be positive upwards and in units of W/m^2
 
-lat=ncread('../ValidationData/rlnt.nc','lat')
+f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
+f_olrcs = netcdf.netcdf_file('../ValidationData/rlntcs.nc','r')
+olr = -f_olr.variables['rlnt'][:]
+olrcs = -f_olrcs.variables['rlntcs'][:]
+lat = f_olr.variables['lat'][:]
 
-olr_ANN=TropD_Calculate_Mon2Season(olr,concat([arange(1,12)]))
+#Change axes of olr and olrcs to be [time, lat]
+olr = np.transpose(olr, (1,0))
+olrcs = np.transpose(olrcs, (1,0))
 
-olrcs_ANN=TropD_Calculate_Mon2Season(olrcs,concat([arange(1,12)]))
+olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
 
-Phi_olr_nh=zeros(size(olr,1),1)
+olrcs_ANN = TropD_Calculate_Mon2Season(olrcs, np.arange(12))
 
-Phi_olr_sh=zeros(size(olr,1),1)
+Phi_olr_nh = np.zeros((np.shape(olr)[0],1))
+Phi_olr_sh = np.zeros((np.shape(olr)[0],1))
 
-Phi_olr_nh_ANN=zeros(size(olr_ANN,1),1)
+Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olr_sh_ANN=zeros(size(olr_ANN,1),1)
+Phi_olrcs_nh = np.zeros((np.shape(olr)[0],1))
+Phi_olrcs_sh = np.zeros((np.shape(olr)[0],1))
 
-Phi_olrcs_nh=zeros(size(olr,1),1)
+Phi_olrcs_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olrcs_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olrcs_sh=zeros(size(olr,1),1)
+Phi_olr20_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr20_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olrcs_nh_ANN=zeros(size(olr_ANN,1),1)
+Phi_olr240_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr240_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olrcs_sh_ANN=zeros(size(olr_ANN,1),1)
+for j in range(np.shape(olr)[0]):
+  Phi_olr_sh[j], Phi_olr_nh[j] = TropD_Metric_OLR(olr[j,:], lat)
+  Phi_olrcs_sh[j], Phi_olrcs_nh[j] = TropD_Metric_OLR(olrcs[j,:], lat)
 
-Phi_olr20_nh_ANN=zeros(size(olr_ANN,1),1)
+for j in range(np.shape(olr_ANN)[0]):
+  Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:], lat)
+  Phi_olrcs_sh_ANN[j], Phi_olrcs_nh_ANN[j] = TropD_Metric_OLR(olrcs_ANN[j,:], lat)
+  Phi_olr20_sh_ANN[j], Phi_olr20_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:], lat, method='20W')
+  Phi_olr240_sh_ANN[j], Phi_olr240_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:],lat,method='cutoff',Cutoff=240)
 
-Phi_olr20_sh_ANN=zeros(size(olr_ANN,1),1)
 
-Phi_olr240_nh_ANN=zeros(size(olr_ANN,1),1)
 
-Phi_olr240_sh_ANN=zeros(size(olr_ANN,1),1)
+#figure
+#subplot('211')
+#plot(time,Phi_olr_nh,'-','linewidth',3,'color',green_color)
+#hold('on')
+#plot(time,Phi_olrcs_nh,'-','linewidth',1,'color',multiply(green_color,0.5))
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_nh_ANN,'-','linewidth',1,'color',multiply(blue_color,0.5))
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH OLR cutoff latitude')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of OLR 250W/m^2 cutoff latitude from monthly OLR','Latitude of OLR 250W/m^2 cutoff latitude from monthly clear-sky OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean clear-sky OLR')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(time,Phi_olr_sh,'-','linewidth',3,'color',green_color)
+#hold('on')
+#plot(time,Phi_olrcs_sh,'-','linewidth',1,'color',dot(green_color,0.5))
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_sh_ANN,'-','linewidth',1,'color',dot(blue_color,0.5))
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH OLR cutoff latitude')
+#figure
+#subplot('211')
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_nh_ANN,'-','linewidth',3,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_nh_ANN,'-','linewidth',3,'color',green_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH OLR cutoff latitude')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of OLR 250W/m^2 {default} cutoff latitude from annual-mean OLR','Latitude of OLR 240W/m^2 cutoff latitude from annual-mean OLR','Latitude of OLR -20W/m^2 cutoff latitude from annual-mean OLR')
+#set(l,'box','off','location','north')
+#subplot('212')
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_sh_ANN,'-','linewidth',3,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_sh_ANN,'-','linewidth',3,'color',green_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH OLR cutoff latitude')
 
-for j in arange(1,size(olr,1)).reshape(-1):
-  Phi_olr_sh[j],Phi_olr_nh[j]=TropD_Metric_OLR(squeeze(olr(j,arange(),arange())),lat,nargout=2)
-  Phi_olrcs_sh[j],Phi_olrcs_nh[j]=TropD_Metric_OLR(squeeze(olrcs(j,arange(),arange())),lat,nargout=2)
-
-for j in arange(1,size(olr_ANN,1)).reshape(-1):
-  Phi_olr_sh_ANN[j],Phi_olr_nh_ANN[j]=TropD_Metric_OLR(squeeze(olr_ANN(j,arange(),arange())),lat,nargout=2)
-  Phi_olrcs_sh_ANN[j],Phi_olrcs_nh_ANN[j]=TropD_Metric_OLR(squeeze(olrcs_ANN(j,arange(),arange())),lat,nargout=2)
-  Phi_olr20_sh_ANN[j],Phi_olr20_nh_ANN[j]=TropD_Metric_OLR(squeeze(olr_ANN(j,arange(),arange())),lat,'20W',nargout=2)
-  Phi_olr240_sh_ANN[j],Phi_olr240_nh_ANN[j]=TropD_Metric_OLR(squeeze(olr_ANN(j,arange(),arange())),lat,'cutoff',240,nargout=2)
-
-figure
-subplot('211')
-plot(time,Phi_olr_nh,'-','linewidth',3,'color',green_color)
-hold('on')
-plot(time,Phi_olrcs_nh,'-','linewidth',1,'color',multiply(green_color,0.5))
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_nh_ANN,'-','linewidth',1,'color',multiply(blue_color,0.5))
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH OLR cutoff latitude')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of OLR 250W/m^2 cutoff latitude from monthly OLR','Latitude of OLR 250W/m^2 cutoff latitude from monthly clear-sky OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean clear-sky OLR')
-set(l,'box','off','location','north')
-subplot('212')
-plot(time,Phi_olr_sh,'-','linewidth',3,'color',green_color)
-hold('on')
-plot(time,Phi_olrcs_sh,'-','linewidth',1,'color',dot(green_color,0.5))
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_sh_ANN,'-','linewidth',1,'color',dot(blue_color,0.5))
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH OLR cutoff latitude')
-figure
-subplot('211')
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_nh_ANN,'-','linewidth',3,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_nh_ANN,'-','linewidth',3,'color',green_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH OLR cutoff latitude')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of OLR 250W/m^2 {default} cutoff latitude from annual-mean OLR','Latitude of OLR 240W/m^2 cutoff latitude from annual-mean OLR','Latitude of OLR -20W/m^2 cutoff latitude from annual-mean OLR')
-set(l,'box','off','location','north')
-subplot('212')
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_sh_ANN,'-','linewidth',3,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_sh_ANN,'-','linewidth',3,'color',green_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH OLR cutoff latitude')
 ## 4) STJ -- Subtropical Jet (STJ) latitude
-U=ncread('../ValidationData/ua.nc','ua')
 
-lat=ncread('../ValidationData/ua.nc','lat')
+f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_u.variables['ua'][:]
+lat = f_u.variables['lat'][:]
+lev = f_u.variables['lev'][:]
 
-lev=ncread('../ValidationData/ua.nc','lev')
+#Change axes of u to be [time, lat]
+U = np.transpose(U, (2,1,0))
 
 # Calculate STJ latitude from annual mean
-U_ANN=TropD_Calculate_Mon2Season(U,concat([arange(1,12)]))
+U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_stj_nh_ANN_adj=zeros(size(U_ANN,1),1)
+Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_nh_ANN_core = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],1))
 
-Phi_stj_sh_ANN_adj=zeros(size(U_ANN,1),1)
+for j in range(np.shape(U_ANN)[0]):
+  Phi_stj_sh_ANN_adj [j], Phi_stj_nh_ANN_adj[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
+  Phi_stj_sh_ANN_core[j], Phi_stj_nh_ANN_core[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev, method='core')
 
-Phi_stj_nh_ANN_core=zeros(size(U_ANN,1),1)
 
-Phi_stj_sh_ANN_core=zeros(size(U_ANN,1),1)
+#figure
+#subplot('211')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_adj,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_core,'-','linewidth',2,'color',blue_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH STJ latitude')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of STJ from anual mean U, using \'adjusted\' method','Latitude of STJ from anual mean U, using \'core\' method')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_adj,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_core,'-','linewidth',2,'color',blue_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH STJ latitude')
 
-for j in arange(1,size(U_ANN,1)).reshape(-1):
-  Phi_stj_sh_ANN_adj[j],Phi_stj_nh_ANN_adj[j]=TropD_Metric_STJ(squeeze(U_ANN(j,arange(),arange())),lat,lev,nargout=2)
-
-  Phi_stj_sh_ANN_core[j],Phi_stj_nh_ANN_core[j]=TropD_Metric_STJ(squeeze(U_ANN(j,arange(),arange())),lat,lev,'core',nargout=2)
-
-figure
-subplot('211')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_adj,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_core,'-','linewidth',2,'color',blue_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH STJ latitude')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of STJ from anual mean U, using \'adjusted\' method','Latitude of STJ from anual mean U, using \'core\' method')
-set(l,'box','off','location','north')
-subplot('212')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_adj,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_core,'-','linewidth',2,'color',blue_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH STJ latitude')
 ## 5) EDJ -- Eddy Driven Jet (EDJ) latitude
-U=ncread('../ValidationData/ua.nc','ua')
+f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_u.variables['ua'][:]
+lat = f_u.variables['lat'][:]
+lev = f_u.variables['lev'][:]
 
-lat=ncread('../ValidationData/ua.nc','lat')
+#Change axes of u to be [time, lat]
+U = np.transpose(U, (2,1,0))
 
-lev=ncread('../ValidationData/ua.nc','lev')
+Phi_edj_nh = np.zeros((np.shape(U)[0],1))
+Phi_edj_sh = np.zeros((np.shape(U)[0],1))
 
-Phi_edj_nh=zeros(size(U,1),1)
-
-Phi_edj_sh=zeros(size(U,1),1)
-
-for j in arange(1,size(U,1)).reshape(-1):
-  Phi_edj_sh[j],Phi_edj_nh[j]=TropD_Metric_EDJ(squeeze(U(j,arange(),arange())),lat,lev,'max',nargout=2)
+for j in range(np.shape(U)[0]):
+  Phi_edj_sh[j], Phi_edj_nh[j] = TropD_Metric_EDJ(U[j,:,:,] ,lat, lev, method='max')
 
 # Calculate EDJ latitude from annual mean
-U_ANN=TropD_Calculate_Mon2Season(U,concat([arange(1,12)]))
+U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_edj_nh_ANN=zeros(size(U_ANN,1),1)
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
+Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
-Phi_edj_sh_ANN=zeros(size(U_ANN,1),1)
+for j in range(np.shape(U_ANN)[0]):
+  Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
 
-for j in arange(1,size(U_ANN,1)).reshape(-1):
-  Phi_edj_sh_ANN[j],Phi_edj_nh_ANN[j]=TropD_Metric_EDJ(squeeze(U_ANN(j,arange(),arange())),lat,lev,nargout=2)
+#figure
+#subplot('211')
+#plot(time,Phi_edj_nh,'-','linewidth',1,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_nh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH EDJ latitude')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of EDJ from monthly mean U','Latitude of EDJ from annual mean U','Latitude of EDJ from annual mean of monthly metric values')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(time,Phi_edj_sh,'-','linewidth',1,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_sh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH EDJ latitude')
 
-figure
-subplot('211')
-plot(time,Phi_edj_nh,'-','linewidth',1,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_nh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH EDJ latitude')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of EDJ from monthly mean U','Latitude of EDJ from annual mean U','Latitude of EDJ from annual mean of monthly metric values')
-set(l,'box','off','location','north')
-subplot('212')
-plot(time,Phi_edj_sh,'-','linewidth',1,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_sh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH EDJ latitude')
+
+#working till here
+
 ## 6) PE -- Precipitation minus evaporation subtropical zero crossing latitude
 pr=ncread('../ValidationData/pr.nc','pr')
 
