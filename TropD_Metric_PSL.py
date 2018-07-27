@@ -21,8 +21,8 @@ from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
     
 def TropD_Metric_PSL(ps, lat, method='max'):
 
-  eq_boundary=15
-  polar_boundary=60
+  eq_boundary = 15
+  polar_boundary = 60
     
   if 'max' == method:
     PhiNH = TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
@@ -38,5 +38,5 @@ def TropD_Metric_PSL(ps, lat, method='max'):
   else:
     print 'TropD_Metric_PSL: ERROR: unrecognized method ',method
   
-  return PhiNH,PhiSH
+  return PhiSH, PhiNH
     

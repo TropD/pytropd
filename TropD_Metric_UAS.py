@@ -65,7 +65,8 @@ def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', Lat_Unce
     # flip arrays to find the most equatorward zero crossing
     PhiSH = TropD_Calculate_ZeroCrossing(np.flip(uas[(lat < uas_min_lat_SH) & (lat > -polar_boundary)],0),\
             np.flip(lat[(lat < uas_min_lat_SH) & (lat > -polar_boundary)],0), Lat_Uncertainty)
-    return PhiNH, PhiSH
+
+    return PhiSH, PhiNH
   except AssertionError:
     print 'TropD_Metric_UAS: ERROR : unrecognized method ', method
 

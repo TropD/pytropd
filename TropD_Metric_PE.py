@@ -23,7 +23,7 @@ def TropD_Metric_PE(pe,lat,method='zero_crossing',Lat_Uncertainty=0.0):
     
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
-      uas = np.flip(uas)
+      pe = np.flip(pe)
       lat = np.flip(lat)
     
   # The gradient of PE is used to determine whether PE becomes positive at the zero crossing
@@ -60,6 +60,6 @@ def TropD_Metric_PE(pe,lat,method='zero_crossing',Lat_Uncertainty=0.0):
       PhiSH = TropD_Calculate_ZeroCrossing(np.flip(pe[(lat < ZC1) & (lat > -polar_boundary)],0), \
                     np.flip(lat[(lat < ZC1) & (lat > -polar_boundary)],0), Lat_Uncertainty)
 
-    return PhiNH, PhiSH
+    return PhiSH, PhiNH
   except AssertionError:
     print 'TropD_Metric_PE: ERROR : unrecognized method ',method

@@ -373,152 +373,152 @@ for j in range(np.shape(U_ANN)[0]):
 #working till here
 
 ## 6) PE -- Precipitation minus evaporation subtropical zero crossing latitude
-pr=ncread('../ValidationData/pr.nc','pr')
+f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
+f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
 
 L=2510400.0
 
-er=- ncread('../ValidationData/hfls.nc','hfls') / L
+pr = f_pr.variables['pr'][:]
+er = -f_er.variables['hfls'][:]/L
+PE = pr - er 
 
-PE=pr - er
-lat=ncread('../ValidationData/pr.nc','lat')
+lat = f_pr.variables['lat'][:]
 
-PE_ANN=TropD_Calculate_Mon2Season(PE,concat([arange(1,12)]))
+#Change axes of pr and er to be [time, lat]
+PE = np.transpose(PE, (1,0))
 
-Phi_pe_nh=zeros(size(pr,1),1)
+PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
 
-Phi_pe_sh=zeros(size(pr,1),1)
+Phi_pe_nh = np.zeros((np.shape(PE)[0],1))
+Phi_pe_sh = np.zeros((np.shape(PE)[0],1))
+Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
+Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
 
-Phi_pe_nh_ANN=zeros(size(PE_ANN,1),1)
+for j in range(np.shape(PE)[0]):
+  Phi_pe_sh[j], Phi_pe_nh[j] = TropD_Metric_PE(PE[j,:], lat)
 
-Phi_pe_sh_ANN=zeros(size(PE_ANN,1),1)
+for j in range(np.shape(PE_ANN)[0]):
+  Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:], lat)
 
-for j in arange(1,size(PE,1)).reshape(-1):
-  Phi_pe_sh[j],Phi_pe_nh[j]=TropD_Metric_PE(squeeze(PE(j,arange(),arange())),lat,nargout=2)
+#figure
+#subplot('211')
+#plot(time,Phi_pe_nh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_nh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH P - E zero-crossing')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of P minus E zero-crossing','Latitude of P minus E zero-crossing from annual mean field','Latitude of P minus E zero-crossing from annual mean of monthly metric')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(time,Phi_pe_sh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_sh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH P - E zero-crossing')
 
-for j in arange(1,size(PE_ANN,1)).reshape(-1):
-  Phi_pe_sh_ANN[j],Phi_pe_nh_ANN[j]=TropD_Metric_PE(squeeze(PE_ANN(j,arange(),arange())),lat,nargout=2)
-
-figure
-subplot('211')
-plot(time,Phi_pe_nh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_nh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH P - E zero-crossing')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of P minus E zero-crossing','Latitude of P minus E zero-crossing from annual mean field','Latitude of P minus E zero-crossing from annual mean of monthly metric')
-set(l,'box','off','location','north')
-subplot('212')
-plot(time,Phi_pe_sh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_sh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH P - E zero-crossing')
 ## 7) UAS -- Zonal surface wind subtropical zero crossing latitude
-U=ncread('../ValidationData/ua.nc','ua')
+f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
+U = f_u.variables['ua'][:]
+uas = f_uas.variables['uas'][:]
+lat = f_u.variables['lat'][:]
+lev = f_u.variables['lev'][:]
 
-lat=ncread('../ValidationData/ua.nc','lat')
+#Change axes of u to be [time, lat]
+U = np.transpose(U, (2,1,0))
+uas = np.transpose(uas, (1,0))
 
-lev=ncread('../ValidationData/ua.nc','lev')
+uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
+u_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-uas=ncread('../ValidationData/uas.nc','uas')
+Phi_uas_nh = np.zeros((np.shape(uas)[0],1))
+Phi_uas_sh = np.zeros((np.shape(uas)[0],1))
 
-uas_ANN=TropD_Calculate_Mon2Season(uas,concat([arange(1,12)]))
+Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_Uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_Uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
 
-U_ANN=TropD_Calculate_Mon2Season(U,concat([arange(1,12)]))
+for j in range(np.shape(uas)[0]):
+  Phi_uas_sh[j], Phi_uas_nh[j] = TropD_Metric_UAS(uas[j,:], lat)
 
-Phi_uas_nh=zeros(size(uas,1),1)
+for j in range(np.shape(uas_ANN)[0]):
+  Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:], lat)
+  Phi_Uas_sh_ANN[j], Phi_Uas_nh_ANN[j] = TropD_Metric_UAS(U_ANN[j,:], lat, lev)
 
-Phi_uas_sh=zeros(size(uas,1),1)
 
-Phi_uas_nh_ANN=zeros(size(uas_ANN,1),1)
+#figure
+#subplot('211')
+#plot(time,Phi_uas_nh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_nh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y2,y2)]) + 0.5,Phi_Uas_nh_ANN,'-','linewidth',2,'color',red_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#ylabel('NH uas zero-crossing')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of surface zonal wind zero crossing','Latitude of surface zonal wind zero crossing from annual mean field','Latitude of 850 hPa zonal wind zero crossing from annual mean field','Latitude of surface zonal wind zero crossing from annual mean of monthly metric')
+#set(l,'box','off','location','north')
+#subplot('212')
+#plot(time,Phi_uas_sh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_sh_ANN,'-','linewidth',2,'color',blue_color)
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_Uas_sh_ANN,'-','linewidth',2,'color',red_color)
+#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh,concat([arange(1,12)])),'-k','linewidth',2)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
+#xlim(concat([y1,y2 + 1]))
+#xlabel('Year','fontsize',14)
+#ylabel('SH uas zero-crossing')
 
-Phi_uas_sh_ANN=zeros(size(uas_ANN,1),1)
-
-Phi_Uas_nh_ANN=zeros(size(uas_ANN,1),1)
-
-Phi_Uas_sh_ANN=zeros(size(uas_ANN,1),1)
-
-# The TropD_Metric_UAS metric accepts both 2D and 1D zonal wind. 
-#r surface 1D wind, both of the following syntaxes are allowed and equivalent
-[Phi_sh , Phi_nh] = TropD_Metric_UAS(uas,lat) ;   
-[Phi_sh , Phi_nh] = TropD_Metric_UAS(uas,lat,1) ;
-
-for j in arange(1,size(uas,1)).reshape(-1):
-  Phi_uas_sh[j],Phi_uas_nh[j]=TropD_Metric_UAS(squeeze(uas(j,arange(),arange())),lat,nargout=2)
-
-for j in arange(1,size(uas_ANN,1)).reshape(-1):
-  Phi_uas_sh_ANN[j],Phi_uas_nh_ANN[j]=TropD_Metric_UAS(squeeze(uas_ANN(j,arange(),arange())),lat,nargout=2)
-  Phi_Uas_sh_ANN[j],Phi_Uas_nh_ANN[j]=TropD_Metric_UAS(squeeze(U_ANN(j,arange(),arange())),lat,lev,nargout=2)
-
-figure
-subplot('211')
-plot(time,Phi_uas_nh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_nh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_Uas_nh_ANN,'-','linewidth',2,'color',red_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-ylabel('NH uas zero-crossing')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of surface zonal wind zero crossing','Latitude of surface zonal wind zero crossing from annual mean field','Latitude of 850 hPa zonal wind zero crossing from annual mean field','Latitude of surface zonal wind zero crossing from annual mean of monthly metric')
-set(l,'box','off','location','north')
-subplot('212')
-plot(time,Phi_uas_sh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_sh_ANN,'-','linewidth',2,'color',blue_color)
-plot(concat([arange(y1,y2)]) + 0.5,Phi_Uas_sh_ANN,'-','linewidth',2,'color',red_color)
-plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh,concat([arange(1,12)])),'-k','linewidth',2)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-xlim(concat([y1,y2 + 1]))
-xlabel('Year','fontsize',14)
-ylabel('SH uas zero-crossing')
 ## 8) PSL -- Sea-level Pressure Maximum
-ps=ncread('../ValidationData/psl.nc','psl')
+f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
+ps = f_ps.variables['psl'][:]
+lat = f_ps.variables['lat'][:]
 
-lat=ncread('../ValidationData/psl.nc','lat')
+#Change axes of u to be [time, lat]
+ps = np.transpose(ps, (1,0))
 
-ps_DJF=TropD_Calculate_Mon2Season(ps,concat([1,2,12]))
+ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11]))
+ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))
 
-ps_JJA=TropD_Calculate_Mon2Season(ps,concat([6,7,8]))
+Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],1))
+Phi_ps_DJF_sh = np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_JJA_sh = np.zeros((np.shape(ps_JJA)[0],1))
 
-Phi_ps_DJF_nh=zeros(size(ps_DJF,1),1)
+for j in range(np.shape(ps_DJF)[0]):
+  Phi_ps_DJF_sh[j], Phi_ps_DJF_nh[j] = TropD_Metric_PSL(ps_DJF[j,:], lat)
 
-Phi_ps_JJA_nh=zeros(size(ps_JJA,1),1)
+for j in range(np.shape(ps_JJA)[0]):
+  Phi_ps_JJA_sh[j], Phi_ps_JJA_nh[j] = TropD_Metric_PSL(ps_JJA[j,:], lat)
 
-Phi_ps_DJF_sh=zeros(size(ps_DJF,1),1)
+#figure
+#subplot('211')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_nh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_nh,'-','linewidth',2,'color',blue_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
+#ylabel('NH max psl latitude')
+#xlim(concat([y1,y2 + 1]))
+#l=legend('Latitude of max sea-level pressure during DJF','Latitude of max sea-level pressure during JJA')
+#set(l,'box','off','location','south')
+#subplot('212')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_sh,'-','linewidth',2,'color',green_color)
+#hold('on')
+#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_sh,'-','linewidth',2,'color',blue_color)
+#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
+#ylabel('SH max psl latitude')
+#xlim(concat([y1,y2 + 1]))
 
-Phi_ps_JJA_sh=zeros(size(ps_JJA,1),1)
+#working up to here
 
-for j in arange(1,size(ps_DJF,1)).reshape(-1):
-  Phi_ps_DJF_sh[j],Phi_ps_DJF_nh[j]=TropD_Metric_PSL(squeeze(ps_DJF(j,arange(),arange())).T,lat,nargout=2)
-
-for j in arange(1,size(ps_JJA,1)).reshape(-1):
-  Phi_ps_JJA_sh[j],Phi_ps_JJA_nh[j]=TropD_Metric_PSL(squeeze(ps_JJA(j,arange(),arange())).T,lat,nargout=2)
-
-figure
-subplot('211')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_nh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_nh,'-','linewidth',2,'color',blue_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
-ylabel('NH max psl latitude')
-xlim(concat([y1,y2 + 1]))
-l=legend('Latitude of max sea-level pressure during DJF','Latitude of max sea-level pressure during JJA')
-set(l,'box','off','location','south')
-subplot('212')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_sh,'-','linewidth',2,'color',green_color)
-hold('on')
-plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_sh,'-','linewidth',2,'color',blue_color)
-set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick',concat([arange(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
-ylabel('SH max psl latitude')
-xlim(concat([y1,y2 + 1]))
 ## 9) Compare annual mean metrics
-i500
+#Psi500
 V=ncread('../ValidationData/va.nc','va')
 
 lat=ncread('../ValidationData/va.nc','lat')
