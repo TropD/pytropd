@@ -66,8 +66,8 @@ V = np.transpose(V, (2,1,0))
 lat = f_V.variables['lat'][:]
 lev = f_V.variables['lev'][:]
 
-Phi_psi_nh = np.zeros((np.shape(V)[0],))
-Phi_psi_sh = np.zeros((np.shape(V)[0],))
+Phi_psi_nh = np.zeros((np.shape(V)[0],1))
+Phi_psi_sh = np.zeros((np.shape(V)[0],1))
 
 for j in range(np.shape(V)[0]):
   Phi_psi_sh[j], Phi_psi_nh[j] = TropD_Metric_PSI(V[j,:,:], lat, lev)
@@ -76,8 +76,8 @@ for j in range(np.shape(V)[0]):
 # Calculate metric from annual mean
 V_ANN = TropD_Calculate_Mon2Season(V,np.arange(12))
 
-Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
-Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],1))
+Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],1))
 
 for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
@@ -105,8 +105,8 @@ for j in range(np.shape(V_ANN)[0]):
 #ylabel(cellarray([['SH \\Psi zero crossing'],['latitude']]))
 # Introduce latitude unertainty condition: no additional zero crossing is allowed within 10 degrees
 
-Phi_psi_nh_L = np.zeros((np.shape(V)[0],))
-Phi_psi_sh_L = np.zeros((np.shape(V)[0],))
+Phi_psi_nh_L = np.zeros((np.shape(V)[0],1))
+Phi_psi_sh_L = np.zeros((np.shape(V)[0],1))
 
 for j in range(np.shape(V)[0]):
   Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, 'Psi_500', 10)
@@ -135,8 +135,8 @@ Z = np.transpose(Z, (2,1,0))
 lat = f_T.variables['lat'][:]
 lev = f_T.variables['lev'][:]
 
-Phi_tpb_nh = np.zeros((np.shape(T)[0],))
-Phi_tpb_sh = np.zeros((np.shape(T)[0],))
+Phi_tpb_nh = np.zeros((np.shape(T)[0],1))
+Phi_tpb_sh = np.zeros((np.shape(T)[0],1))
 
 for j in range(np.shape(V)[0]):
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
@@ -146,17 +146,17 @@ T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
 
 Z_ANN = TropD_Calculate_Mon2Season(Z, np.arange(12))
 
-Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
-Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
-Phi_tpbZ_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpbZ_nh_ANN = np.zeros((np.shape(T_ANN)[0],1))
                                                    
-Phi_tpbZ_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpbZ_sh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
-Phi_tpbT_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpbT_nh_ANN = np.zeros((np.shape(T_ANN)[0],1))
                                                    
-Phi_tpbT_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpbT_sh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
 for j in range(np.shape(T_ANN)[0]):
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_gradient')
@@ -207,23 +207,23 @@ olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
 
 olrcs_ANN = TropD_Calculate_Mon2Season(olrcs, np.arange(12))
 
-Phi_olr_nh = np.zeros((np.shape(olr)[0],))
-Phi_olr_sh = np.zeros((np.shape(olr)[0],))
+Phi_olr_nh = np.zeros((np.shape(olr)[0],1))
+Phi_olr_sh = np.zeros((np.shape(olr)[0],1))
 
-Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olrcs_nh = np.zeros((np.shape(olr)[0],))
-Phi_olrcs_sh = np.zeros((np.shape(olr)[0],))
+Phi_olrcs_nh = np.zeros((np.shape(olr)[0],1))
+Phi_olrcs_sh = np.zeros((np.shape(olr)[0],1))
 
-Phi_olrcs_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olrcs_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olrcs_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olrcs_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olr20_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr20_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr20_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr20_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olr240_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr240_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr240_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+Phi_olr240_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
 for j in range(np.shape(olr)[0]):
   Phi_olr_sh[j], Phi_olr_nh[j] = TropD_Metric_OLR(olr[j,:], lat)
@@ -295,10 +295,10 @@ U = np.transpose(U, (2,1,0))
 # Calculate STJ latitude from annual mean
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_nh_ANN_core = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],))
+Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_nh_ANN_core = np.zeros((np.shape(U_ANN)[0],1))
+Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN_adj [j], Phi_stj_nh_ANN_adj[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
@@ -333,8 +333,8 @@ lev = f_u.variables['lev'][:]
 #Change axes of u to be [time, lat]
 U = np.transpose(U, (2,1,0))
 
-Phi_edj_nh = np.zeros((np.shape(U)[0],))
-Phi_edj_sh = np.zeros((np.shape(U)[0],))
+Phi_edj_nh = np.zeros((np.shape(U)[0],1))
+Phi_edj_sh = np.zeros((np.shape(U)[0],1))
 
 for j in range(np.shape(U)[0]):
   Phi_edj_sh[j], Phi_edj_nh[j] = TropD_Metric_EDJ(U[j,:,:,] ,lat, lev, method='max')
@@ -342,8 +342,8 @@ for j in range(np.shape(U)[0]):
 # Calculate EDJ latitude from annual mean
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
+Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
@@ -387,10 +387,10 @@ PE = np.transpose(PE, (1,0))
 
 PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
 
-Phi_pe_nh = np.zeros((np.shape(PE)[0],))
-Phi_pe_sh = np.zeros((np.shape(PE)[0],))
-Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],))
-Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],))
+Phi_pe_nh = np.zeros((np.shape(PE)[0],1))
+Phi_pe_sh = np.zeros((np.shape(PE)[0],1))
+Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
+Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
 
 for j in range(np.shape(PE)[0]):
   Phi_pe_sh[j], Phi_pe_nh[j] = TropD_Metric_PE(PE[j,:], lat)
@@ -434,13 +434,13 @@ uas = np.transpose(uas, (1,0))
 uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
 u_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_uas_nh = np.zeros((np.shape(uas)[0],))
-Phi_uas_sh = np.zeros((np.shape(uas)[0],))
+Phi_uas_nh = np.zeros((np.shape(uas)[0],1))
+Phi_uas_sh = np.zeros((np.shape(uas)[0],1))
 
-Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_Uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_Uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
+Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_Uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+Phi_Uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
 
 for j in range(np.shape(uas)[0]):
   Phi_uas_sh[j], Phi_uas_nh[j] = TropD_Metric_UAS(uas[j,:], lat)
@@ -478,16 +478,16 @@ f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
 ps = f_ps.variables['psl'][:]
 lat = f_ps.variables['lat'][:]
 
-#Change axes of ps to be [time, lat]
+#Change axes of u to be [time, lat]
 ps = np.transpose(ps, (1,0))
 
 ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11]))
 ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))
 
-Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],))
-Phi_ps_DJF_sh = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_JJA_sh = np.zeros((np.shape(ps_JJA)[0],))
+Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],1))
+Phi_ps_DJF_sh = np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_JJA_sh = np.zeros((np.shape(ps_JJA)[0],1))
 
 for j in range(np.shape(ps_DJF)[0]):
   Phi_ps_DJF_sh[j], Phi_ps_DJF_nh[j] = TropD_Metric_PSL(ps_DJF[j,:], lat)
@@ -522,12 +522,12 @@ lat = f_V.variables['lat'][:]
 lev = f_V.variables['lev'][:]
 
 #Change axes of V to be [time, lat]
-V = np.transpose(V, (2,1,0))
+V = np.transpose(V, (1,0))
 
 V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
 
-Phi_ps_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
-Phi_ps_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_ps_nh_ANN = np.zeros((np.shape(V_ANN)[0],1))
+Phi_ps_sh_ANN = np.zeros((np.shape(V_ANN)[0],1))
 
 for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
@@ -537,12 +537,12 @@ f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
 T = f_T.variables['ta'][:]
 
 #Change axes of T to be [time, lat]
-T = np.transpose(T, (2,1,0))
+T = np.transpose(T, (1,0))
 
 T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
 
-Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
-Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],1))
+Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
 for j in range(np.shape(T_ANN)[0]):
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev)
@@ -556,52 +556,52 @@ ps = np.transpose(ps, (1,0))
 
 ps_ANN = TropD_Calculate_Mon2Season(ps, np.arange(12))
 
-Phi_ps_nh_ANN = np.zeros((np.shape(ps_ANN)[0],))
+Phi_ps_nh_ANN = np.zeros((np.shape(ps_ANN)[0],1))
 
-Phi_ps_sh_ANN = np.zeros((np.shape(ps_ANN)[0],))
+Phi_ps_sh_ANN = np.zeros((np.shape(ps_ANN)[0],1))
 
 for j in range(np.shape(ps_ANN)[0]):
-  Phi_ps_sh_ANN[j], Phi_ps_nh_ANN[j] = TropD_Metric_PSL(ps_ANN[j,:], lat)
+  Phi_ps_sh_ANN[j], Phi_ps_nh_ANN[j] = TropD_Metric_PSL(ps_ANN[j,:,:], lat)
 
 # Eddy driven jet
-f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
-U = f_u.variables['ua'][:]
+f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_ps.variables['ua'][:]
 
 #Change axes of U to be [time, lat]
-U = np.transpose(U, (2,1,0))
+U = np.transpose(U, (1,0))
 
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
-Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
 
 # Subtropical jet
-Phi_stj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_stj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
-Phi_stj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_stj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN[j], Phi_stj_nh_ANN[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
 
 # OLR
-f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
-olr = -f_olr.variables['rlnt'][:]
+f_olr = - ncread('../ValidationData/rlnt.nc','r')
+olr = f_olr.variables['rlnt'][:]
 
 #Change axes of olr to be [time, lat]
 olr = np.transpose(olr, (1,0))
 
 olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
 
-Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
-Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
 for j in range(np.shape(olr_ANN)[0]):
-  Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:], lat)
+  Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:,:], lat)
 
 # P minus E
 f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
@@ -609,8 +609,8 @@ pr = f_pr.variables['pr'][:]
 
 L = 2510400.0
 
-f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
-er = -f_er.variables['hfls'][:]/L
+f_er = - ncread('../ValidationData/hfls.nc','r')
+er = f_er.variables['hfls'][:] / L
 
 #Change axes of ps and er to be [time, lat]
 pr = np.transpose(pr, (1,0))
@@ -619,28 +619,28 @@ er = np.transpose(er, (1,0))
 PE = pr - er
 PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
 
-Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],))
+Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
 
-Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],))
+Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
 
 for j in range(np.shape(PE_ANN)[0]):
-  Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:], lat)
+  Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:,:], lat)
 
 # Surface winds
 f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
-uas = f_uas.variables['uas'][:]
+uas = f_ps.variables['uas'][:]
 
 #Change axes of uas to be [time, lat]
 uas = np.transpose(uas, (1,0))
 
 uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
 
-Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
+Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
 
-Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
+Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
 
 for j in range(np.shape(uas_ANN)[0]):
-  Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:], lat)
+  Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:,:], lat)
 
 
 #figure
@@ -679,23 +679,21 @@ for j in range(np.shape(uas_ANN)[0]):
 
 ## 10) Validate metrics
 #Psi500
-f_V = netcdf.netcdf_file('../ValidationData/va.nc','r')
-V = f_V.variables['va'][:]
-lat = f_V.variables['lat'][:]
-lev = f_V.variables['lev'][:]
+V = netcdf.netcdf_file('../ValidationData/va.nc','va')
 
-#Change axes of V to be [time, lat]
-V = np.transpose(V, (2,1,0))
+lat = netcdf.netcdf_file('../ValidationData/va.nc','lat')
+
+lev = netcdf.netcdf_file('../ValidationData/va.nc','lev')
 
 V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
 
-Phi_psi_nh = np.zeros((np.shape(V)[0],))
+Phi_psi_nh = np.zeros((np.shape(V)[0],1))
 
-Phi_psi_sh = np.zeros((np.shape(V)[0],))
+Phi_psi_sh = np.zeros((np.shape(V)[0],1))
 
-Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],1))
 
-Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],1))
 
 for j in range(np.shape(V)[0]):
   Phi_psi_sh[j], Phi_psi_nh[j] = TropD_Metric_PSI(V[j,:,:], lat, lev)
@@ -703,41 +701,32 @@ for j in range(np.shape(V)[0]):
 for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
 
-
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSI_ANN.nc','r')
-Phi_nh = f_Phi.variables['PSI_NH'][:]
-Phi_sh = f_Phi.variables['PSI_SH'][:]
-
-if not (np.std(Phi_nh - Phi_psi_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_psi_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated PSI metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSI_ANN.nc','PSI_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSI_ANN.nc','PSI_SH')
+if logical_not((std(Phi_nh - Phi_psi_nh_ANN) < 1e-10 and std(Phi_sh - Phi_psi_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated PSI metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated PSI metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated PSI metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSI.nc','r')
-Phi_nh = f_Phi.variables['PSI_NH'][:]
-Phi_sh = f_Phi.variables['PSI_SH'][:]
-
-if not (np.std(Phi_nh - Phi_psi_nh) < 1e-10 and np.std(Phi_sh - Phi_psi_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated PSI metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSI.nc','PSI_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSI.nc','PSI_SH')
+if logical_not((std(Phi_nh - Phi_psi_nh) < 1e-10 and std(Phi_sh - Phi_psi_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated PSI metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated PSI metrics are the same!'
+  disp('OK. Monthly Validation and calculated PSI metrics are the same!')
 
 # Tropopause break
-f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
-T = f_T.variables['ta'][:]
-
-#Change axes of T to be [time, lat, lev]
-T = np.transpose(T, (2,1,0))
+T = netcdf.netcdf_file('../ValidationData/ta.nc','ta')
 
 T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
 
-Phi_tpb_nh = np.zeros((np.shape(T)[0],))
+Phi_tpb_nh=np.zeros((np.shape(T)[0],1))
 
-Phi_tpb_sh = np.zeros((np.shape(T)[0],))
+Phi_tpb_sh=np.zeros((np.shape(T)[0],1))
 
-Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
-Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],1))
 
 for j in range(np.shape(T)[0]):
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
@@ -745,107 +734,91 @@ for j in range(np.shape(T)[0]):
 for j in range(np.shape(T_ANN)[0]):
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/TPB_ANN.nc','r')
-Phi_nh = f_Phi.variables['TPB_NH'][:]
-Phi_sh = f_Phi.variables['TPB_SH'][:]
-
-if not (np.std(Phi_nh - Phi_tpb_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_tpb_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated TPB metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/TPB_ANN.nc','TPB_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/TPB_ANN.nc','TPB_SH')
+if logical_not((std(Phi_nh - Phi_tpb_nh_ANN) < 1e-10 and std(Phi_sh - Phi_tpb_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated TPB metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated TPB metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated TPB metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/TPB.nc','r')
-Phi_nh = f_Phi.variables['TPB_NH'][:]
-Phi_sh = f_Phi.variables['TPB_SH'][:]
-
-if not (np.std(Phi_nh - Phi_tpb_nh) < 1e-10 and np.std(Phi_sh - Phi_tpb_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated TPB metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/TPB.nc','TPB_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/TPB.nc','TPB_SH')
+if logical_not((std(Phi_nh - Phi_tpb_nh) < 1e-10 and std(Phi_sh - Phi_tpb_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated TPB metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated TPB metrics are the same!'
+  disp('OK. Monthly Validation and calculated TPB metrics are the same!')
 
 # Surface pressure max (Invalid in NH)
-f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
-ps = f_ps.variables['psl'][:]
+ps = netcdf.netcdf_file('../ValidationData/psl.nc','psl')
 
-#Change axes of ps to be [time, lat]
-ps = np.transpose(ps, (1,0))
+ps_DJF=TropD_Calculate_Mon2Season(ps,concat([1,2,12]))
 
-ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11]))
-ps_MAM = TropD_Calculate_Mon2Season(ps, np.array([2,3,4]))
-ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))
-ps_SON = TropD_Calculate_Mon2Season(ps, np.array([8,9,10]))
+ps_JJA=TropD_Calculate_Mon2Season(ps, np.arange(12)(6,8)]))
 
-Phi_ps_sh_DJF = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_sh_JJA = np.zeros((np.shape(ps_JJA)[0],))
-Phi_ps_sh_MAM = np.zeros((np.shape(ps_MAM)[0],))
-Phi_ps_sh_SON = np.zeros((np.shape(ps_SON)[0],))
-Phi_ps_nh_DJF = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_nh_JJA = np.zeros((np.shape(ps_JJA)[0],))
-Phi_ps_nh_MAM = np.zeros((np.shape(ps_MAM)[0],))
-Phi_ps_nh_SON = np.zeros((np.shape(ps_SON)[0],))
+ps_MAM=TropD_Calculate_Mon2Season(ps, np.arange(12)(3,5)]))
 
+ps_SON = TropD_Calculate_Mon2Season(ps, np.arange(12)(9,11)]))
+
+Phi_ps_sh_DJF=np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_sh_JJA=np.zeros((np.shape(ps_JJA)[0],1))
+Phi_ps_sh_MAM=np.zeros((np.shape(ps_MAM)[0],1))
+Phi_ps_sh_SON = np.zeros((np.shape(ps_SON)[0],1))
+Phi_ps_nh_DJF=np.zeros((np.shape(ps_DJF)[0],1))
+Phi_ps_nh_JJA=np.zeros((np.shape(ps_JJA)[0],1))
+Phi_ps_nh_MAM=np.zeros((np.shape(ps_MAM)[0],1))
+Phi_ps_nh_SON = np.zeros((np.shape(ps_SON)[0],1))
 for j in range(np.shape(ps_DJF)[0]):
-  Phi_ps_sh_DJF[j], Phi_ps_nh_DJF[j] = TropD_Metric_PSL(ps_DJF[j,:], lat)
+  Phi_ps_sh_DJF[j], Phi_ps_nh_DJF[j] = TropD_Metric_PSL(ps_DJF[j,:,:], lat)
 
 for j in range(np.shape(ps_JJA)[0]):
-  Phi_ps_sh_JJA[j], Phi_ps_nh_JJA[j] = TropD_Metric_PSL(ps_JJA[j,:], lat)
+  Phi_ps_sh_JJA[j], Phi_ps_nh_JJA[j] = TropD_Metric_PSL(ps_JJA[j,:,:], lat)
 
 for j in range(np.shape(ps_MAM)[0]):
-  Phi_ps_sh_MAM[j], Phi_ps_nh_MAM[j] = TropD_Metric_PSL(ps_MAM[j,:], lat)
+  Phi_ps_sh_MAM[j], Phi_ps_nh_MAM[j] = TropD_Metric_PSL(ps_MAM[j,:,:], lat)
 
 for j in range(np.shape(ps_SON)[0]):
-  Phi_ps_sh_SON[j], Phi_ps_nh_SON[j] = TropD_Metric_PSL(ps_SON[j,:], lat)
+  Phi_ps_sh_SON[j], Phi_ps_nh_SON[j] = TropD_Metric_PSL(ps_SON[j,:,:], lat)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSL_DJF.nc','r')
-Phi_nh = f_Phi.variables['PSL_NH'][:]
-Phi_sh = f_Phi.variables['PSL_SH'][:]
-
-if not (np.std(Phi_sh - Phi_ps_sh_DJF) < 1e-10) or not (np.std(Phi_nh - Phi_ps_nh_DJF) < 1e-10):
-  print 'Warning: DJF Validation and calculated PSL metrics are NOT equal!'
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSL_DJF.nc','PSL_SH')
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSL_DJF.nc','PSL_NH')
+if logical_not((std(Phi_sh - Phi_ps_sh_DJF) < 1e-10)) or logical_not((std(Phi_nh - Phi_ps_nh_DJF) < 1e-10)):
+  disp('Warning: DJF Validation and calculated PSL metrics are NOT equal!')
 else:
-  print 'OK. DJF Validation and calculated PSL metrics are the same!'
+  disp('OK. DJF Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSL_JJA.nc','r')
-Phi_nh = f_Phi.variables['PSL_NH'][:]
-Phi_sh = f_Phi.variables['PSL_SH'][:]
-
-if not (np.std(Phi_sh - Phi_ps_sh_JJA) < 1e-10) or not (np.std(Phi_nh - Phi_ps_nh_JJA) < 1e-10):
-  print 'Warning: JJA Validation and calculated PSL metrics are NOT equal!'
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSL_JJA.nc','PSL_SH')
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSL_JJA.nc','PSL_NH')
+if logical_not((std(Phi_sh - Phi_ps_sh_JJA) < 1e-10)) or logical_not((std(Phi_nh - Phi_ps_nh_JJA) < 1e-10)):
+  disp('Warning: JJA Validation and calculated PSL metrics are NOT equal!')
 else:
-  print 'OK. JJA Validation and calculated PSL metrics are the same!'
+  disp('OK. JJA Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSL_MAM.nc','r')
-Phi_nh = f_Phi.variables['PSL_NH'][:]
-Phi_sh = f_Phi.variables['PSL_SH'][:]
-
-if not (np.std(Phi_sh - Phi_ps_sh_MAM) < 1e-10) or not (np.std(Phi_nh - Phi_ps_nh_MAM) < 1e-10):
-  print 'Warning: MAM Validation and calculated PSL metrics are NOT equal!'
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSL_MAM.nc','PSL_SH')
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSL_MAM.nc','PSL_NH')
+if logical_not((std(Phi_sh - Phi_ps_sh_MAM) < 1e-10)) or logical_not((std(Phi_nh - Phi_ps_nh_MAM) < 1e-10)):
+  disp('Warning: MAM Validation and calculated PSL metrics are NOT equal!')
 else:
-  print 'OK. MAM Validation and calculated PSL metrics are the same!'
+  disp('OK. MAM Validation and calculated PSL metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PSL_SON.nc','r')
-Phi_nh = f_Phi.variables['PSL_NH'][:]
-Phi_sh = f_Phi.variables['PSL_SH'][:]
-
-if not (np.std(Phi_sh - Phi_ps_sh_SON) < 1e-10) or not (np.std(Phi_nh - Phi_ps_nh_SON) < 1e-10):
-  print 'Warning: SON Validation and calculated PSL metrics are NOT equal!'
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PSL_SON.nc','PSL_SH')
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PSL_SON.nc','PSL_NH')
+if logical_not((std(Phi_sh - Phi_ps_sh_SON) < 1e-10)) or logical_not((std(Phi_nh - Phi_ps_nh_SON) < 1e-10)):
+  disp('Warning: SON Validation and calculated PSL metrics are NOT equal!')
 else:
-  print 'OK. SON Validation and calculated PSL metrics are the same!'
+  disp('OK. SON Validation and calculated PSL metrics are the same!')
 
 # Eddy driven jet
-f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
-U = f_U.variables['ua'][:]
-
-#Change axes of U to be [time, lat]
-U = np.transpose(U, (2,1,0))
+U = netcdf.netcdf_file('../ValidationData/ua.nc','ua')
 
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_edj_nh=np.zeros((np.shape(U)[0],))
-Phi_edj_sh=np.zeros((np.shape(U)[0],))
+Phi_edj_nh=np.zeros((np.shape(U)[0],1))
 
-Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_edj_sh=np.zeros((np.shape(U)[0],1))
+
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
+
+Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U)[0]):
   Phi_edj_sh[j], Phi_edj_nh[j] = TropD_Metric_EDJ(U[j,:,:], lat, lev)
@@ -853,29 +826,28 @@ for j in range(np.shape(U)[0]):
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/EDJ_ANN.nc','r')
-Phi_nh = f_Phi.variables['EDJ_NH'][:]
-Phi_sh = f_Phi.variables['EDJ_SH'][:]
-
-if not (np.std(Phi_nh - Phi_edj_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_edj_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated EDJ metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/EDJ_ANN.nc','EDJ_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/EDJ_ANN.nc','EDJ_SH')
+if logical_not((std(Phi_nh - Phi_edj_nh_ANN) < 1e-10 and std(Phi_sh - Phi_edj_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated EDJ metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated EDJ metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated EDJ metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/EDJ.nc','r')
-Phi_nh = f_Phi.variables['EDJ_NH'][:]
-Phi_sh = f_Phi.variables['EDJ_SH'][:]
-
-if not (np.std(Phi_nh - Phi_edj_nh) < 1e-10 and np.std(Phi_sh - Phi_edj_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated EDJ metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/EDJ.nc','EDJ_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/EDJ.nc','EDJ_SH')
+if logical_not((std(Phi_nh - Phi_edj_nh) < 1e-10 and std(Phi_sh - Phi_edj_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated EDJ metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated EDJ metrics are the same!'
+  disp('OK. Monthly Validation and calculated EDJ metrics are the same!')
 
 # Subtropical jet
-Phi_stj_nh = np.zeros((np.shape(U)[0],))
-Phi_stj_sh = np.zeros((np.shape(U)[0],))
-Phi_stj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_stj_nh=np.zeros((np.shape(U)[0],1))
+
+Phi_stj_sh=np.zeros((np.shape(U)[0],1))
+
+Phi_stj_nh_ANN = np.zeros((np.shape(U_ANN)[0],1))
+
+Phi_stj_sh_ANN = np.zeros((np.shape(U_ANN)[0],1))
 
 for j in range(np.shape(U)[0]):
   Phi_stj_sh[j], Phi_stj_nh[j] = TropD_Metric_STJ(U[j,:,:], lat, lev)
@@ -883,144 +855,121 @@ for j in range(np.shape(U)[0]):
 for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN[j], Phi_stj_nh_ANN[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/STJ_ANN.nc','r')
-Phi_nh = f_Phi.variables['STJ_NH'][:]
-Phi_sh = f_Phi.variables['STJ_SH'][:]
-
-if not (np.std(Phi_nh - Phi_stj_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_stj_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated STJ metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/STJ_ANN.nc','STJ_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/STJ_ANN.nc','STJ_SH')
+if logical_not((std(Phi_nh - Phi_stj_nh_ANN) < 1e-10 and std(Phi_sh - Phi_stj_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated STJ metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated STJ metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated STJ metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/STJ.nc','r')
-Phi_nh = f_Phi.variables['STJ_NH'][:]
-Phi_sh = f_Phi.variables['STJ_SH'][:]
-
-if not (np.std(Phi_nh - Phi_stj_nh) < 1e-10 and np.std(Phi_sh - Phi_stj_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated STJ metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/STJ.nc','STJ_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/STJ.nc','STJ_SH')
+if logical_not((std(Phi_nh - Phi_stj_nh) < 1e-10 and std(Phi_sh - Phi_stj_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated STJ metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated STJ metrics are the same!'
+  disp('OK. Monthly Validation and calculated STJ metrics are the same!')
 
 # OLR
-f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
-olr = -f_olr.variables['rlnt'][:]
-
-#Change axes of olr to be [time, lat]
-olr = np.transpose(olr, (1,0))
+olr=- ncread('../ValidationData/rlnt.nc','rlnt')
 
 olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
 
-Phi_olr_nh = np.zeros((np.shape(olr)[0],))
-Phi_olr_sh = np.zeros((np.shape(olr)[0],))
-Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr_nh=np.zeros((np.shape(olr)[0],1))
+
+Phi_olr_sh=np.zeros((np.shape(olr)[0],1))
+
+Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
+
+Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],1))
 
 for j in range(np.shape(olr)[0]):
-  Phi_olr_sh[j], Phi_olr_nh[j] = TropD_Metric_OLR(olr[j,:], lat)
+  Phi_olr_sh[j], Phi_olr_nh[j] = TropD_Metric_OLR(olr[j,:,:], lat)
 
 for j in range(np.shape(olr_ANN)[0]):
-  Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:], lat)
+  Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:,:], lat)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/OLR_ANN.nc','r')
-Phi_nh = f_Phi.variables['OLR_NH'][:]
-Phi_sh = f_Phi.variables['OLR_SH'][:]
-
-if not (np.std(Phi_nh - Phi_olr_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_olr_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated OLR metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/OLR_ANN.nc','OLR_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/OLR_ANN.nc','OLR_SH')
+if logical_not((std(Phi_nh - Phi_olr_nh_ANN) < 1e-10 and std(Phi_sh - Phi_olr_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated OLR metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated OLR metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated OLR metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/OLR.nc','r')
-Phi_nh = f_Phi.variables['OLR_NH'][:]
-Phi_sh = f_Phi.variables['OLR_SH'][:]
-
-if not (np.std(Phi_nh - Phi_olr_nh) < 1e-10 and np.std(Phi_sh - Phi_olr_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated OLR metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/OLR.nc','OLR_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/OLR.nc','OLR_SH')
+if logical_not((std(Phi_nh - Phi_olr_nh) < 1e-10 and std(Phi_sh - Phi_olr_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated OLR metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated OLR metrics are the same!'
+  disp('OK. Monthly Validation and calculated OLR metrics are the same!')
 
 # P minus E
-f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
-pr = f_pr.variables['pr'][:]
+pr = netcdf.netcdf_file('../ValidationData/pr.nc','pr')
 
-L = 2510400.0
+L=2510400.0
 
-f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
-er = -f_er.variables['hfls'][:]/L
+er=- ncread('../ValidationData/hfls.nc','hfls') / L
 
-#Change axes of ps and er to be [time, lat]
-pr = np.transpose(pr, (1,0))
-er = np.transpose(er, (1,0))
-
-PE = pr - er
+PE=pr - er
 PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
 
-Phi_pe_nh=np.zeros((np.shape(PE)[0],))
-Phi_pe_sh=np.zeros((np.shape(PE)[0],))
+Phi_pe_nh=np.zeros((np.shape(PE)[0],1))
 
-Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],))
-Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],))
+Phi_pe_sh=np.zeros((np.shape(PE)[0],1))
+
+Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
+
+Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],1))
 
 for j in range(np.shape(PE)[0]):
-  Phi_pe_sh[j], Phi_pe_nh[j] = TropD_Metric_PE(PE[j,:], lat)
+  Phi_pe_sh[j], Phi_pe_nh[j] = TropD_Metric_PE(PE[j,:,:], lat)
 
 for j in range(np.shape(PE_ANN)[0]):
-  Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:], lat)
+  Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:,:], lat)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PE_ANN.nc','r')
-Phi_nh = f_Phi.variables['PE_NH'][:]
-Phi_sh = f_Phi.variables['PE_SH'][:]
-
-if not (np.std(Phi_nh - Phi_pe_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_pe_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated P-E metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PE_ANN.nc','PE_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PE_ANN.nc','PE_SH')
+if logical_not((std(Phi_nh - Phi_pe_nh_ANN) < 1e-10 and std(Phi_sh - Phi_pe_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated P-E metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated P-E metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated P-E metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/PE.nc','r')
-Phi_nh = f_Phi.variables['PE_NH'][:]
-Phi_sh = f_Phi.variables['PE_SH'][:]
-
-if not (np.std(Phi_nh - Phi_pe_nh) < 1e-10 and np.std(Phi_sh - Phi_pe_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated P-E metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/PE.nc','PE_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/PE.nc','PE_SH')
+if logical_not((std(Phi_nh - Phi_pe_nh) < 1e-10 and std(Phi_sh - Phi_pe_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated P-E metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated P-E metrics are the same!'
+  disp('OK. Monthly Validation and calculated P-E metrics are the same!')
 
 # Surface winds
-f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
-uas = f_uas.variables['uas'][:]
-
-#Change axes of uas to be [time, lat]
-uas = np.transpose(uas, (1,0))
+uas = netcdf.netcdf_file('../ValidationData/uas.nc','uas')
 
 uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
 
-Phi_uas_nh=np.zeros((np.shape(uas)[0],))
-Phi_uas_sh=np.zeros((np.shape(uas)[0],))
+Phi_uas_nh=np.zeros((np.shape(uas)[0],1))
 
-Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
+Phi_uas_sh=np.zeros((np.shape(uas)[0],1))
+
+Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
+
+Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],1))
 
 for j in range(np.shape(uas)[0]):
-  Phi_uas_sh[j], Phi_uas_nh[j] = TropD_Metric_UAS(uas[j,:], lat)
+  Phi_uas_sh[j], Phi_uas_nh[j] = TropD_Metric_UAS(uas[j,:,:], lat)
 
 for j in range(np.shape(uas_ANN)[0]):
-  Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:], lat)
+  Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:,:], lat)
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/UAS_ANN.nc','r')
-Phi_nh = f_Phi.variables['UAS_NH'][:]
-Phi_sh = f_Phi.variables['UAS_SH'][:]
-
-if not (np.std(Phi_nh - Phi_uas_nh_ANN) < 1e-10 and np.std(Phi_sh - Phi_uas_sh_ANN) < 1e-10):
-  print 'Warning: annual-mean Validation and calculated UAS metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/UAS_ANN.nc','UAS_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/UAS_ANN.nc','UAS_SH')
+if logical_not((std(Phi_nh - Phi_uas_nh_ANN) < 1e-10 and std(Phi_sh - Phi_uas_sh_ANN) < 1e-10)):
+  disp('Warning: annual-mean Validation and calculated UAS metrics are NOT equal!')
 else:
-  print 'OK. Annual-mean Validation and calculated UAS metrics are the same!'
+  disp('OK. Annual-mean Validation and calculated UAS metrics are the same!')
 
-f_Phi = netcdf.netcdf_file('../ValidationMetrics/UAS.nc','r')
-Phi_nh = f_Phi.variables['UAS_NH'][:]
-Phi_sh = f_Phi.variables['UAS_SH'][:]
-
-if not (np.std(Phi_nh - Phi_uas_nh) < 1e-10 and np.std(Phi_sh - Phi_uas_sh) < 1e-10):
-  print 'Warning: monthly Validation and calculated UAS metrics are NOT equal!'
+Phi_nh = netcdf.netcdf_file('../ValidationMetrics/UAS.nc','UAS_NH')
+Phi_sh = netcdf.netcdf_file('../ValidationMetrics/UAS.nc','UAS_SH')
+if logical_not((std(Phi_nh - Phi_uas_nh) < 1e-10 and std(Phi_sh - Phi_uas_sh) < 1e-10)):
+  disp('Warning: monthly Validation and calculated UAS metrics are NOT equal!')
 else:
-  print 'OK. Monthly Validation and calculated UAS metrics are the same!'
+  disp('OK. Monthly Validation and calculated UAS metrics are the same!')
 

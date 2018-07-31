@@ -3,6 +3,11 @@ import numpy as np
 import scipy as sp
 from scipy import interpolate 
 
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
 def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
   ''' Calculate the Tropopause Height in isobaric coordinates 
 
@@ -67,20 +72,17 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
     if np.size(Pidx):
       for c in range(len(Pidx)):
         dpk_2km =  -2000 * k * g / Rd / T1[c] * Pidx[c]
-        try:
-          idx2 = np.where(Pidx[c:] < Pidx[c] + dpk_2km)[0][0]
-        except IndexError:
-          idx2 = len(Pidx[c:])
+        idx2 = find_nearest(Pidx[c:], Pidx[c] + dpk_2km)
 
-        if sum(G1[idx[c]:idx[c]+idx2-1] <= 2) == idx2-1:
+        if sum(G1[idx[c]:idx[c]+idx2+1] <= 2)-1 == idx2:
           Pt[j]=Pidx[c]
           break
     else:
       Pt[j] = np.nan
-  
+      
+ 
   Pt = Pt ** (1 / k) / 100
     
-
   if Z.any():
     Zt =  np.reshape(Z, (np.shape(Z)[0]*np.shape(Z)[1], np.shape(Z)[2]))
     Ht =  np.zeros((np.shape(T)[0]*np.shape(T)[1]))
@@ -95,6 +97,6 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
         #disp('TropD_Calculate_TropopauseHeight: ERROR :  T and Z must have the same dimensions')
   
   else:
+    
     Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
     return Pt
-

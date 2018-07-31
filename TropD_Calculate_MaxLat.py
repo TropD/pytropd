@@ -2,7 +2,7 @@ from __future__ import division
 from types import *
 import numpy as np
 
-def TropD_Calculate_MaxLat(F,lat,n=int(6),*args,**kwargs):
+def TropD_Calculate_MaxLat(F,lat,n=int(6)):
   ''' Find latitude of absolute maximum value for a given interval
 
   Written by Ori Adam Mar.17.2017 as part of TropD package

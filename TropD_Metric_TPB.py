@@ -46,19 +46,19 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
     Pt = TropD_Calculate_TropopauseHeight(T,lev)
     Ptd = np.diff(Pt) / (lat[1] - lat[0])
     lat2 = (lat[1:] + lat[:-1]) / 2
-
+    
     if (n >= 1):
       PhiNH = TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
-              lat2[(lat2 > 0) & (lat2 < polar_boundary)], n)
+              lat2[(lat2 > 0) & (lat2 < polar_boundary)], n=n)
       PhiSH = TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
-              lat2[(lat2 > -polar_boundary) & (lat2 < 0)], n)
+              lat2[(lat2 > -polar_boundary) & (lat2 < 0)], n=n)
     
     else:
       PhiNH = TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
               lat2[(lat2 > 0) & (lat2 < polar_boundary)])
       PhiSH = TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
               lat2[(lat2 > -polar_boundary) & (lat2 < 0)])
-    
+     
   elif method=='max_potemp':
     XF = np.tile((lev / 1000) ** k, (len(lat), 1))
     PT = T / XF
@@ -67,9 +67,9 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
     
     if (n >= 1):
       PhiNH = TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
-              lat[(lat > 0) & (lat < polar_boundary)], n)
+              lat[(lat > 0) & (lat < polar_boundary)], n=n)
       PhiSH = TropD_Calculate_MaxLat(PTdif[:,(lat > - polar_boundary) & (lat < 0)],\
-              lat[(lat > -polar_boundary) & (lat < 0)], n)
+              lat[(lat > -polar_boundary) & (lat < 0)], n=n)
     
     else:
       PhiNH = TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
