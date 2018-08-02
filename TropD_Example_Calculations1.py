@@ -1,47 +1,3 @@
-## Set display and meta parameters
-    #y1=1979
-    #y2=2016
-    #time=linspace(y1,y2 + 1,dot(12,(y2 - y1 + 1)) + 1)
-    #time=(time(arange(1,end() - 1)) + time(arange(2,end()))) / 2
-    #red_color=concat([1,0.3,0.4])
-    #orange_color=concat([255,140,0]) / 256
-    #blue_color=concat([0,0.447,0.741])
-    #purple_color=concat([0.494,0.184,0.556])
-    #green_color=concat([0.466,0.674,0.188])
-    #lightblue_color=concat([0.301,0.745,0.933])
-    #maroon_color=concat([0.635,0.078,0.184])
-    ## Ticks
-    #Ytick1=arange(- 60,60,1)
-    #Ytick2=arange(- 60,60,2)
-    #Ytick5=arange(- 60,60,5)
-    #YtickLabels1=cellarray([])
-    #YtickLabels2=cellarray([])
-    #YtickLabels5=cellarray([])
-    #S0N='S0N'
-    #for y in arange(1,length(Ytick1),2).reshape(-1):
-    #    if Ytick1(y) == 0:
-    #        YtickLabels1[y]=cellarray(['0'])
-    #    else:
-    #        YtickLabels1[y]=cellarray([concat([int2str(abs(Ytick1(y))),S0N(sign(Ytick1(y)) + 2)])])
-    #    if y < length(Ytick1):
-    #        YtickLabels1[y + 1]=cellarray([''])
-    #
-    #for y in arange(1,length(Ytick2),2).reshape(-1):
-    #    if Ytick2(y) == 0:
-    #        YtickLabels2[y]=cellarray(['0'])
-    #    else:
-    #        YtickLabels2[y]=cellarray([concat([int2str(abs(Ytick2(y))),S0N(sign(Ytick2(y)) + 2)])])
-    #    if y < length(Ytick2):
-    #        YtickLabels2[y + 1]=cellarray([''])
-    #
-    #for y in arange(1,length(Ytick5),2).reshape(-1):
-    #    if Ytick5(y) == 0:
-    #        YtickLabels5[y]=cellarray(['0'])
-    #    else:
-    #        YtickLabels5[y]=cellarray([concat([int2str(abs(Ytick5(y))),S0N(sign(Ytick5(y)) + 2)])])
-    #    if y < length(Ytick5):
-    #        YtickLabels5[y + 1]=cellarray([''])
-
 from __future__ import division
 import numpy as np
 import scipy as sp
@@ -56,6 +12,23 @@ from TropD_Metric_PSL import TropD_Metric_PSL
 from TropD_Metric_OLR import TropD_Metric_OLR
 
 from TropD_Calculate_Mon2Season import TropD_Calculate_Mon2Season
+
+import matplotlib.pyplot as plt
+from matplotlib import rc
+
+## Set display and meta parameters
+y1 = 1979
+y2 = 2016
+time = np.linspace(y1,y2,12*(y2-y1+1))
+#time=linspace(y1,y2 + 1,dot(12,(y2 - y1 + 1)) + 1)
+#time=(time(arange(1,end() - 1)) + time(arange(2,end()))) / 2
+red_color     = (1,0.3,0.4)
+orange_color  = (255/256,140/256,0) 
+blue_color    = (0,0.447,0.741)
+purple_color  = (0.494,0.184,0.556)
+green_color   = (0.466,0.674,0.188)
+lightblue_color = (0.301,0.745,0.933)
+maroon_color  = (0.635,0.078,0.184)
 
 
 ## 1) PSI -- Streamfunction zero crossing
@@ -83,45 +56,46 @@ for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
 
 
-#figure
-#subplot('211')
-#plot(time,Phi_psi_nh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_psi_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_psi_nh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#ylabel(cellarray([['NH \\Psi_{500}'],['latitude']]))
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of \\Psi_{500} zero crossing from monthly mean V','Latitude of \\Psi_{500} zero crossing from annual mean V','Latitude of \\Psi_{500} zero crossing from annual means of monthly metric values')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_psi_sh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_psi_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_psi_sh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel(cellarray([['SH \\Psi zero crossing'],['latitude']]))
+plt.figure()
+plt.subplot(211)
+plt.plot(time, Phi_psi_nh, linewidth=1, color=green_color, \
+        label=r'Latitude of $\Psi_{500}$ zero crossing from monthly mean V')
+plt.plot(np.arange(y1,y2+1)+0.5, Phi_psi_nh_ANN, linewidth=2, color=blue_color,\
+        label=r'Latitude of $\Psi_{500}$ zero crossing from annual mean V')
+plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_nh, np.arange(12)),linewidth=2, color='k',\
+        label=r'Latitude of $\Psi_{500}$ zero crossing from annual means of monthly metric values')
+plt.xticks(np.arange(1980,2020,5))
+plt.ylabel('latitude')
+plt.title(r"NH $\Psi_{500}$")
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time, Phi_psi_sh, linewidth=1, color=green_color)
+plt.plot(np.arange(y1,y2+1)+0.5, Phi_psi_sh_ANN, linewidth=2, color=blue_color)
+plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_sh, np.arange(12)),linewidth=2, color='k')
+plt.xticks(np.arange(1980,2020,5))
+plt.ylabel('latitude')
+plt.title(r"SH $\Psi_{500}$")
+plt.show()
+
 # Introduce latitude unertainty condition: no additional zero crossing is allowed within 10 degrees
 
 Phi_psi_nh_L = np.zeros((np.shape(V)[0],))
 Phi_psi_sh_L = np.zeros((np.shape(V)[0],))
 
 for j in range(np.shape(V)[0]):
-  Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, 'Psi_500', 10)
+  Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, method='Psi_500', Lat_Uncertainty=10)
 
-#figure
-#plot(time,Phi_psi_nh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(time(isnan(Phi_psi_nh_L)),Phi_psi_nh(isnan(Phi_psi_nh_L)),'*','markersize',10,'color',red_color)
-#hold('on')
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#ylabel(cellarray([['NH \\Psi_{500}'],['latitude']]))
-#xlim(concat([y1,y2 + 1]))
-#l=legend('\\Psi_{500} zero crossing from monthly mean V that qualify uncertainty criterion','\\Psi_{500} zero crossing from monthly mean V that fail uncertainty criterion')
-#set(l,'box','off','location','north')
-#xlabel('Year','fontsize',14)
+plt.figure()
+plt.plot(time,Phi_psi_nh,linewidth=2,color=green_color,\
+    label='$\Psi_{500}$ zero crossing from monthly mean V that qualify uncertainty criterion') 
+plt.plot(time[np.isnan(Phi_psi_nh_L)], Phi_psi_nh[np.isnan(Phi_psi_nh_L)],marker='*',linestyle='None',markersize=10,color=red_color,\
+    label='$\Psi_{500}$ zero crossing from monthly mean V that fail uncertainty criterion')
+plt.title(r'NH $\Psi_{500}$')
+plt.ylabel('latitude')
+plt.legend(loc='best', frameon=False)
+plt.xlabel('Year')
+plt.show()
+
 
 ## 2) TPB -- Tropopause break latitude
 f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
@@ -138,7 +112,7 @@ lev = f_T.variables['lev'][:]
 Phi_tpb_nh = np.zeros((np.shape(T)[0],))
 Phi_tpb_sh = np.zeros((np.shape(T)[0],))
 
-for j in range(np.shape(V)[0]):
+for j in range(np.shape(T)[0]):
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
 
 # Calculate tropopause break from annual mean
@@ -163,32 +137,31 @@ for j in range(np.shape(T_ANN)[0]):
   Phi_tpbT_sh_ANN[j], Phi_tpbT_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_potemp')
   Phi_tpbZ_sh_ANN[j], Phi_tpbZ_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='cutoff',\
                                                            Z=Z_ANN[j,:,:,], Cutoff=15*1000)
-
-
-#figure
-#subplot('211')
-#plot(time,Phi_tpb_nh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_nh_ANN,'--','linewidth',1,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_nh_ANN,'--','linewidth',1,'color',red_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#ylabel(cellarray([['NH tropopause break'],['latitude']]))
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of tropopause break from monthly mean T -- potential temperature difference','Latitude of tropopause break from annual mean T -- maximal gradient','Latitude of tropopause break from annual mean T -- 15km cutoff height','Latitude of tropopause break from annual mean T -- potential temperature difference','Latitude of tropopause break from annual mean of monthly metric values -- potential temperature difference')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_tpb_sh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpb_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbZ_sh_ANN,'--','linewidth',1,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_tpbT_sh_ANN,'--','linewidth',1,'color',red_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel(cellarray([['SH tropopause break'],['latitude']]))
+plt.figure()
+plt.subplot(211)
+plt.plot(time,Phi_tpb_nh,linewidth=1,color=green_color, \
+    label='Latitude of tropopause break from monthly mean T -- potential temperature difference')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpb_nh_ANN,linewidth=2,color=blue_color,
+    label='Latitude of tropopause break from annual mean T -- maximal gradient')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbZ_nh_ANN,linestyle='--',linewidth=1,color=blue_color,\
+    label='Latitude of tropopause break from annual mean T -- 15km cutoff height')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbT_nh_ANN,linestyle='--',linewidth=1,color=red_color,\
+    label='Latitude of tropopause break from annual mean T -- potential temperature difference')
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh, np.arange(12)),color='k',linewidth=2,\
+    label='Latitude of tropopause break from annual mean of monthly metric values -- potential temperature difference')
+plt.title(r'NH tropopause break')
+plt.ylabel('latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time,Phi_tpb_sh,linewidth=1,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpb_sh_ANN,linewidth=2,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbZ_sh_ANN,linestyle='--',linewidth=1,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbT_sh_ANN,linestyle='--',linewidth=1,color=red_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh, np.arange(12)),color='k',linewidth=2)
+plt.xlabel('Year')
+plt.title(r'SH tropopause break')
+plt.ylabel('latitude')
+plt.show()
 
 ##3) OLR -- OLR cutoff
 #Note: OLR is assumed to be positive upwards and in units of W/m^2
@@ -237,50 +210,45 @@ for j in range(np.shape(olr_ANN)[0]):
 
 
 
-#figure
-#subplot('211')
-#plot(time,Phi_olr_nh,'-','linewidth',3,'color',green_color)
-#hold('on')
-#plot(time,Phi_olrcs_nh,'-','linewidth',1,'color',multiply(green_color,0.5))
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_nh_ANN,'-','linewidth',1,'color',multiply(blue_color,0.5))
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH OLR cutoff latitude')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of OLR 250W/m^2 cutoff latitude from monthly OLR','Latitude of OLR 250W/m^2 cutoff latitude from monthly clear-sky OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean OLR','Latitude of OLR 250W/m^2 cutoff latitude from annual mean clear-sky OLR')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_olr_sh,'-','linewidth',3,'color',green_color)
-#hold('on')
-#plot(time,Phi_olrcs_sh,'-','linewidth',1,'color',dot(green_color,0.5))
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olrcs_sh_ANN,'-','linewidth',1,'color',dot(blue_color,0.5))
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH OLR cutoff latitude')
-#figure
-#subplot('211')
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_nh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_nh_ANN,'-','linewidth',3,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_nh_ANN,'-','linewidth',3,'color',green_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH OLR cutoff latitude')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of OLR 250W/m^2 {default} cutoff latitude from annual-mean OLR','Latitude of OLR 240W/m^2 cutoff latitude from annual-mean OLR','Latitude of OLR -20W/m^2 cutoff latitude from annual-mean OLR')
-#set(l,'box','off','location','north')
-#subplot('212')
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr_sh_ANN,'-','linewidth',3,'color',multiply(blue_color,0.5))
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr240_sh_ANN,'-','linewidth',3,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_olr20_sh_ANN,'-','linewidth',3,'color',green_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH OLR cutoff latitude')
+plt.figure()
+plt.subplot(211)
+plt.plot(time,Phi_olr_nh,linewidth=3,color=green_color,\
+    label='Latitude of OLR 250W/m^2 cutoff latitude from monthly OLR')
+plt.plot(time,Phi_olrcs_nh,linewidth=1,color=tuple([0.5*x for x in green_color]),\
+    label='Latitude of OLR 250W/m^2 cutoff latitude from monthly clear-sky OLR')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr_nh_ANN,linewidth=3,color=blue_color,\
+    label='Latitude of OLR 250W/m^2 cutoff latitude from annual mean OLR')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olrcs_nh_ANN,linewidth=1,color=tuple([0.5*x for x in blue_color]),\
+    label='Latitude of OLR 250W/m^2 cutoff latitude from annual mean clear-sky OLR')
+plt.ylabel('NH OLR cutoff latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time,Phi_olr_sh,linewidth=3,color=green_color)
+plt.plot(time,Phi_olrcs_sh,linewidth=1,color=tuple([0.5*x for x in green_color]))
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr_sh_ANN,linewidth=3,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olrcs_sh_ANN,linewidth=1,color=tuple([0.5*x for x in blue_color]))
+plt.xlabel('Year')
+plt.ylabel('SH OLR cutoff latitude')
+plt.show()
+
+plt.figure()
+plt.subplot(211)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr_nh_ANN,linewidth=3,color=tuple([0.5*x for x in blue_color]),\
+    label='Latitude of OLR 250W/m^2 {default} cutoff latitude from annual-mean OLR')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr240_nh_ANN,linewidth=3,color=blue_color,\
+    label='Latitude of OLR 240W/m^2 cutoff latitude from annual-mean OLR')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr20_nh_ANN,linewidth=3,color=green_color,\
+    label='Latitude of OLR -20W/m^2 cutoff latitude from annual-mean OLR')
+plt.ylabel('NH OLR cutoff latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr_sh_ANN,linewidth=3,color=tuple([0.5*x for x in blue_color]))
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr240_sh_ANN,linewidth=3,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_olr20_sh_ANN,linewidth=3,color=green_color)
+plt.xlabel('Year')
+plt.ylabel('SH OLR cutoff latitude')
+plt.show()
+
 
 ## 4) STJ -- Subtropical Jet (STJ) latitude
 
@@ -305,24 +273,20 @@ for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN_core[j], Phi_stj_nh_ANN_core[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev, method='core')
 
 
-#figure
-#subplot('211')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_adj,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_nh_ANN_core,'-','linewidth',2,'color',blue_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH STJ latitude')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of STJ from anual mean U, using \'adjusted\' method','Latitude of STJ from anual mean U, using \'core\' method')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_adj,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_stj_sh_ANN_core,'-','linewidth',2,'color',blue_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH STJ latitude')
+plt.figure()
+plt.subplot(211)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_nh_ANN_adj,linewidth=2,color=green_color,\
+    label='Latitude of STJ from anual mean U, using \'adjusted\' method')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_nh_ANN_core,linewidth=2,color=blue_color,\
+    label='Latitude of STJ from anual mean U, using \'core\' method')
+plt.ylabel('NH STJ latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_sh_ANN_adj,linewidth=2,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_sh_ANN_core,linewidth=2,color=blue_color)
+plt.xlabel('Year')
+plt.ylabel('SH STJ latitude')
+plt.show()
 
 ## 5) EDJ -- Eddy Driven Jet (EDJ) latitude
 f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
@@ -348,26 +312,23 @@ Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
 
-#figure
-#subplot('211')
-#plot(time,Phi_edj_nh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH EDJ latitude')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of EDJ from monthly mean U','Latitude of EDJ from annual mean U','Latitude of EDJ from annual mean of monthly metric values')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_edj_sh,'-','linewidth',1,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_edj_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH EDJ latitude')
+plt.figure()
+plt.subplot(211)
+plt.plot(time,Phi_edj_nh,linewidth=1,color=green_color,\
+    label='Latitude of EDJ from monthly mean U')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_edj_nh_ANN,linewidth=2,color=blue_color,\
+    label='Latitude of EDJ from annual mean U')
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh, np.arange(12)),color='k',linewidth=2,\
+    label='Latitude of EDJ from annual mean of monthly metric values')
+plt.ylabel('NH EDJ latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time,Phi_edj_sh,linewidth=1,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_edj_sh_ANN,linewidth=2,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh, np.arange(12)),color='k',linewidth=2)
+plt.xlabel('Year')
+plt.ylabel('SH EDJ latitude')
+plt.show()
 
 
 ## 6) PE -- Precipitation minus evaporation subtropical zero crossing latitude
@@ -398,26 +359,24 @@ for j in range(np.shape(PE)[0]):
 for j in range(np.shape(PE_ANN)[0]):
   Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:], lat)
 
-#figure
-#subplot('211')
-#plot(time,Phi_pe_nh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH P - E zero-crossing')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of P minus E zero-crossing','Latitude of P minus E zero-crossing from annual mean field','Latitude of P minus E zero-crossing from annual mean of monthly metric')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_pe_sh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_pe_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH P - E zero-crossing')
+plt.figure()
+plt.subplot(211)
+plt.plot(time,Phi_pe_nh,linewidth=2,color=green_color,\
+    label='Latitude of P minus E zero-crossing')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_pe_nh_ANN,linewidth=2,color=blue_color,\
+    label='Latitude of P minus E zero-crossing from annual mean field')
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh, np.arange(12)),color='k',linewidth=2,\
+    label='Latitude of P minus E zero-crossing from annual mean of monthly metric')
+plt.ylabel('NH P - E zero-crossing')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time,Phi_pe_sh,linewidth=2,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_pe_sh_ANN,linewidth=2,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh, np.arange(12)),color='k',linewidth=2)
+plt.xlabel('Year')
+plt.ylabel('SH P - E zero-crossing')
+plt.show()
+
 
 ## 7) UAS -- Zonal surface wind subtropical zero crossing latitude
 f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
@@ -432,7 +391,7 @@ U = np.transpose(U, (2,1,0))
 uas = np.transpose(uas, (1,0))
 
 uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
-u_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
 Phi_uas_nh = np.zeros((np.shape(uas)[0],))
 Phi_uas_sh = np.zeros((np.shape(uas)[0],))
@@ -450,28 +409,26 @@ for j in range(np.shape(uas_ANN)[0]):
   Phi_Uas_sh_ANN[j], Phi_Uas_nh_ANN[j] = TropD_Metric_UAS(U_ANN[j,:], lat, lev)
 
 
-#figure
-#subplot('211')
-#plot(time,Phi_uas_nh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y2,y2)]) + 0.5,Phi_Uas_nh_ANN,'-','linewidth',2,'color',red_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#ylabel('NH uas zero-crossing')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of surface zonal wind zero crossing','Latitude of surface zonal wind zero crossing from annual mean field','Latitude of 850 hPa zonal wind zero crossing from annual mean field','Latitude of surface zonal wind zero crossing from annual mean of monthly metric')
-#set(l,'box','off','location','north')
-#subplot('212')
-#plot(time,Phi_uas_sh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_uas_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_Uas_sh_ANN,'-','linewidth',2,'color',red_color)
-#plot(concat([arange(y1,y2)]) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh, np.arange(12)),'-k','linewidth',2)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick2,'yticklabels',YtickLabels2)
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH uas zero-crossing')
+plt.figure()
+plt.subplot(211)
+plt.plot(time,Phi_uas_nh,linewidth=2,color=green_color,\
+    label='Latitude of surface zonal wind zero crossing')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_uas_nh_ANN,linewidth=2,color=blue_color,\
+    label='Latitude of surface zonal wind zero crossing from annual mean field')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_Uas_nh_ANN,linewidth=2,color=red_color,\
+    label='Latitude of 850 hPa zonal wind zero crossing from annual mean field')
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh, np.arange(12)),color='k',linewidth=2,\
+    label='Latitude of surface zonal wind zero crossing from annual mean of monthly metric')
+plt.ylabel('NH uas zero-crossing')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(time,Phi_uas_sh,linewidth=2,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_uas_sh_ANN,linewidth=2,color=blue_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_Uas_sh_ANN,linewidth=2,color=red_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh, np.arange(12)),color='k',linewidth=2)
+plt.xlabel('Year')
+plt.ylabel('SH uas zero-crossing')
+plt.show()
 
 ## 8) PSL -- Sea-level Pressure Maximum
 f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
@@ -495,24 +452,19 @@ for j in range(np.shape(ps_DJF)[0]):
 for j in range(np.shape(ps_JJA)[0]):
   Phi_ps_JJA_sh[j], Phi_ps_JJA_nh[j] = TropD_Metric_PSL(ps_JJA[j,:], lat)
 
-#figure
-#subplot('211')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_nh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_nh,'-','linewidth',2,'color',blue_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
-#ylabel('NH max psl latitude')
-#xlim(concat([y1,y2 + 1]))
-#l=legend('Latitude of max sea-level pressure during DJF','Latitude of max sea-level pressure during JJA')
-#set(l,'box','off','location','south')
-#subplot('212')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_DJF_sh,'-','linewidth',2,'color',green_color)
-#hold('on')
-#plot(concat([arange(y1,y2)]) + 0.5,Phi_ps_JJA_sh,'-','linewidth',2,'color',blue_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick1,'yticklabels',YtickLabels1)
-#ylabel('SH max psl latitude')
-#xlim(concat([y1,y2 + 1]))
-
+plt.figure()
+plt.subplot(211)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_ps_DJF_nh,linewidth=2,color=green_color,\
+    label='Latitude of max sea-level pressure during DJF')
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_ps_JJA_nh,linewidth=2,color=blue_color,\
+    label='Latitude of max sea-level pressure during JJA')
+plt.ylabel('NH max psl latitude')
+plt.legend(loc='best', frameon=False)
+plt.subplot(212)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_ps_DJF_sh,linewidth=2,color=green_color)
+plt.plot(np.arange(y1,y2+1) + 0.5,Phi_ps_JJA_sh,linewidth=2,color=blue_color)
+plt.ylabel('SH max psl latitude')
+plt.show()
 
 ## 9) Compare annual mean metrics
 #Psi500
@@ -526,8 +478,8 @@ V = np.transpose(V, (2,1,0))
 
 V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
 
-Phi_ps_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
-Phi_ps_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
 
 for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
@@ -643,39 +595,48 @@ for j in range(np.shape(uas_ANN)[0]):
   Phi_uas_sh_ANN[j], Phi_uas_nh_ANN[j] = TropD_Metric_UAS(uas_ANN[j,:], lat)
 
 
-#figure
-#subplot('211')
-#plot(concat([arange(y1,y2)]),Phi_psi_nh_ANN,'-','linewidth',2,'color',concat([0,0,0]))
-#hold('on')
-#plot(concat([arange(y1,y2)]),Phi_tpb_nh_ANN,'-','linewidth',2,'color',green_color)
-#plot(concat([arange(y1,y2)]),Phi_edj_nh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]),Phi_stj_nh_ANN,'-','linewidth',2,'color',red_color)
-#plot(concat([arange(y1,y2)]),Phi_olr_nh_ANN,'-','linewidth',2,'color',lightblue_color)
-#plot(concat([arange(y1,y2)]),Phi_pe_nh_ANN,'-','linewidth',2,'color',orange_color)
-#plot(concat([arange(y1,y2)]),Phi_uas_nh_ANN,'-','linewidth',2,'color',purple_color)
-#plot(concat([arange(y1,y2)]),Phi_ps_nh_ANN,'--','linewidth',2,'color',maroon_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'xticklabels',cellarray(['']),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#l=legend('PSI','TPB','EDJ','STJ','OLR','P-E','UAS','PSL')
-#set(l,'box','off','location','eastoutside')
-#ylabel('NH HC edge')
-#xlim(concat([y1,y2 + 1]))
-#ylim(concat([25,50]))
-#subplot('212')
-#plot(concat([arange(y1,y2)]),Phi_psi_sh_ANN,'-','linewidth',2,'color',concat([0,0,0]))
-#hold('on')
-#plot(concat([arange(y1,y2)]),Phi_tpb_sh_ANN,'-','linewidth',2,'color',green_color)
-#plot(concat([arange(y1,y2)]),Phi_edj_sh_ANN,'-','linewidth',2,'color',blue_color)
-#plot(concat([arange(y1,y2)]),Phi_stj_sh_ANN,'-','linewidth',2,'color',red_color)
-#plot(concat([arange(y1,y2)]),Phi_olr_sh_ANN,'-','linewidth',2,'color',lightblue_color)
-#plot(concat([arange(y1,y2)]),Phi_pe_sh_ANN,'-','linewidth',2,'color',orange_color)
-#plot(concat([arange(y1,y2)]),Phi_uas_sh_ANN,'-','linewidth',2,'color',purple_color)
-#plot(concat([arange(y1,y2)]),Phi_ps_sh_ANN,'--','linewidth',2,'color',maroon_color)
-#set(gca,'fontsize',12,'linewidth',2,'tickdir','out','box','off','xtick', np.arange(12)(1980,2020,5)]),'ytick',Ytick5,'yticklabels',YtickLabels5)
-#l=legend('PSI','TPB','EDJ','STJ','OLR','P-E','UAS','PSL')
-#set(l,'box','off','location','eastoutside')
-#xlim(concat([y1,y2 + 1]))
-#xlabel('Year','fontsize',14)
-#ylabel('SH HC edge')
+plt.figure()
+plt.subplot(211)
+plt.plot(np.arange(y1,y2+1),Phi_psi_nh_ANN,linewidth=2,color=tuple([0,0,0]),\
+    label='PSI')
+plt.plot(np.arange(y1,y2+1),Phi_tpb_nh_ANN,linewidth=2,color=green_color,\
+    label='TPB')
+plt.plot(np.arange(y1,y2+1),Phi_edj_nh_ANN,linewidth=2,color=blue_color,\
+    label='EDJ')
+plt.plot(np.arange(y1,y2+1),Phi_stj_nh_ANN,linewidth=2,color=red_color,\
+    label='STJ')
+plt.plot(np.arange(y1,y2+1),Phi_olr_nh_ANN,linewidth=2,color=lightblue_color,\
+    label='OLR')
+plt.plot(np.arange(y1,y2+1),Phi_pe_nh_ANN,linewidth=2,color=orange_color,\
+    label='P-E')
+plt.plot(np.arange(y1,y2+1),Phi_uas_nh_ANN,linewidth=2,color=purple_color,\
+    label='UAS')
+plt.plot(np.arange(y1,y2+1),Phi_ps_nh_ANN,linestyle='--',linewidth=2,color=maroon_color,\
+    label='PSL')
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+plt.ylabel('NH HC edge')
+plt.subplot(212)
+plt.plot(np.arange(y1,y2+1),Phi_psi_sh_ANN,linewidth=2,color=tuple([0,0,0]),\
+    label='PSI')
+plt.plot(np.arange(y1,y2+1),Phi_tpb_sh_ANN,linewidth=2,color=green_color,\
+    label='TPB')
+plt.plot(np.arange(y1,y2+1),Phi_edj_sh_ANN,linewidth=2,color=blue_color,\
+    label='EDJ')
+plt.plot(np.arange(y1,y2+1),Phi_stj_sh_ANN,linewidth=2,color=red_color,\
+    label='STJ')
+plt.plot(np.arange(y1,y2+1),Phi_olr_sh_ANN,linewidth=2,color=lightblue_color,\
+    label='OLR')
+plt.plot(np.arange(y1,y2+1),Phi_pe_sh_ANN,linewidth=2,color=orange_color,\
+    label='P-E')
+plt.plot(np.arange(y1,y2+1),Phi_uas_sh_ANN,linewidth=2,color=purple_color,\
+    label='UAS')
+plt.plot(np.arange(y1,y2+1),Phi_ps_sh_ANN,linestyle='--',linewidth=2,color=maroon_color,\
+    label='PSL')
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+plt.xlabel('Year')
+plt.ylabel('SH HC edge')
+plt.show()
+
 
 ## 10) Validate metrics
 #Psi500

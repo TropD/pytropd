@@ -92,19 +92,21 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', Lat_Uncertainty=0):
 
   else:
     PhiNH = TropD_Calculate_ZeroCrossing(P[(lat > Lmax) & (lat < Lmin)],\
-            lat[(lat > Lmax) & (lat < Lmin)], Lat_Uncertainty)
+            lat[(lat > Lmax) & (lat < Lmin)], Lat_Uncertainty=Lat_Uncertainty)
+  
   # SH
   Lmax = TropD_Calculate_MaxLat(-P[(lat < 0) & (lat > -subpolar_boundary)],\
          lat[(lat < 0) & (lat > -subpolar_boundary)])
 
   Lmin = TropD_Calculate_MaxLat(P[(lat < Lmax) & (lat > -polar_boundary)],\
          lat[(lat < Lmax) & (lat > -polar_boundary)])
+
   if method=='Psi_500_10Perc':
     Pmin = min(P[(lat < 0) & (lat > -subpolar_boundary)])
     PhiSH = TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0) + 0.1*Pmin,\
             np.flip(lat[(lat < Lmax) & (lat > Lmin)], 0))
   else:
     PhiSH = TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0),\
-            np.flip(lat[(lat < Lmax) & (lat > Lmin)], 0), Lat_Uncertainty)
+            np.flip(lat[(lat < Lmax) & (lat > Lmin)], 0), Lat_Uncertainty=Lat_Uncertainty)
   return PhiSH, PhiNH
 

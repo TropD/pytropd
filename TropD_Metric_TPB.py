@@ -82,14 +82,14 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
     
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
-      Ht = np.flip(Ht,1)
+      Ht = np.flip(np.squeeze(Ht),0)
       lat = np.flip(lat,0)
     
     polar_boundary = 60
       
-    PhiNH = TropD_Calculate_ZeroCrossing(Ht[:,(lat > 0) & (lat < polar_boundary)] - Cutoff,
+    PhiNH = TropD_Calculate_ZeroCrossing(Ht[(lat > 0) & (lat < polar_boundary)] - Cutoff,
               lat[(lat > 0) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(Ht[:,(lat < 0) & (lat > -polar_boundary)], 1) - Cutoff,
+    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(Ht[(lat < 0) & (lat > -polar_boundary)], 0) - Cutoff,
               np.flip(lat[(lat < 0) & (lat > -polar_boundary)], 0))
   
   else:
