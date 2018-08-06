@@ -6,10 +6,8 @@ def TropD_Calculate_MaxLat(F,lat,n=int(6)):
   ''' Find latitude of absolute maximum value for a given interval
 
   Written by Ori Adam Mar.17.2017 as part of TropD package
-  Converted to python by Alison Ming Jul.4.2017
-
-  Syntax:
-  >> Ymax = TropD_Calculate_MaxLat(F,lat,n=6)
+  Converted to python by Paul Staten Jul.29.2017
+  Edited by Alison Ming Jul.4.2017
 
   Positional arguments:
   F -- vector

@@ -1,29 +1,3 @@
-
-# TropD Tropopause break (TPB) metric
-# Written by Ori Adam Mar.17.2017
-# Methods:
-# 'max_gradient': The latitude of maximal poleward gradient of the tropopause height
-# 'cutoff': The most equatorward latitude where the tropopause crosses a prescribed cutoff value
-# 'max_potemp': The latitude of maximal difference between the potential temperature at the tropopause and at the surface
-
-    # Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_TPB(T) & (lat,lev,method)
-# Or
-# >> [PhiSH PhiNH] = TropD_Metric_TPB(T) & (lat,lev,method,Z)
-# Or
-# >> [PhiSH PhiNH] = TropD_Metric_TPB(T) & (lat,lev,method,Z,Cutoff)
-# Input:
-# T(lat,lev) = temperature (K)
-# lat = equally spaced latitude column vector
-# lev = pressure levels column vector in hPa
-# method (optional) = 'max_gradient' {default} |  'max_potemp'  |  'cutoff'  |
-# Z(lat,lev) (optional) = geopotential height (m)
-# Cutoff (optional, scalar) = geopotential height (m) cutoff that marks the location of the tropopause break; Default value = 15000m
-# Output:
-# PhiSH = latitude of tropopause break in the SH
-# PhiNH = latitude of tropopause break in the NH
-
-
 from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
@@ -31,6 +5,33 @@ from TropD_Calculate_TropopauseHeight import TropD_Calculate_TropopauseHeight
 from TropD_Calculate_ZeroCrossing import TropD_Calculate_ZeroCrossing
 
 def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*1000):
+
+  '''TropD Tropopause break (TPB) metric
+  Written by Ori Adam Mar.17.2017
+  Edited by Alison Ming Jul.4.2017
+  
+  Positional arguments:
+  T(lat,lev) -- temperature (K)
+  lat -- latitude vector
+  lev -- pressure levels column vector in hPa
+
+  Keyword arguments:
+  method (optional) -- 'max_gradient' (default) |  'max_potemp'  |  'cutoff' 
+  
+  'max_gradient': The latitude of maximal poleward gradient of the tropopause height
+  
+  'cutoff': The most equatorward latitude where the tropopause crosses a prescribed cutoff value
+  
+  'max_potemp': The latitude of maximal difference between the potential temperature at the tropopause and at the surface
+  
+  Z(lat,lev) (optional) -- geopotential height (m)
+  Cutoff (optional, scalar) -- geopotential height (m) cutoff that marks the location of the tropopause break
+
+  Outputs:
+  PhiSH -- latitude of tropopause break in the SH
+  PhiNH -- latitude of tropopause break in the NH
+  '''
+
 
   Rd = 287.04
   Cpd = 1005.7

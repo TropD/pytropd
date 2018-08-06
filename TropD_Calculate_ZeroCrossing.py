@@ -8,7 +8,8 @@ def TropD_Calculate_ZeroCrossing(F, lat, Lat_Uncertainty=0.0,*args,**kwargs):
 
   Written by Ori Adam Mar.17.2017 as part of TropD package
   Edited by Ori Adam Jun.12.2017
-  Converted to python by Alison Ming Jul.5.2017
+  Converted to python by Paul Staten Jul.29.2017
+  Edited by Alison Ming Jul.5.2017
   Find the first (with increasing index) zero crossing of the function F
   in the interval lat_int
 

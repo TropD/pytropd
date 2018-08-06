@@ -1,27 +1,3 @@
-
-# TropD Subtropical Jet (STJ) metric
-# Written by Ori Adam Mar.20.2017
-# Methods:
-#  'adjusted' {Default}: Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level,
-#                        poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude
-#  'adjusted_peak': Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level,
-#                   poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude
-#  'core': Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels,
-#          poleward of 10 degrees and equatorward of 70 degrees
-#  'core_peak': Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels,
-#               poleward of 10 degrees and equatorward of 70 degrees
-
-    # Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_STJ(U,lat,lev,method)
-# Input:
-# U(lat,lev) = zonal mean zonal wind
-# lat = equally spaced latitude column vector
-# lev = vertical level vector in hPa units
-# method (optional) = 'adjusted' {default}| 'core' | 'adjusted_peak' | 'core_peak'
-# Output:
-# PhiSH = latitude of STJ in the SH
-# PhiNH = latitude of STJ in the NH
-
 from __future__ import division
 import numpy as np
 import scipy as sp
@@ -32,11 +8,39 @@ from TropD_Calculate_StreamFunction import TropD_Calculate_StreamFunction
 from TropD_Metric_EDJ import TropD_Metric_EDJ
 
 def find_nearest(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return idx
+  ''' Find the index of the item in the array nearest to the value 
+  '''
+  array = np.asarray(array)
+  idx = (np.abs(array - value)).argmin()
+  return idx
 
 def TropD_Metric_STJ(U, lat, lev, method='adjusted', n=0):
+
+  '''TropD Subtropical Jet (STJ) metric
+  Written by Ori Adam Mar.20.2017
+  Edited by Alison Ming Jul.4.2017
+  
+  Positional arguments:
+  U(lat,lev) -- zonal mean zonal wind
+  lat -- latitude vector
+  lev -- vertical level vector in hPa units
+  
+  Keyword arguments:
+  method (optional) -- 'adjusted' (default) | 'core' | 'adjusted_peak' | 'core_peak'
+
+  'adjusted' : Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude
+
+  'adjusted_peak': Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude
+
+  'core': Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees
+  
+  'core_peak': Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees
+  
+  Outputs:
+  PhiSH -- latitude of STJ in the SH
+  PhiNH -- latitude of STJ in the NH
+  '''
+
   try:
     assert (not hasattr(n, "__len__") and n >= 0)  
   except AssertionError:

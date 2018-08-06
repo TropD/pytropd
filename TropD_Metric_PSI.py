@@ -1,27 +1,3 @@
-# TropD PSI metric 
-# Latitude of the meridional mass streamfunction subtropical zero crossing
-# Written by Ori Adam Mar.20.2017
-# Methods:
-#  'Psi_500'{default}: Zero crossing of the stream function (Psi) at the 500hPa level
-#  'Psi_500_10Perc': Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
-#  'Psi_300_700': Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
-#  'Psi_500_Int': Zero crossing of the vertically-integrated Psi at the 500 hPa level
-#  'Psi_Int'    : Zero crossing of the column-averaged Psi
-    
-    # Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_PSI(V,lat,lev,method,Lat_Uncertainty)
-# Input:
-# V(lat,lev) = zonal-mean meridional wind
-# lat = equally spaced latitude vector
-# lev = vertical level vector in hPa units
-# method (optional) = 'Psi_500' {default}|  'Psi_500_10Perc'  |  'Psi_300_700' |  'Psi_500_Int'  |  'Psi_Int'
-# Lat_Uncertainty (optional, requires specifying the method): [Degrees latitude, default = 0] 
-#                    The minimal distance allowed between the first and second zero crossings.
-#                    For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   
-# Output:
-# PhiSH = latitude of Psi zero crossing in the SH
-# PhiNH = latitude of Psi zero crossing in the NH
-    
 from __future__ import division
 import numpy as np
 import scipy as sp
@@ -31,11 +7,39 @@ from TropD_Calculate_ZeroCrossing import TropD_Calculate_ZeroCrossing
 from TropD_Calculate_StreamFunction import TropD_Calculate_StreamFunction 
     
 def find_nearest(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return idx
+  ''' Find the index of the item in the array nearest to the value 
+  '''
+  array = np.asarray(array)
+  idx = (np.abs(array - value)).argmin()
+  return idx
 
 def TropD_Metric_PSI(V, lat, lev, method='Psi_500', Lat_Uncertainty=0):
+  '''TropD PSI metric 
+  Latitude of the meridional mass streamfunction subtropical zero crossing
+  Written by Ori Adam Mar.20.2017
+  Edited by Alison Ming Jul.4.2017
+     
+  Positional arguments:
+  V(lat,lev) -- zonal-mean meridional wind
+  lat -- latitude vector
+  lev -- vertical level vector in hPa units
+
+  Keyword arguments:  
+  method (optional) -- 'Psi_500' (default) |  'Psi_500_10Perc'  |  'Psi_300_700' |  'Psi_500_Int'  |  'Psi_Int'
+  
+  'Psi_500'{default}: Zero crossing of the stream function (Psi) at the 500hPa level
+  'Psi_500_10Perc': Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
+  'Psi_300_700': Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
+  'Psi_500_Int': Zero crossing of the vertically-integrated Psi at the 500 hPa level
+  'Psi_Int'    : Zero crossing of the column-averaged Psi
+    
+  Lat_Uncertainty (optional) -- The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   
+  
+  Outputs:
+  PhiSH -- latitude of Psi zero crossing in the SH
+  PhiNH -- latitude of Psi zero crossing in the NH
+  '''
+
   try:
     assert (Lat_Uncertainty >= 0)  
   except AssertionError:

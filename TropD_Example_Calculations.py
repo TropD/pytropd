@@ -16,6 +16,8 @@ from TropD_Calculate_Mon2Season import TropD_Calculate_Mon2Season
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
+# Example codes for using the TropD package to calculate tropical width metrics
+# The code assumes that the current directory is ... TropD/PyTropD/
 ## Set display and meta parameters
 y1 = 1979
 y2 = 2016
@@ -32,6 +34,7 @@ maroon_color  = (0.635,0.078,0.184)
 
 
 ## 1) PSI -- Streamfunction zero crossing
+#read meridional velocity V(time,lat,lev), latitude and level
 f_V = netcdf.netcdf_file('../ValidationData/va.nc','r')
 V = f_V.variables['va'][:]
 #Change axes of V to be [time, lat, lev]
@@ -39,18 +42,19 @@ V = np.transpose(V, (2,1,0))
 lat = f_V.variables['lat'][:]
 lev = f_V.variables['lev'][:]
 
-Phi_psi_nh = np.zeros((np.shape(V)[0],))
-Phi_psi_sh = np.zeros((np.shape(V)[0],))
+Phi_psi_nh = np.zeros((np.shape(V)[0],)) # latitude of monthly NH Psi zero crossing
+Phi_psi_sh = np.zeros((np.shape(V)[0],)) # latitude of monthly SH Psi zero crossing
 
 for j in range(np.shape(V)[0]):
+  # Default method = 'Psi500'
   Phi_psi_sh[j], Phi_psi_nh[j] = TropD_Metric_PSI(V[j,:,:], lat, lev)
 
 
 # Calculate metric from annual mean
 V_ANN = TropD_Calculate_Mon2Season(V,np.arange(12))
 
-Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
-Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
+Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],)) # latitude of NH stream function zero crossing from annual mean V
+Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],)) # latitude of SH stream function zero crossing from annual mean V
 
 for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
@@ -78,9 +82,8 @@ plt.title(r"SH $\Psi_{500}$")
 plt.show()
 
 # Introduce latitude unertainty condition: no additional zero crossing is allowed within 10 degrees
-
-Phi_psi_nh_L = np.zeros((np.shape(V)[0],))
-Phi_psi_sh_L = np.zeros((np.shape(V)[0],))
+Phi_psi_nh_L = np.zeros((np.shape(V)[0],)) # latitude of monthly NH Psi zero crossing
+Phi_psi_sh_L = np.zeros((np.shape(V)[0],)) # latitude of monthly SH Psi zero crossing
 
 for j in range(np.shape(V)[0]):
   Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, method='Psi_500', Lat_Uncertainty=10)
@@ -98,6 +101,7 @@ plt.show()
 
 
 ## 2) TPB -- Tropopause break latitude
+#read temperature T(time,lat,lev), potential height [m] Z(time,lat,lev), latitude and level
 f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
 f_Z = netcdf.netcdf_file('../ValidationData/zg.nc','r')
 T = f_T.variables['ta'][:]
@@ -109,34 +113,35 @@ Z = np.transpose(Z, (2,1,0))
 lat = f_T.variables['lat'][:]
 lev = f_T.variables['lev'][:]
 
-Phi_tpb_nh = np.zeros((np.shape(T)[0],))
-Phi_tpb_sh = np.zeros((np.shape(T)[0],))
+Phi_tpb_nh = np.zeros((np.shape(T)[0],)) # latitude of monthly NH tropopause break
+Phi_tpb_sh = np.zeros((np.shape(T)[0],)) # latitude of monthly SH tropopause break
 
 for j in range(np.shape(T)[0]):
+  ''' Default method = 'max_potemp'. Latitude of maximal difference between 
+  potential temperature at the tropopause level and the potential temperature at the surface
+  '''
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
 
 # Calculate tropopause break from annual mean
 T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
-
 Z_ANN = TropD_Calculate_Mon2Season(Z, np.arange(12))
 
-Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
-
-Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
-
-Phi_tpbZ_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
-                                                   
-Phi_tpbZ_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
-
-Phi_tpbT_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
-                                                   
-Phi_tpbT_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
+Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))  # latitude of NH tropopause break from annual mean T
+Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))  # latitude of SH tropopause break from annual mean T
+Phi_tpbZ_nh_ANN = np.zeros((np.shape(T_ANN)[0],)) # latitude of NH tropopause break from annual mean T
+Phi_tpbZ_sh_ANN = np.zeros((np.shape(T_ANN)[0],)) # latitude of SH tropopause break from annual mean T
+Phi_tpbT_nh_ANN = np.zeros((np.shape(T_ANN)[0],)) # latitude of NH tropopause break from annual mean T
+Phi_tpbT_sh_ANN = np.zeros((np.shape(T_ANN)[0],)) # latitude of SH tropopause break from annual mean T
 
 for j in range(np.shape(T_ANN)[0]):
+  # (Default) latitude of maximal poleward gradient
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_gradient')
+  # latitude of maximal difference in potential temperature between the tropopase and surface 
   Phi_tpbT_sh_ANN[j], Phi_tpbT_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='max_potemp')
+  # CutoffHeight = 15km marks the height of the tropopause break
   Phi_tpbZ_sh_ANN[j], Phi_tpbZ_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev, method='cutoff',\
                                                            Z=Z_ANN[j,:,:,], Cutoff=15*1000)
+
 plt.figure()
 plt.subplot(211)
 plt.plot(time,Phi_tpb_nh,linewidth=1,color=green_color, \
@@ -165,7 +170,8 @@ plt.show()
 
 ##3) OLR -- OLR cutoff
 #Note: OLR is assumed to be positive upwards and in units of W/m^2
-
+# read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
+# read zonal mean monthly clear-sky TOA outgoing longwave radiation olrcs(time,lat)
 f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
 f_olrcs = netcdf.netcdf_file('../ValidationData/rlntcs.nc','r')
 olr = -f_olr.variables['rlnt'][:]
@@ -176,29 +182,29 @@ lat = f_olr.variables['lat'][:]
 olr = np.transpose(olr, (1,0))
 olrcs = np.transpose(olrcs, (1,0))
 
+#Calculate annual mean field
 olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
-
 olrcs_ANN = TropD_Calculate_Mon2Season(olrcs, np.arange(12))
 
-Phi_olr_nh = np.zeros((np.shape(olr)[0],))
-Phi_olr_sh = np.zeros((np.shape(olr)[0],))
+Phi_olr_nh = np.zeros((np.shape(olr)[0],))            # latitude of NH olr metric                                    
+Phi_olr_sh = np.zeros((np.shape(olr)[0],))            # latitude of SH olr metric
 
-Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))    # latitude of NH olr metric from annual mean olr
+Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))    # latitude of SH olr metric from annual mean olr
 
-Phi_olrcs_nh = np.zeros((np.shape(olr)[0],))
-Phi_olrcs_sh = np.zeros((np.shape(olr)[0],))
+Phi_olrcs_nh = np.zeros((np.shape(olr)[0],))          # latitude of NH olr metric
+Phi_olrcs_sh = np.zeros((np.shape(olr)[0],))          # latitude of SH olr metric
 
-Phi_olrcs_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olrcs_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olrcs_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))  # latitude of NH olr metric from annual mean olr
+Phi_olrcs_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))  # latitude of SH olr metric from annual mean olr
 
-Phi_olr20_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr20_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-
-Phi_olr240_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-Phi_olr240_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
+Phi_olr20_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))  # latitude of NH olr metric from annual mean olr-20W/m^2 cutoff
+Phi_olr20_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))  # latitude of SH olr metric from annual mean olr-20W/m^2 cutoff
+Phi_olr240_nh_ANN = np.zeros((np.shape(olr_ANN)[0],)) # latitude of NH olr metric from annual mean olr 240W/m^2 cutoff
+Phi_olr240_sh_ANN = np.zeros((np.shape(olr_ANN)[0],)) # latitude of SH olr metric from annual mean olr 240W/m^2 cutoff
 
 for j in range(np.shape(olr)[0]):
+  # Default method = '250W'
   Phi_olr_sh[j], Phi_olr_nh[j] = TropD_Metric_OLR(olr[j,:], lat)
   Phi_olrcs_sh[j], Phi_olrcs_nh[j] = TropD_Metric_OLR(olrcs[j,:], lat)
 
@@ -251,11 +257,11 @@ plt.show()
 
 
 ## 4) STJ -- Subtropical Jet (STJ) latitude
-
-f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
-U = f_u.variables['ua'][:]
-lat = f_u.variables['lat'][:]
-lev = f_u.variables['lev'][:]
+#read zonal wind U(time,lat,lev), latitude and level
+f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_U.variables['ua'][:]
+lat = f_U.variables['lat'][:]
+lev = f_U.variables['lev'][:]
 
 #Change axes of u to be [time, lat]
 U = np.transpose(U, (2,1,0))
@@ -263,12 +269,13 @@ U = np.transpose(U, (2,1,0))
 # Calculate STJ latitude from annual mean
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_nh_ANN_core = np.zeros((np.shape(U_ANN)[0],))
-Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],))
+Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))  # latitude of NH STJ from annual mean U
+Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))  # latitude of SH STJ from annual mean U
+Phi_stj_nh_ANN_core = np.zeros((np.shape(U_ANN)[0],)) # latitude of NH STJ from annual mean U
+Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],)) # latitude of SH STJ from annual mean U
 
 for j in range(np.shape(U_ANN)[0]):
+  # Default method =  'adjusted'
   Phi_stj_sh_ANN_adj [j], Phi_stj_nh_ANN_adj[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
   Phi_stj_sh_ANN_core[j], Phi_stj_nh_ANN_core[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev, method='core')
 
@@ -289,16 +296,17 @@ plt.ylabel('SH STJ latitude')
 plt.show()
 
 ## 5) EDJ -- Eddy Driven Jet (EDJ) latitude
-f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
-U = f_u.variables['ua'][:]
-lat = f_u.variables['lat'][:]
-lev = f_u.variables['lev'][:]
+#read zonal wind U(time,lat,lev), latitude and level
+f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_U.variables['ua'][:]
+lat = f_U.variables['lat'][:]
+lev = f_U.variables['lev'][:]
 
 #Change axes of u to be [time, lat]
 U = np.transpose(U, (2,1,0))
 
-Phi_edj_nh = np.zeros((np.shape(U)[0],))
-Phi_edj_sh = np.zeros((np.shape(U)[0],))
+Phi_edj_nh = np.zeros((np.shape(U)[0],)) # latitude of monthly NH EDJ
+Phi_edj_sh = np.zeros((np.shape(U)[0],)) # latitude of monthly SH EDJ
 
 for j in range(np.shape(U)[0]):
   Phi_edj_sh[j], Phi_edj_nh[j] = TropD_Metric_EDJ(U[j,:,:,] ,lat, lev, method='max')
@@ -306,8 +314,8 @@ for j in range(np.shape(U)[0]):
 # Calculate EDJ latitude from annual mean
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
+Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of NH EDJ from annual mean U  
+Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of SH EDJ from annual mean U
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_edj_sh_ANN[j], Phi_edj_nh_ANN[j] = TropD_Metric_EDJ(U_ANN[j,:,:], lat, lev)
@@ -332,10 +340,13 @@ plt.show()
 
 
 ## 6) PE -- Precipitation minus evaporation subtropical zero crossing latitude
+# read zonal mean monthly precipitation pr(time,lat)
 f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
+# read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
 f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
 
-L=2510400.0
+#Latent heat of vaporization
+L = 2510400.0
 
 pr = f_pr.variables['pr'][:]
 er = -f_er.variables['hfls'][:]/L
@@ -348,12 +359,14 @@ PE = np.transpose(PE, (1,0))
 
 PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
 
-Phi_pe_nh = np.zeros((np.shape(PE)[0],))
-Phi_pe_sh = np.zeros((np.shape(PE)[0],))
-Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],))
-Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],))
+Phi_pe_nh = np.zeros((np.shape(PE)[0],))         # latitude of NH PminusE metric
+Phi_pe_sh = np.zeros((np.shape(PE)[0],))         # latitude of SH PminusE metri
+
+Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],)) # latitude of NH PminusE metric from annual mean PminusE
+Phi_pe_sh_ANN = np.zeros((np.shape(PE_ANN)[0],)) # latitude of SH PminusE metric from annual mean PminusE
 
 for j in range(np.shape(PE)[0]):
+  # Default method = 'zero_crossing'
   Phi_pe_sh[j], Phi_pe_nh[j] = TropD_Metric_PE(PE[j,:], lat)
 
 for j in range(np.shape(PE_ANN)[0]):
@@ -379,12 +392,14 @@ plt.show()
 
 
 ## 7) UAS -- Zonal surface wind subtropical zero crossing latitude
-f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+#read zonal wind U(time,lat,lev), latitude and level
+f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+#read zonal mean surface wind U(time,lat)
 f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
-U = f_u.variables['ua'][:]
+U = f_U.variables['ua'][:]
 uas = f_uas.variables['uas'][:]
-lat = f_u.variables['lat'][:]
-lev = f_u.variables['lev'][:]
+lat = f_U.variables['lat'][:]
+lev = f_U.variables['lev'][:]
 
 #Change axes of u to be [time, lat]
 U = np.transpose(U, (2,1,0))
@@ -393,13 +408,13 @@ uas = np.transpose(uas, (1,0))
 uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
-Phi_uas_nh = np.zeros((np.shape(uas)[0],))
-Phi_uas_sh = np.zeros((np.shape(uas)[0],))
+Phi_uas_nh = np.zeros((np.shape(uas)[0],))         # latitude of NH surface zonal wind metric                        
+Phi_uas_sh = np.zeros((np.shape(uas)[0],))         # latitude of SH surface zonal wind metric
 
-Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_Uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
-Phi_Uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],))
+Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],)) # latitude of NH surface zonal wind metric from annual mean surface zonal wind
+Phi_uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],)) # latitude of SH surface zonal wind metric from annual mean surface zonal wind
+Phi_Uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],)) # latitude of NH surface zonal wind metric from annual mean zonal wind (lat,lev)
+Phi_Uas_sh_ANN = np.zeros((np.shape(uas_ANN)[0],)) # latitude of SH surface zonal wind metric from annual mean zonal wind (lat,lev)
 
 for j in range(np.shape(uas)[0]):
   Phi_uas_sh[j], Phi_uas_nh[j] = TropD_Metric_UAS(uas[j,:], lat)
@@ -431,6 +446,7 @@ plt.ylabel('SH uas zero-crossing')
 plt.show()
 
 ## 8) PSL -- Sea-level Pressure Maximum
+# read sea-level pressure ps(time,lat) and latitude
 f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
 ps = f_ps.variables['psl'][:]
 lat = f_ps.variables['lat'][:]
@@ -438,15 +454,16 @@ lat = f_ps.variables['lat'][:]
 #Change axes of ps to be [time, lat]
 ps = np.transpose(ps, (1,0))
 
-ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11]))
-ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))
+ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11])) # calculate DJF means
+ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))  # calculate JJA means
 
-Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],))
-Phi_ps_DJF_sh = np.zeros((np.shape(ps_DJF)[0],))
-Phi_ps_JJA_sh = np.zeros((np.shape(ps_JJA)[0],))
+Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],)) # latitude of monthly NH max surface pressure
+Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],)) # latitude of monthly NH max surface pressure
+Phi_ps_DJF_sh = np.zeros((np.shape(ps_DJF)[0],)) # latitude of monthly SH max surface pressure
+Phi_ps_JJA_sh = np.zeros((np.shape(ps_JJA)[0],)) # latitude of monthly SH max surface pressure
 
 for j in range(np.shape(ps_DJF)[0]):
+  # Default method = 'max'
   Phi_ps_DJF_sh[j], Phi_ps_DJF_nh[j] = TropD_Metric_PSL(ps_DJF[j,:], lat)
 
 for j in range(np.shape(ps_JJA)[0]):
@@ -468,6 +485,7 @@ plt.show()
 
 ## 9) Compare annual mean metrics
 #Psi500
+#read meridional velocity V(time,lat,lev), latitude and level
 f_V = netcdf.netcdf_file('../ValidationData/va.nc','r')
 V = f_V.variables['va'][:]
 lat = f_V.variables['lat'][:]
@@ -485,6 +503,7 @@ for j in range(np.shape(V_ANN)[0]):
   Phi_psi_sh_ANN[j], Phi_psi_nh_ANN[j] = TropD_Metric_PSI(V_ANN[j,:,:], lat, lev)
 
 # Tropopause break
+#read meridional temperature T(time,lat,lev), latitude and level
 f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
 T = f_T.variables['ta'][:]
 
@@ -500,6 +519,7 @@ for j in range(np.shape(T_ANN)[0]):
   Phi_tpb_sh_ANN[j], Phi_tpb_nh_ANN[j] = TropD_Metric_TPB(T_ANN[j,:,:], lat, lev)
 
 # Surface pressure max
+# read sea-level pressure ps(time,lat) and latitude
 f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
 ps = f_ps.variables['psl'][:]
 
@@ -509,15 +529,15 @@ ps = np.transpose(ps, (1,0))
 ps_ANN = TropD_Calculate_Mon2Season(ps, np.arange(12))
 
 Phi_ps_nh_ANN = np.zeros((np.shape(ps_ANN)[0],))
-
 Phi_ps_sh_ANN = np.zeros((np.shape(ps_ANN)[0],))
 
 for j in range(np.shape(ps_ANN)[0]):
   Phi_ps_sh_ANN[j], Phi_ps_nh_ANN[j] = TropD_Metric_PSL(ps_ANN[j,:], lat)
 
 # Eddy driven jet
-f_u = netcdf.netcdf_file('../ValidationData/ua.nc','r')
-U = f_u.variables['ua'][:]
+#read zonal wind U(time,lat,lev), latitude and level
+f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
+U = f_U.variables['ua'][:]
 
 #Change axes of U to be [time, lat]
 U = np.transpose(U, (2,1,0))
@@ -525,7 +545,6 @@ U = np.transpose(U, (2,1,0))
 U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
 
 Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-
 Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
 
 for j in range(np.shape(U_ANN)[0]):
@@ -533,13 +552,13 @@ for j in range(np.shape(U_ANN)[0]):
 
 # Subtropical jet
 Phi_stj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
-
 Phi_stj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
 
 for j in range(np.shape(U_ANN)[0]):
   Phi_stj_sh_ANN[j], Phi_stj_nh_ANN[j] = TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
 
 # OLR
+# read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
 f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
 olr = -f_olr.variables['rlnt'][:]
 
@@ -549,18 +568,20 @@ olr = np.transpose(olr, (1,0))
 olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
 
 Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
-
 Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
 
 for j in range(np.shape(olr_ANN)[0]):
   Phi_olr_sh_ANN[j], Phi_olr_nh_ANN[j] = TropD_Metric_OLR(olr_ANN[j,:], lat)
 
 # P minus E
+# read zonal mean monthly precipitation pr(time,lat)
 f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
 pr = f_pr.variables['pr'][:]
 
+#Latent heat of vaporization
 L = 2510400.0
 
+# read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
 f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
 er = -f_er.variables['hfls'][:]/L
 
@@ -579,6 +600,7 @@ for j in range(np.shape(PE_ANN)[0]):
   Phi_pe_sh_ANN[j], Phi_pe_nh_ANN[j] = TropD_Metric_PE(PE_ANN[j,:], lat)
 
 # Surface winds
+#read zonal mean surface wind U(time,lat)
 f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
 uas = f_uas.variables['uas'][:]
 
@@ -639,7 +661,9 @@ plt.show()
 
 
 ## 10) Validate metrics
+# Check calculations with precalculated values from file within roundoff error
 #Psi500
+#read meridional velocity V(time,lat,lev), latitude and level
 f_V = netcdf.netcdf_file('../ValidationData/va.nc','r')
 V = f_V.variables['va'][:]
 lat = f_V.variables['lat'][:]
@@ -651,11 +675,9 @@ V = np.transpose(V, (2,1,0))
 V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
 
 Phi_psi_nh = np.zeros((np.shape(V)[0],))
-
 Phi_psi_sh = np.zeros((np.shape(V)[0],))
 
 Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
-
 Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
 
 for j in range(np.shape(V)[0]):
@@ -684,6 +706,7 @@ else:
   print 'OK. Monthly Validation and calculated PSI metrics are the same!'
 
 # Tropopause break
+#read temperature T(time,lat,lev), latitude and level
 f_T = netcdf.netcdf_file('../ValidationData/ta.nc','r')
 T = f_T.variables['ta'][:]
 
@@ -693,11 +716,9 @@ T = np.transpose(T, (2,1,0))
 T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
 
 Phi_tpb_nh = np.zeros((np.shape(T)[0],))
-
 Phi_tpb_sh = np.zeros((np.shape(T)[0],))
 
 Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
-
 Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
 
 for j in range(np.shape(T)[0]):
@@ -725,6 +746,7 @@ else:
   print 'OK. Monthly Validation and calculated TPB metrics are the same!'
 
 # Surface pressure max (Invalid in NH)
+# read sea-level pressure ps(time,lat) and latitude
 f_ps = netcdf.netcdf_file('../ValidationData/psl.nc','r')
 ps = f_ps.variables['psl'][:]
 
@@ -794,6 +816,7 @@ else:
   print 'OK. SON Validation and calculated PSL metrics are the same!'
 
 # Eddy driven jet
+#read zonal wind U(time,lat,lev), latitude and level
 f_U = netcdf.netcdf_file('../ValidationData/ua.nc','r')
 U = f_U.variables['ua'][:]
 
@@ -863,6 +886,7 @@ else:
   print 'OK. Monthly Validation and calculated STJ metrics are the same!'
 
 # OLR
+# read zonal mean monthly TOA outgoing longwave radiation olr(time,lat)
 f_olr = netcdf.netcdf_file('../ValidationData/rlnt.nc','r')
 olr = -f_olr.variables['rlnt'][:]
 
@@ -901,11 +925,14 @@ else:
   print 'OK. Monthly Validation and calculated OLR metrics are the same!'
 
 # P minus E
+# read zonal mean monthly precipitation pr(time,lat)
 f_pr = netcdf.netcdf_file('../ValidationData/pr.nc','r')
 pr = f_pr.variables['pr'][:]
 
+#Latent heat of vaporization
 L = 2510400.0
 
+# read zonal mean monthly evaporation drived from surface latent heat flux hfls(time,lat)
 f_er = netcdf.netcdf_file('../ValidationData/hfls.nc','r')
 er = -f_er.variables['hfls'][:]/L
 
@@ -947,6 +974,7 @@ else:
   print 'OK. Monthly Validation and calculated P-E metrics are the same!'
 
 # Surface winds
+#read zonal mean surface wind U(time,lat)
 f_uas = netcdf.netcdf_file('../ValidationData/uas.nc','r')
 uas = f_uas.variables['uas'][:]
 

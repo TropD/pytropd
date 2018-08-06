@@ -1,0 +1,40 @@
+ TropD software for calculating tropical width metrics, version 1.0
+ Written by Ori Adam, published Jan.22.2018
+ Converted to Python by Alison Ming Jul.5.2017
+ 
+ 
+ The package contains:
+ 1. 8 Metric functions TropD_Metric_[MetricName] which output various metrics of the edge of the tropics in the SH and NH
+ 2. 4 Basic calculations: 
+    - TropD_Calculate_ZeroCrossing: Find the latitufde of zero crossing of a given field
+    - TropD_Calculate_MaxLat: Find the latitude of maximum of a given field 
+    - TropD_Calculate_StreamFunction: Calculate the meridional mass streamfunction
+    - TropD_Calculate_TropopauseHeight: Calculate the height of the tropopause
+    - TropD_Calculate_Mon2Season: Calculate seasonal means from monthly time series 
+ 3. TropD_Example_Calculations: Example and tutorial code
+
+ Code and method documentation can be found at Adam et al. (2018):
+ Adam O., K. M. Grise, P. State, I. Simpson, S. M. Davis, N. A. Davis, D. W. Waugh, and T. Birner, 2018: 
+ The TropD software package: standardized methods for calculating Tropical Width Diagnostics. Geoscientific Model Development.
+ 
+
+ LICENSE
+ Copyright (C) 2018 Ori Adam, Alison Ming, Paul Staten
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that:  
+ Redistributions of source code must retain the above credit to the
+ authors and the following disclaimer in the documentation and/or other materials provided 
+ with the distribution notice.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.

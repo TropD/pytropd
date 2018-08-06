@@ -1,25 +1,25 @@
-
-    # TropD PSL metric
-# Latitude of maximum of the subtropical sea-level pressure
-# Written by Ori Adam Mar.17.2017
-# Methods:
-# the latitude of maximum of sea-level pressure
-    
-    # Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_PSL(ps,lat,method)
-# Input:
-# ps(lat) = sea-level pressure
-# lat = equally spaced latitude column vector
-# method (optional) = | 'max' {default} | 'peak'
-# Output:
-# PhiSH = latitude of subtropical sea-level pressure maximum in the SH
-# PhiNH = latitude of subtropical sea-level pressure maximum in the NH
-    
 from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
     
 def TropD_Metric_PSL(ps, lat, method='max'):
+
+  '''TropD PSL metric
+  Latitude of maximum of the subtropical sea-level pressure
+  Written by Ori Adam Mar.17.2017
+  Edited by Alison Ming Jul.4.2017
+  
+  Positional arguments:
+  ps(lat,) -- sea-level pressure
+  lat -- equally spaced latitude column vector
+
+  Keyword arguments:
+  method (optional) -- 'max' (default) | 'peak'
+  
+  Outputs:
+  PhiSH -- latitude of subtropical sea-level pressure maximum in the SH
+  PhiNH -- latitude of subtropical sea-level pressure maximum in the NH
+  '''
 
   eq_boundary = 15
   polar_boundary = 60

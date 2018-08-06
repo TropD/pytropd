@@ -1,36 +1,37 @@
-
-    # TropD near-surface zonal wind metric
-# Written by Ori Adam Mar.21.2017
-# Methods:
-#  'zero_crossing': the first subtropical latitude where near-surface zonal wind changes from negative to positive
-# Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_UAS(U,lat,lev)
-# or
-# >> [PhiSH PhiNH] = TropD_Metric_UAS(U,lat,lev,method,Lat_Uncertainty)
-# Input:
-# U(lat,lev) = zonal mean zonal wind
-# or 
-# U(lat,1) = zonal mean surface wind
-# lat = equally spaced latitude column vector
-# lev = vertical level vector in hPa units 
-# (set lev=1 for single-level input zonal wind U(lat,1))
-# method (optional) = 'zero_crossing' {default}
-# Lat_Uncertainty (optional) = [Degrees latitude, default = 0] the minimal distance allowed between the first and second zero crossings
-# Output:
-# PhiSH = latitude of first subtropical zero crossing in the SH
-# PhiNH = latitude of first subtropical zero crossing in the NH
-
 from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
 from TropD_Calculate_ZeroCrossing import TropD_Calculate_ZeroCrossing	
 
 def find_nearest(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return idx
+  ''' Find the index of the item in the array nearest to the value 
+  '''
+  array = np.asarray(array)
+  idx = (np.abs(array - value)).argmin()
+  return idx
 
 def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', Lat_Uncertainty = 0):
+  
+  '''TropD near-surface zonal wind metric
+  Written by Ori Adam Mar.21.2017
+  Edited by Alison Ming Jul.4.2017
+  
+  Positional arguments:
+  U(lat,lev) or U (lat,)-- Zonal mean zonal wind. Also takes surface wind 
+  lat -- latitude vector
+  lev -- vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)
+
+  method (optional) -- 'zero_crossing' (default)
+  'zero_crossing': the first subtropical latitude where near-surface zonal wind changes from negative to positive
+
+  Keyword arguments:
+  Lat_Uncertainty (optional) -- the minimal distance allowed between the first and second zero crossings
+  
+  Outputs:
+  PhiSH -- latitude of first subtropical zero crossing in the SH
+  PhiNH -- latitude of first subtropical zero crossing in the NH
+  '''
+
   try:
     assert (Lat_Uncertainty >= 0)  
   except AssertionError:

@@ -1,25 +1,26 @@
-
-    # TropD Precipitation minus Evaporation (PE) metric
-# Written by Ori Adam Mar.21.2017
-# Methods:
-#  'zero_crossing': the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values
-# Syntax:
-# >> [PhiSH PhiNH] = TropD_Metric_PE(pe,lat,method,Lat_Uncertainty)
-# Input:
-# pe(lat) = zonal-mean precipitation minus evaporation
-# lat = equally spaced latitude column vector
-# method (optional) = 'zero_crossing' {default}
-# Lat_Uncertainty (optional) = [Degrees latitude, default = 0] the minimal distance allowed between the first and second zero crossings along lat
-# Output:
-# PhiSH = latitude of first subtropical P-E zero crossing in the SH
-# PhiNH = latitude of first subtropical P-E zero crossing in the NH
-    
 from __future__ import division
 import numpy as np
 from TropD_Calculate_MaxLat import TropD_Calculate_MaxLat
 from TropD_Calculate_ZeroCrossing import TropD_Calculate_ZeroCrossing	
     
 def TropD_Metric_PE(pe,lat,method='zero_crossing',Lat_Uncertainty=0.0):
+
+  '''TropD Precipitation minus Evaporation (PE) metric
+  Written by Ori Adam Mar.21.2017
+  Edited by Alison Ming Jul.4.2017
+     
+  Positional arguments:
+  pe(lat,) -- zonal-mean precipitation minus evaporation
+  lat -- equally spaced latitude column vector
+
+  Keyword arguments:
+  method -- 'zero_crossing': the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.
+  Lat_Uncertainty (optional) -- The minimal distance allowed between the first and second zero crossings along lat
+
+  Output:
+  PhiSH -- latitude of first subtropical P-E zero crossing in the SH
+  PhiNH -- latitude of first subtropical P-E zero crossing in the NH
+  '''    
     
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
