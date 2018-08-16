@@ -49,18 +49,18 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', Lat_Uncertainty=0):
   polar_boundary=60
     
   Psi = TropD_Calculate_StreamFunction(V, lat, lev)
-  COS = np.repeat(np.cos(lat*np.pi/180), len(lev), axis=0).reshape(len(lat),len(lev))
-  
+  Psi[np.isnan(Psi)]=0
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
       Psi = np.flip(Psi, 0)
       lat = np.flip(lat, 0)
     
-  Psi[np.isnan(Psi)]=0
+  COS = np.repeat(np.cos(lat*np.pi/180), len(lev), axis=0).reshape(len(lat),len(lev))
     
   if ( method=='Psi_500' or method=='Psi_500_10Perc'):
     # Use Psi at the level nearest to 500 hPa
     P = Psi[:,find_nearest(lev, 500)]
+
   elif method == 'Psi_300_700':
     # Use Psi averaged between the 300 and 700 hPa level
     P = np.trapz(Psi[:,(lev <= 700) & (lev >= 300)] * COS[:,(lev <= 700) & (lev >= 300)],\
@@ -68,9 +68,11 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', Lat_Uncertainty=0):
 
   elif method == 'Psi_500_Int':
     # Use integrated Psi from p=0 to level mearest to 500 hPa
-    PPsi = sp.integrate.cumtrapz(Psi*COS, lev, axis=1)
+    PPsi_temp = sp.integrate.cumtrapz(Psi*COS, lev, axis=1)
+    PPsi = np.zeros(np.shape(Psi))
+    PPsi[:,1:] = PPsi_temp
     P = PPsi[:,find_nearest(lev, 500)]
-  
+     
   elif method == 'Psi_Int':
     # Use vertical mean of Psi 
     P = np.trapz(Psi*COS, lev, axis=1)

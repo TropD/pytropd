@@ -117,7 +117,7 @@ Phi_tpb_nh = np.zeros((np.shape(T)[0],)) # latitude of monthly NH tropopause bre
 Phi_tpb_sh = np.zeros((np.shape(T)[0],)) # latitude of monthly SH tropopause break
 
 for j in range(np.shape(T)[0]):
-  ''' Default method = 'max_potemp'. Latitude of maximal difference between 
+  ''' Default method = 'max_gradient'. Latitude of maximal difference between 
   potential temperature at the tropopause level and the potential temperature at the surface
   '''
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
