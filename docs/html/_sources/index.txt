@@ -11,6 +11,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+.. autofunction:: TropD_Metric_OLR
 
 
 Indices and tables
