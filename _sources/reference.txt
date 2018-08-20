@@ -8,7 +8,7 @@ Reference
 
   .. module:: pytropd
 
-  :doc:`Metrics`
+  :doc:`metrics`
 
   .. autosummary::
 

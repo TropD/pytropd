@@ -1,0 +1,10 @@
+Calculating Metrics
+====================
+
+.. currentmodule:: pytropd
+
+.. autofunction:: TropD_Metric_OLR 
+
+.. autofunction:: TropD_Metric_PSI
+
+.. autofunction:: autodetectformat
