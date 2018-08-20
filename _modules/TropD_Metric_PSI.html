@@ -48,6 +48,31 @@
           <div class="body" role="main">
             
   <h1>Source code for TropD_Metric_PSI</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;TropD PSI metric </span>
+<span class="sd">Latitude of the meridional mass streamfunction subtropical zero crossing</span>
+<span class="sd">Written by Ori Adam Mar.20.2017</span>
+<span class="sd">Edited by Alison Ming Jul.4.2017</span>
+<span class="sd">   </span>
+<span class="sd">Positional arguments:</span>
+<span class="sd">V(lat,lev) -- zonal-mean meridional wind</span>
+<span class="sd">lat -- latitude vector</span>
+<span class="sd">lev -- vertical level vector in hPa units</span>
+
+<span class="sd">Keyword arguments:  </span>
+<span class="sd">method (optional) -- &#39;Psi_500&#39; (default) |  &#39;Psi_500_10Perc&#39;  |  &#39;Psi_300_700&#39; |  &#39;Psi_500_Int&#39;  |  &#39;Psi_Int&#39;</span>
+
+<span class="sd">&#39;Psi_500&#39;{default}: Zero crossing of the stream function (Psi) at the 500hPa level</span>
+<span class="sd">&#39;Psi_500_10Perc&#39;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level</span>
+<span class="sd">&#39;Psi_300_700&#39;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels</span>
+<span class="sd">&#39;Psi_500_Int&#39;: Zero crossing of the vertically-integrated Psi at the 500 hPa level</span>
+<span class="sd">&#39;Psi_Int&#39;    : Zero crossing of the column-averaged Psi</span>
+<span class="sd">  </span>
+<span class="sd">Lat_Uncertainty (optional) -- The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   </span>
+
+<span class="sd">Outputs:</span>
+<span class="sd">PhiSH -- latitude of Psi zero crossing in the SH</span>
+<span class="sd">PhiNH -- latitude of Psi zero crossing in the NH</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy</span> <span class="kn">as</span> <span class="nn">sp</span>
@@ -63,32 +88,7 @@
   <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span> <span class="o">-</span> <span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
   <span class="k">return</span> <span class="n">idx</span></div>
 
-<div class="viewcode-block" id="TropD_Metric_PSI"><a class="viewcode-back" href="../metrics.html#TropD_Metric_PSI.TropD_Metric_PSI">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Psi_500&#39;</span><span class="p">,</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-  <span class="sd">&#39;&#39;&#39;TropD PSI metric </span>
-<span class="sd">  Latitude of the meridional mass streamfunction subtropical zero crossing</span>
-<span class="sd">  Written by Ori Adam Mar.20.2017</span>
-<span class="sd">  Edited by Alison Ming Jul.4.2017</span>
-<span class="sd">     </span>
-<span class="sd">  Positional arguments:</span>
-<span class="sd">  V(lat,lev) -- zonal-mean meridional wind</span>
-<span class="sd">  lat -- latitude vector</span>
-<span class="sd">  lev -- vertical level vector in hPa units</span>
-
-<span class="sd">  Keyword arguments:  </span>
-<span class="sd">  method (optional) -- &#39;Psi_500&#39; (default) |  &#39;Psi_500_10Perc&#39;  |  &#39;Psi_300_700&#39; |  &#39;Psi_500_Int&#39;  |  &#39;Psi_Int&#39;</span>
-<span class="sd">  </span>
-<span class="sd">  &#39;Psi_500&#39;{default}: Zero crossing of the stream function (Psi) at the 500hPa level</span>
-<span class="sd">  &#39;Psi_500_10Perc&#39;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level</span>
-<span class="sd">  &#39;Psi_300_700&#39;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels</span>
-<span class="sd">  &#39;Psi_500_Int&#39;: Zero crossing of the vertically-integrated Psi at the 500 hPa level</span>
-<span class="sd">  &#39;Psi_Int&#39;    : Zero crossing of the column-averaged Psi</span>
-<span class="sd">    </span>
-<span class="sd">  Lat_Uncertainty (optional) -- The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   </span>
-<span class="sd">  </span>
-<span class="sd">  Outputs:</span>
-<span class="sd">  PhiSH -- latitude of Psi zero crossing in the SH</span>
-<span class="sd">  PhiNH -- latitude of Psi zero crossing in the NH</span>
-<span class="sd">  &#39;&#39;&#39;</span>
+<span class="k">def</span> <span class="nf">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Psi_500&#39;</span><span class="p">,</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">Lat_Uncertainty</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  
@@ -164,7 +164,7 @@
   <span class="k">else</span><span class="p">:</span>
     <span class="n">PhiSH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">P</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">),</span>\
             <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="n">Lat_Uncertainty</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span></div>
+  <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span>
 
 </pre></div>
 
