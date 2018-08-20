@@ -7,4 +7,5 @@ Calculating Metrics
    :members:
 
 .. automodule:: TropD_Metric_PSI
+   :members:
 

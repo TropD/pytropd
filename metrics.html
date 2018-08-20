@@ -112,7 +112,37 @@
 </tr>
 </tbody>
 </table>
-<span class="target" id="module-TropD_Metric_PSI"></span></div>
+<span class="target" id="module-TropD_Metric_PSI"></span><dl class="function">
+<dt id="TropD_Metric_PSI.TropD_Metric_PSI">
+<code class="descclassname">TropD_Metric_PSI.</code><code class="descname">TropD_Metric_PSI</code><span class="sig-paren">(</span><em>V</em>, <em>lat</em>, <em>lev</em>, <em>method='Psi_500'</em>, <em>Lat_Uncertainty=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TropD_Metric_PSI.html#TropD_Metric_PSI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TropD_Metric_PSI.TropD_Metric_PSI" title="Permalink to this definition">¶</a></dt>
+<dd><p>TropD PSI metric
+Latitude of the meridional mass streamfunction subtropical zero crossing
+Written by Ori Adam Mar.20.2017
+Edited by Alison Ming Jul.4.2017</p>
+<p>Positional arguments:
+V(lat,lev) &#8211; zonal-mean meridional wind
+lat &#8211; latitude vector
+lev &#8211; vertical level vector in hPa units</p>
+<p>Keyword arguments:
+method (optional) &#8211; &#8216;Psi_500&#8217; (default) |  &#8216;Psi_500_10Perc&#8217;  |  &#8216;Psi_300_700&#8217; |  &#8216;Psi_500_Int&#8217;  |  &#8216;Psi_Int&#8217;</p>
+<p>&#8216;Psi_500&#8217;{default}: Zero crossing of the stream function (Psi) at the 500hPa level
+&#8216;Psi_500_10Perc&#8217;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
+&#8216;Psi_300_700&#8217;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
+&#8216;Psi_500_Int&#8217;: Zero crossing of the vertically-integrated Psi at the 500 hPa level
+&#8216;Psi_Int&#8217;    : Zero crossing of the column-averaged Psi</p>
+<p>Lat_Uncertainty (optional) &#8211; The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.</p>
+<p>Outputs:
+PhiSH &#8211; latitude of Psi zero crossing in the SH
+PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="TropD_Metric_PSI.find_nearest">
+<code class="descclassname">TropD_Metric_PSI.</code><code class="descname">find_nearest</code><span class="sig-paren">(</span><em>array</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TropD_Metric_PSI.html#find_nearest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TropD_Metric_PSI.find_nearest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the index of the item in the array nearest to the value</p>
+</dd></dl>
+
+</div>
 
 
           </div>
