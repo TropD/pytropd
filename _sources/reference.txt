@@ -2,7 +2,6 @@
 Reference
 ==============
 
-.. currentmodule:: pytropd
 
 .. container:: module
 

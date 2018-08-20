@@ -3,8 +3,6 @@ Calculating Metrics
 
 .. currentmodule:: pytropd
 
-.. autofunction:: TropD_Metric_OLR 
+.. automodule:: TropD_Metric_PSI
 
-.. autofunction:: TropD_Metric_PSI
-
-.. autofunction:: autodetectformat
+.. automodule:: autodetectformat
