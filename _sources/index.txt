@@ -8,7 +8,7 @@ Welcome to PyTropD's documentation!
 
 PyTropD is a python package intended to calculate different metrics of tropical width as described in [link to paper]. This package is the python equivalent to the original MATLAB |registered| version
 
-.. |registered| unicode:: 00AE .. registered trademark sign
+.. |registered| unicode:: U+00AE .. registered trademark sign
 
 A quick overview can be found in the :doc:`tutorial`.
 
@@ -17,7 +17,7 @@ This documentation will describe version 1.0, it is still a work in progress.
 
 Download and Install
 ----------------------
-See the :doc:`install` page for all the details. The project is located on Github: repository_.
+See the :doc:`install` page for all the details. The project is located in a Github repository_.
 
 .. _repository: https://github.com/tropd/pytropd
 
