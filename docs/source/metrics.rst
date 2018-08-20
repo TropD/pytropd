@@ -1,8 +1,11 @@
+====================
 Calculating Metrics
 ====================
 
-.. currentmodule:: pytropd
+
+.. automodule:: TropD_Metric_OLR
+   :members:
 
 .. automodule:: TropD_Metric_PSI
+   :members:
 
-.. automodule:: autodetectformat
