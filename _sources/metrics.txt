@@ -4,6 +4,7 @@ Calculating Metrics
 
 
 .. automodule:: TropD_Metric_OLR
+   :members: TropD_Metric_OLR
 
 .. automodule:: TropD_Metric_PSI
 
