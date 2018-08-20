@@ -8,7 +8,7 @@
     
     <title>Points to main rst file in pytropd directory &mdash; PyTropD 1.0.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -23,75 +23,95 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyTropD 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="Reference" href="reference.html" />
     <link rel="prev" title="Welcome to PyTropD’s documentation!" href="index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
+          <a href="reference.html" title="Reference"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to PyTropD’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
-  <div class="section" id="module-TropD_Metric_OLR">
-<span id="points-to-main-rst-file-in-pytropd-directory"></span><h1>Points to main rst file in pytropd directory<a class="headerlink" href="#module-TropD_Metric_OLR" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="TropD_Metric_OLR.TropD_Metric_OLR">
-<tt class="descclassname">TropD_Metric_OLR.</tt><tt class="descname">TropD_Metric_OLR</tt><big>(</big><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><big>)</big><a class="reference internal" href="_modules/TropD_Metric_OLR.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TropD_Metric_OLR.TropD_Metric_OLR" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD Outgoing Longwave Radiation (OLR) metric
-Written by Ori Adam Mar.21.2017
-Edited by Alison Ming Jul.4.2017</p>
-<p>Positional arguments:
-olr(lat,) &#8211; zonal mean TOA olr (positive)
-lat &#8211; equally spaced latitude column vector</p>
-<p>Keyword arguments:
-method (optional) &#8211; &#8216;250W&#8217; (default) | &#8216;cutoff&#8217; | &#8216;10Perc&#8217; | &#8216;20W&#8217; | &#8216;max&#8217; | &#8216;peak&#8217;</p>
-<p>&#8216;250W&#8217;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
-<p>&#8216;20W&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
-<p>&#8216;cutoff&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
-<p>&#8216;10Perc&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
-<p>&#8216;max&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
-<p>&#8216;peak&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
-<p>Cutoff (optional) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</p>
-<p>n (optional) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</p>
-<p>Outputs:
-PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH
-PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
-</dd></dl>
-
+  <div class="section" id="points-to-main-rst-file-in-pytropd-directory">
+<h1>Points to main rst file in pytropd directory<a class="headerlink" href="#points-to-main-rst-file-in-pytropd-directory" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="pygeode-1-0">
+<h2>PyGeode 1.0<a class="headerlink" href="#pygeode-1-0" title="Permalink to this headline">¶</a></h2>
+<p>PyTropD is a python package intended to calculate different metrics of tropical width as described in [link to paper]. This package is the python equivalent to the original MATLAB 00AE version</p>
+<p>A quick overview can be found in the <code class="xref doc docutils literal"><span class="pre">tutorial</span></code>.</p>
+<p>This documentation will describe version 1.0, it is still a work in progress.</p>
+<div class="section" id="download-and-install">
+<h3>Download and Install<a class="headerlink" href="#download-and-install" title="Permalink to this headline">¶</a></h3>
+<p>See the <code class="xref doc docutils literal"><span class="pre">install</span></code> page for all the details. The project is located on Github: <a class="reference external" href="https://github.com/tropd/pytropd">repository</a>.</p>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>There is a step by step <code class="xref doc docutils literal"><span class="pre">tutorial</span></code> intended to introduce you to many
+aspects of the code.</p>
+<p>There is also a <a class="reference internal" href="reference.html"><em>Reference</em></a> with full details.</p>
+</div>
+<div class="section" id="about-pytropd">
+<h3>About PyTropD<a class="headerlink" href="#about-pytropd" title="Permalink to this headline">¶</a></h3>
+<p>The MATLAB 00AE version was originally developed by the <a class="reference external" href="http://www.issibern.ch/teams/twdip/">ISSI Tropical Width Diagnostics Intercomparison Project</a>.</p>
+<blockquote>
+<div></div></blockquote>
+<p>The code was translated to Python by Alison Ming with help from Paul William Staten and TropD team.</p>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+</div>
 </div>
 
 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Points to main rst file in pytropd directory</a><ul>
+<li><a class="reference internal" href="#pygeode-1-0">PyGeode 1.0</a><ul>
+<li><a class="reference internal" href="#download-and-install">Download and Install</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#about-pytropd">About PyTropD</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
                         title="previous chapter">Welcome to PyTropD&#8217;s documentation!</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/includeme.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reference.html"
+                        title="next chapter">Reference</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/includeme.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -108,24 +128,24 @@ PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
+          <a href="reference.html" title="Reference"
+             >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to PyTropD’s documentation!"
              >previous</a> |</li>
-        <li><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2018, Alison Ming.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>
