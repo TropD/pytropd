@@ -4,4 +4,14 @@ Reference
 
 .. currentmodule:: pytropd
 
-.. automodule:: TropD_Metric_OLR
+.. container:: module
+
+  .. module:: pytropd
+
+  :doc:`Metrics`
+
+  .. autosummary::
+
+    TropD_Metric_OLR
+    TropD_Metric_PSI
+
