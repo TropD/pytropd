@@ -45,6 +45,7 @@ The code was translated to Python by Alison Ming with help from Paul William Sta
   install
   tutorial
   reference
+  metrics
   gallery
 
 
