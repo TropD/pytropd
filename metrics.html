@@ -35,6 +35,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="reference.html" title="Reference"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
@@ -46,9 +49,70 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="calculating-metrics">
-<h1>Calculating Metrics<a class="headerlink" href="#calculating-metrics" title="Permalink to this headline">¶</a></h1>
-</div>
+  <div class="section" id="module-TropD_Metric_OLR">
+<span id="calculating-metrics"></span><h1>Calculating Metrics<a class="headerlink" href="#module-TropD_Metric_OLR" title="Permalink to this headline">¶</a></h1>
+<p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param olr(lat,):</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">type olr(lat,):</th><td class="field-body">zonal mean TOA olr (positive)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param lat &#8211; equally spaced latitude column vector:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param method (optional):</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">type method (optional):</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">&#8216;250W&#8217; (default) | &#8216;cutoff&#8217; | &#8216;10Perc&#8217; | &#8216;20W&#8217; | &#8216;max&#8217; | &#8216;peak&#8217;</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param &#8216;250W&#8217;(Default):</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">type &#8216;250W&#8217;(Default):</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param &#8216;20W&#8217;:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type &#8216;20W&#8217;:</th><td class="field-body">the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param &#8216;cutoff&#8217;:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type &#8216;cutoff&#8217;:</th><td class="field-body">the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param &#8216;10Perc&#8217;:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type &#8216;10Perc&#8217;:</th><td class="field-body">the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param &#8216;max&#8217;:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type &#8216;max&#8217;:</th><td class="field-body">the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param &#8216;peak&#8217;:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">type &#8216;peak&#8217;:</th><td class="field-body">the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</td>
+</tr>
+</tbody>
+</table>
+<p>Cutoff (optional) : Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</p>
+<p>n (optional) : For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">returns:</th><td class="field-body"><ul class="first last simple">
+<li><strong>PhiSH</strong> (<em>latitude of near equator OLR threshold crossing in the SH</em>)</li>
+<li><strong>PhiNH</strong> (<em>latitude of near equator OLR threshold crossing in the NH</em>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-TropD_Metric_PSI"></span></div>
 
 
           </div>
@@ -89,6 +153,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="reference.html" title="Reference"
              >previous</a> |</li>
