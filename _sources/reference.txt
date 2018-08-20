@@ -2,15 +2,11 @@
 Reference
 ==============
 
+:doc:`metrics`
 
-.. container:: module
+.. autosummary::
 
-  .. module:: pytropd
+  TropD_Metric_OLR
 
-  :doc:`metrics`
-
-  .. autosummary::
-
-    TropD_Metric_OLR
-    TropD_Metric_PSI
+  TropD_Metric_PSI
 
