@@ -1,7 +1,8 @@
 Calculating Metrics
 ====================
 
-.. currentmodule:: pytropd
+
+.. automodule:: TropD_Metric_OLR
 
 .. automodule:: TropD_Metric_PSI
 
