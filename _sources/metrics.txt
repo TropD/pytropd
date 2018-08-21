@@ -1,6 +1,6 @@
-====================
-Calculating Metrics
-====================
+=====================
+Reference for metrics
+=====================
 
 .. automodule:: metrics
    :members:
