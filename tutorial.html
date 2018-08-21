@@ -42,43 +42,7 @@
   <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
 <p>First import pytropd and some data.</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">pytropd</span> <span class="kn">as</span> <span class="nn">pyt</span>
-
-<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">pytropd.tutorial</span> <span class="kn">import</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">V</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">ImportError</span><span class="g g-Whitespace">                               </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-2-4df95852e5c3&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span> <span class="nn">pytropd.tutorial</span> <span class="kn">import</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">V</span>
-
-<span class="ne">ImportError</span>: No module named tutorial
-
-<span class="gp">In [3]: </span><span class="k">print</span> <span class="n">V</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-3-829fa11a86c5&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="k">print</span> <span class="n">V</span>
-
-<span class="ne">NameError</span>: name &#39;V&#39; is not defined
-</pre></div>
-</div>
 <p>V is a numpy array containing the mean meridional velocity on (lat, levs). We can calculate the metric of tropical width from the mass streamfunction (PSI) as follows:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [4]: </span><span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span> <span class="o">=</span> <span class="n">pyt</span><span class="o">.</span><span class="n">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="p">,:,:],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">)</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-4-5fedb2be10b1&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span> <span class="o">=</span> <span class="n">pyt</span><span class="o">.</span><span class="n">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="p">,:,:],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">)</span>
-
-<span class="ne">NameError</span>: name &#39;V&#39; is not defined
-
-<span class="gp">In [5]: </span><span class="k">print</span><span class="p">(</span><span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span><span class="p">)</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-5-96c3c9c7f4f2&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="k">print</span><span class="p">(</span><span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span><span class="p">)</span>
-
-<span class="ne">NameError</span>: name &#39;Phi_sh&#39; is not defined
-</pre></div>
-</div>
 <p>More detailed code examples can be found in the file <code class="docutils literal"><span class="pre">TropD_Example_Calculations.py</span></code>.</p>
 </div>
 
