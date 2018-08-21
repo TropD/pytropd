@@ -65,7 +65,7 @@ def TropD_Calculate_MaxLat(F,lat,n=int(6)):
 
   return Ymax
 
-def TropD_Calculate_Mon2season(Fm, season=np.arange(12), m=0):
+def TropD_Calculate_Mon2Season(Fm, season=np.arange(12), m=0):
   ''' Calculate seasonal means from monthly time series
 
       Args:

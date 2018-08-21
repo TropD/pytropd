@@ -13,8 +13,6 @@ PyTropD is a python package intended to calculate different metrics of tropical 
 
 __ https://www.geosci-model-dev-discuss.net/gmd-2018-124/
 
-A quick overview can be found in the :doc:`tutorial`.
-
 This documentation will describe version 1.0. It is still a work in progress.
 
 
@@ -44,9 +42,12 @@ The code was translated to Python by Alison Ming with help from Paul William Sta
 
 .. toctree::
     :hidden:
-    :glob:
+    
+    install
+    tutorial
+    reference
+    helper
 
-    *
 
 
 

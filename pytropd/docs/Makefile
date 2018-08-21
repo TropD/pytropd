@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = ../../pytropd-docs
+BUILDDIR      = ../../../pytropd-docs
 
 
 # Task: build and push html
