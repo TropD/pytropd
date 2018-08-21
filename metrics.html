@@ -62,21 +62,24 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>olr</strong> (<em>lat,</em>) &#8211; zonal mean TOA olr (positive)</li>
 <li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
-<p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
-<p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
-<p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
-<p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
-<p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
+<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<p>&#8216;20W&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
+<p>&#8216;cutoff&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
+<p>&#8216;10Perc&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
+<p>&#8216;max&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
+<p>&#8216;peak&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
 </li>
-<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; </li>
-<li><strong>n</strong> (<em>optional</em>) &#8211; </li>
+<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</li>
+<li><strong>n</strong> (<em>optional</em>) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
-<p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of near equator OLR threshold crossing in the SH</p>
+<p>PhiNH: latitude of near equator OLR threshold crossing in the NH</p>
 </p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
 </td>
 </tr>
 </tbody>
@@ -94,17 +97,20 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>U</strong> (<em>lat,lev</em>) &#8211; </li>
-<li><strong>-- latitude vector</strong> (<em>lat</em>) &#8211; </li>
-<li><strong>-- vertical level vector in hPa units</strong> (<em>lev</em>) &#8211; </li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; </li>
-<li><strong>n</strong> (<em>optional, default = 6</em>) &#8211; </li>
+<li><strong>U</strong> (<em>lat,lev</em>) &#8211; Zonal mean zonal wind. Also takes surface wind</li>
+<li><strong>lat</strong> &#8211; latitude vector</li>
+<li><strong>lev</strong> &#8211; vertical level vector in hPa units</li>
+<li><strong>method</strong> (<em>optional</em>) &#8211; &#8216;max&#8217; (default) |  &#8216;peak&#8217;</li>
+<li><strong>n</strong> (<em>optional, default = 6</em>) &#8211; rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of EDJ in the SH</p>
-<p>PhiNH &#8211; latitude of EDJ in the NH</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of EDJ in the SH</p>
+<p>PhiNH: latitude of EDJ in the NH</p>
 </p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
 </td>
 </tr>
 </tbody>
@@ -122,21 +128,24 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>olr</strong> (<em>lat,</em>) &#8211; zonal mean TOA olr (positive)</li>
 <li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
-<p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
-<p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
-<p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
-<p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
-<p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
+<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<p>&#8216;20W&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
+<p>&#8216;cutoff&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
+<p>&#8216;10Perc&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
+<p>&#8216;max&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
+<p>&#8216;peak&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
 </li>
-<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; </li>
-<li><strong>n</strong> (<em>optional</em>) &#8211; </li>
+<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</li>
+<li><strong>n</strong> (<em>optional</em>) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
-<p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of near equator OLR threshold crossing in the SH</p>
+<p>PhiNH: latitude of near equator OLR threshold crossing in the NH</p>
 </p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
 </td>
 </tr>
 </tbody>
@@ -147,15 +156,14 @@
 <dt id="metrics.TropD_Metric_PE">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PE</code><span class="sig-paren">(</span><em>pe</em>, <em>lat</em>, <em>method='zero_crossing'</em>, <em>Lat_Uncertainty=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PE" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD Precipitation minus Evaporation (PE) metric</p>
-<p>Positional arguments:
-pe(lat,) &#8211; zonal-mean precipitation minus evaporation
-lat &#8211; equally spaced latitude column vector</p>
-<p>Keyword arguments:
-method &#8211; &#8216;zero_crossing&#8217;: the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.
-Lat_Uncertainty (optional) &#8211; The minimal distance allowed between the first and second zero crossings along lat</p>
+<p>Args:
+pe(lat,): zonal-mean precipitation minus evaporation
+lat: equally spaced latitude column vector</p>
+<p>method: &#8216;zero_crossing&#8217;: the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.
+Lat_Uncertainty (optional): The minimal distance allowed between the first and second zero crossings along lat</p>
 <p>Output:
-PhiSH &#8211; latitude of first subtropical P-E zero crossing in the SH
-PhiNH &#8211; latitude of first subtropical P-E zero crossing in the NH</p>
+PhiSH: latitude of first subtropical P-E zero crossing in the SH
+PhiNH: latitude of first subtropical P-E zero crossing in the NH</p>
 </dd></dl>
 
 <dl class="function">
@@ -163,21 +171,20 @@ PhiNH &#8211; latitude of first subtropical P-E zero crossing in the NH</p>
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PSI</code><span class="sig-paren">(</span><em>V</em>, <em>lat</em>, <em>lev</em>, <em>method='Psi_500'</em>, <em>Lat_Uncertainty=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PSI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PSI" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD PSI metric
 Latitude of the meridional mass streamfunction subtropical zero crossing</p>
-<p>Positional arguments:
-V(lat,lev) &#8211; zonal-mean meridional wind
-lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units</p>
-<p>Keyword arguments:
-method (optional) &#8211; &#8216;Psi_500&#8217; (default) |  &#8216;Psi_500_10Perc&#8217;  |  &#8216;Psi_300_700&#8217; |  &#8216;Psi_500_Int&#8217;  |  &#8216;Psi_Int&#8217;</p>
+<p>Args:
+V(lat,lev): zonal-mean meridional wind
+lat: latitude vector
+lev: vertical level vector in hPa units</p>
+<p>method (optional): &#8216;Psi_500&#8217; (default) |  &#8216;Psi_500_10Perc&#8217;  |  &#8216;Psi_300_700&#8217; |  &#8216;Psi_500_Int&#8217;  |  &#8216;Psi_Int&#8217;</p>
 <p>&#8216;Psi_500&#8217;{default}: Zero crossing of the stream function (Psi) at the 500hPa level
 &#8216;Psi_500_10Perc&#8217;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
 &#8216;Psi_300_700&#8217;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
 &#8216;Psi_500_Int&#8217;: Zero crossing of the vertically-integrated Psi at the 500 hPa level
 &#8216;Psi_Int&#8217;    : Zero crossing of the column-averaged Psi</p>
-<p>Lat_Uncertainty (optional) &#8211; The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.</p>
-<p>Outputs:
-PhiSH &#8211; latitude of Psi zero crossing in the SH
-PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
+<p>Lat_Uncertainty (optional): The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.</p>
+<p>Returns:
+PhiSH: latitude of Psi zero crossing in the SH
+PhiNH: latitude of Psi zero crossing in the NH</p>
 </dd></dl>
 
 <dl class="function">
@@ -185,70 +192,66 @@ PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PSL</code><span class="sig-paren">(</span><em>ps</em>, <em>lat</em>, <em>method='max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PSL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PSL" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD PSL metric
 Latitude of maximum of the subtropical sea-level pressure</p>
-<p>Positional arguments:
-ps(lat,) &#8211; sea-level pressure
-lat &#8211; equally spaced latitude column vector</p>
-<p>Keyword arguments:
-method (optional) &#8211; &#8216;max&#8217; (default) | &#8216;peak&#8217;</p>
-<p>Outputs:
-PhiSH &#8211; latitude of subtropical sea-level pressure maximum in the SH
-PhiNH &#8211; latitude of subtropical sea-level pressure maximum in the NH</p>
+<p>Args:
+ps(lat,): sea-level pressure
+lat: equally spaced latitude column vector</p>
+<p>method (optional): &#8216;max&#8217; (default) | &#8216;peak&#8217;</p>
+<p>Returns:
+PhiSH: latitude of subtropical sea-level pressure maximum in the SH
+PhiNH: latitude of subtropical sea-level pressure maximum in the NH</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="metrics.TropD_Metric_STJ">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_STJ</code><span class="sig-paren">(</span><em>U</em>, <em>lat</em>, <em>lev</em>, <em>method='adjusted'</em>, <em>n=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_STJ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_STJ" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD Subtropical Jet (STJ) metric</p>
-<p>Positional arguments:
-U(lat,lev) &#8211; zonal mean zonal wind
-lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units</p>
-<p>Keyword arguments:
-method (optional) &#8211; &#8216;adjusted&#8217; (default) | &#8216;core&#8217; | &#8216;adjusted_peak&#8217; | &#8216;core_peak&#8217;</p>
+<p>Args:
+U(lat,lev): zonal mean zonal wind
+lat: latitude vector
+lev: vertical level vector in hPa units</p>
+<p>method (optional): &#8216;adjusted&#8217; (default) | &#8216;core&#8217; | &#8216;adjusted_peak&#8217; | &#8216;core_peak&#8217;</p>
 <p>&#8216;adjusted&#8217; : Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</p>
 <p>&#8216;adjusted_peak&#8217;: Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</p>
 <p>&#8216;core&#8217;: Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</p>
 <p>&#8216;core_peak&#8217;: Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</p>
-<p>Outputs:
-PhiSH &#8211; latitude of STJ in the SH
-PhiNH &#8211; latitude of STJ in the NH</p>
+<p>Returns:
+PhiSH: latitude of STJ in the SH
+PhiNH: latitude of STJ in the NH</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="metrics.TropD_Metric_TPB">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_TPB</code><span class="sig-paren">(</span><em>T</em>, <em>lat</em>, <em>lev</em>, <em>method='max_gradient'</em>, <em>n=0</em>, <em>Z=None</em>, <em>Cutoff=15000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_TPB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_TPB" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD Tropopause break (TPB) metric</p>
-<p>Positional arguments:
-T(lat,lev) &#8211; temperature (K)
-lat &#8211; latitude vector
-lev &#8211; pressure levels column vector in hPa</p>
-<p>Keyword arguments:
-method (optional) &#8211; &#8216;max_gradient&#8217; (default) |  &#8216;max_potemp&#8217;  |  &#8216;cutoff&#8217;</p>
+<p>Args:
+T(lat,lev): temperature (K)
+lat: latitude vector
+lev: pressure levels column vector in hPa</p>
+<p>method (optional): &#8216;max_gradient&#8217; (default) |  &#8216;max_potemp&#8217;  |  &#8216;cutoff&#8217;</p>
 <p>&#8216;max_gradient&#8217;: The latitude of maximal poleward gradient of the tropopause height</p>
 <p>&#8216;cutoff&#8217;: The most equatorward latitude where the tropopause crosses a prescribed cutoff value</p>
 <p>&#8216;max_potemp&#8217;: The latitude of maximal difference between the potential temperature at the tropopause and at the surface</p>
-<p>Z(lat,lev) (optional) &#8211; geopotential height (m)
-Cutoff (optional, scalar) &#8211; geopotential height (m) cutoff that marks the location of the tropopause break</p>
-<p>Outputs:
-PhiSH &#8211; latitude of tropopause break in the SH
-PhiNH &#8211; latitude of tropopause break in the NH</p>
+<p>Z(lat,lev) (optional): geopotential height (m)
+Cutoff (optional, scalar): geopotential height (m) cutoff that marks the location of the tropopause break</p>
+<p>Returns:
+PhiSH: latitude of tropopause break in the SH
+PhiNH: latitude of tropopause break in the NH</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="metrics.TropD_Metric_UAS">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_UAS</code><span class="sig-paren">(</span><em>U</em>, <em>lat</em>, <em>lev=array([1])</em>, <em>method='zero_crossing'</em>, <em>Lat_Uncertainty=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_UAS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_UAS" title="Permalink to this definition">¶</a></dt>
 <dd><p>TropD near-surface zonal wind metric</p>
-<p>Positional arguments:
+<p>Args:
 U(lat,lev) or U (lat,)&#8211; Zonal mean zonal wind. Also takes surface wind
-lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)</p>
-<p>method (optional) &#8211; &#8216;zero_crossing&#8217; (default)
+lat: latitude vector
+lev: vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)</p>
+<p>method (optional): &#8216;zero_crossing&#8217; (default)
 &#8216;zero_crossing&#8217;: the first subtropical latitude where near-surface zonal wind changes from negative to positive</p>
-<p>Keyword arguments:
-Lat_Uncertainty (optional) &#8211; the minimal distance allowed between the first and second zero crossings</p>
-<p>Outputs:
-PhiSH &#8211; latitude of first subtropical zero crossing in the SH
-PhiNH &#8211; latitude of first subtropical zero crossing in the NH</p>
+<p>Lat_Uncertainty (optional): the minimal distance allowed between the first and second zero crossings</p>
+<p>Returns:
+PhiSH: latitude of first subtropical zero crossing in the SH
+PhiNH: latitude of first subtropical zero crossing in the NH</p>
 </dd></dl>
 
 </div>
