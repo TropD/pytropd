@@ -1,4 +1,4 @@
-==============
+============
 Reference
 ==============
 
@@ -8,5 +8,4 @@ Reference
 
   TropD_Metric_OLR
 
-  TropD_Metric_PSI
 
