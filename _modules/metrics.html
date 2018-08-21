@@ -245,20 +245,27 @@
   <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span></div>
     
     
-<div class="viewcode-block" id="TropD_Metric_PE"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_PE">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PE</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">,</span><span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+<div class="viewcode-block" id="TropD_Metric_PE"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_PE">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PE</span><span class="p">(</span><span class="n">pe</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">,</span><span class="n">lat_uncertainty</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 
-  <span class="sd">&#39;&#39;&#39;TropD Precipitation minus Evaporation (PE) metric</span>
+  <span class="sd">&#39;&#39;&#39; TropD Precipitation minus Evaporation (PE) metric</span>
 <span class="sd">     </span>
-<span class="sd">  Args:</span>
-<span class="sd">  pe(lat,): zonal-mean precipitation minus evaporation</span>
-<span class="sd">  lat: equally spaced latitude column vector</span>
+<span class="sd">      Args:</span>
 
-<span class="sd">  method: &#39;zero_crossing&#39;: the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.</span>
-<span class="sd">  Lat_Uncertainty (optional): The minimal distance allowed between the first and second zero crossings along lat</span>
+<span class="sd">        pe(lat,): zonal-mean precipitation minus evaporation</span>
+<span class="sd">   </span>
+<span class="sd">        lat: equally spaced latitude column vector</span>
 
-<span class="sd">  Output:</span>
-<span class="sd">  PhiSH: latitude of first subtropical P-E zero crossing in the SH</span>
-<span class="sd">  PhiNH: latitude of first subtropical P-E zero crossing in the NH</span>
+<span class="sd">        method: </span>
+<span class="sd">       </span>
+<span class="sd">          &#39;zero_crossing&#39;: the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.</span>
+<span class="sd">  </span>
+<span class="sd">        lat_uncertainty (optional): The minimal distance allowed between the first and second zero crossings along lat</span>
+
+<span class="sd">      Returns:</span>
+
+<span class="sd">        PhiSH: latitude of first subtropical P-E zero crossing in the SH</span>
+<span class="sd">  </span>
+<span class="sd">        PhiNH: latitude of first subtropical P-E zero crossing in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>    
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span><span class="p">(</span><span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">])</span>
@@ -283,57 +290,66 @@
   <span class="n">M1</span> <span class="o">=</span> <span class="n">TropD_Calculate_MaxLat</span><span class="p">(</span><span class="o">-</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">eq_boundary</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">subpolar_boundary</span><span class="p">)],</span>\
                  <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">eq_boundary</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">subpolar_boundary</span><span class="p">)],</span> <span class="mi">30</span><span class="p">)</span>
   <span class="n">ZC1</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> \
-                 <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+                 <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
   <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">ZC1</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">ped</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
     <span class="n">PhiNH</span> <span class="o">=</span> <span class="n">ZC1</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">PhiNH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> \
-                  <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+                  <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
   
   <span class="c1"># SH</span>
   <span class="c1"># flip arrays to find the most equatorward zero crossing</span>
   <span class="n">M1</span> <span class="o">=</span> <span class="n">TropD_Calculate_MaxLat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="o">-</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eq_boundary</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">subpolar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span>\
                  <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="o">-</span><span class="n">eq_boundary</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">subpolar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="mi">30</span><span class="p">)</span>               
   <span class="n">ZC1</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> \
-                 <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+                 <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">M1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
 
   <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">ZC1</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">ped</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
     <span class="n">PhiSH</span> <span class="o">=</span> <span class="n">ZC1</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">PhiSH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">pe</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> \
-                  <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+                  <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">ZC1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
 
   <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span></div>
 
-<div class="viewcode-block" id="TropD_Metric_PSI"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_PSI">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Psi_500&#39;</span><span class="p">,</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-  <span class="sd">&#39;&#39;&#39;TropD PSI metric </span>
-<span class="sd">  Latitude of the meridional mass streamfunction subtropical zero crossing</span>
+<div class="viewcode-block" id="TropD_Metric_PSI"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_PSI">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Psi_500&#39;</span><span class="p">,</span> <span class="n">lat_uncertainty</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39; TropD PSI metric </span>
+<span class="sd">      Latitude of the meridional mass streamfunction subtropical zero crossing</span>
 <span class="sd">     </span>
-<span class="sd">  Args:</span>
-<span class="sd">  V(lat,lev): zonal-mean meridional wind</span>
-<span class="sd">  lat: latitude vector</span>
-<span class="sd">  lev: vertical level vector in hPa units</span>
+<span class="sd">      Args:</span>
 <span class="sd">  </span>
-<span class="sd">  method (optional): &#39;Psi_500&#39; (default) |  &#39;Psi_500_10Perc&#39;  |  &#39;Psi_300_700&#39; |  &#39;Psi_500_Int&#39;  |  &#39;Psi_Int&#39;</span>
+<span class="sd">        V(lat,lev): zonal-mean meridional wind</span>
+<span class="sd">      </span>
+<span class="sd">        lat: latitude vector</span>
+
+<span class="sd">        lev: vertical level vector in hPa units</span>
 <span class="sd">  </span>
-<span class="sd">  &#39;Psi_500&#39;{default}: Zero crossing of the stream function (Psi) at the 500hPa level</span>
-<span class="sd">  &#39;Psi_500_10Perc&#39;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level</span>
-<span class="sd">  &#39;Psi_300_700&#39;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels</span>
-<span class="sd">  &#39;Psi_500_Int&#39;: Zero crossing of the vertically-integrated Psi at the 500 hPa level</span>
-<span class="sd">  &#39;Psi_Int&#39;    : Zero crossing of the column-averaged Psi</span>
+<span class="sd">        method (optional):</span>
+<span class="sd">  </span>
+<span class="sd">          &#39;Psi_500&#39;(default): Zero crossing of the stream function (Psi) at the 500hPa level</span>
+
+<span class="sd">          &#39;Psi_500_10Perc&#39;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level</span>
+
+<span class="sd">          &#39;Psi_300_700&#39;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels</span>
+
+<span class="sd">          &#39;Psi_500_Int&#39;: Zero crossing of the vertically-integrated Psi at the 500 hPa level</span>
+
+<span class="sd">          &#39;Psi_Int&#39;    : Zero crossing of the column-averaged Psi</span>
 <span class="sd">    </span>
-<span class="sd">  Lat_Uncertainty (optional): The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   </span>
+<span class="sd">        lat_uncertainty (optional): The minimal distance allowed between the first and second zero crossings. For example, for lat_uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   </span>
 <span class="sd">  </span>
-<span class="sd">  Returns:</span>
-<span class="sd">  PhiSH: latitude of Psi zero crossing in the SH</span>
-<span class="sd">  PhiNH: latitude of Psi zero crossing in the NH</span>
+<span class="sd">      Returns:</span>
+
+<span class="sd">        PhiSH: latitude of Psi zero crossing in the SH</span>
+
+<span class="sd">        PhiNH: latitude of Psi zero crossing in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
 
 
   <span class="k">try</span><span class="p">:</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">Lat_Uncertainty</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  
+    <span class="k">assert</span> <span class="p">(</span><span class="n">lat_uncertainty</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  
   <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;TropD_Metric_PSI: ERROR : Lat_Uncertainty must be &gt;= 0&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;TropD_Metric_PSI: ERROR : lat_uncertainty must be &gt;= 0&#39;</span><span class="p">)</span>
   
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span><span class="p">(</span><span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Psi_500&#39;</span><span class="p">,</span><span class="s1">&#39;Psi_500_10Perc&#39;</span><span class="p">,</span><span class="s1">&#39;Psi_300_700&#39;</span><span class="p">,</span><span class="s1">&#39;Psi_500_Int&#39;</span><span class="p">,</span><span class="s1">&#39;Psi_Int&#39;</span><span class="p">])</span>
@@ -393,7 +409,7 @@
 
   <span class="k">else</span><span class="p">:</span>
     <span class="n">PhiNH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">P</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmin</span><span class="p">)],</span>\
-            <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="n">Lat_Uncertainty</span><span class="p">)</span>
+            <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="n">lat_uncertainty</span><span class="o">=</span><span class="n">lat_uncertainty</span><span class="p">)</span>
   
   <span class="c1"># SH</span>
   <span class="n">Lmax</span> <span class="o">=</span> <span class="n">TropD_Calculate_MaxLat</span><span class="p">(</span><span class="o">-</span><span class="n">P</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">subpolar_boundary</span><span class="p">)],</span>\
@@ -408,24 +424,28 @@
             <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">))</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">PhiSH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">P</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">),</span>\
-            <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">Lat_Uncertainty</span><span class="o">=</span><span class="n">Lat_Uncertainty</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">Lmax</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">)],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">lat_uncertainty</span><span class="o">=</span><span class="n">lat_uncertainty</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span></div>
 
     
 <div class="viewcode-block" id="TropD_Metric_PSL"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_PSL">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_PSL</span><span class="p">(</span><span class="n">ps</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">):</span>
 
-  <span class="sd">&#39;&#39;&#39;TropD PSL metric</span>
-<span class="sd">  Latitude of maximum of the subtropical sea-level pressure</span>
+  <span class="sd">&#39;&#39;&#39; TropD PSL metric</span>
+<span class="sd">      Latitude of maximum of the subtropical sea-level pressure</span>
 <span class="sd">  </span>
-<span class="sd">  Args:</span>
-<span class="sd">  ps(lat,): sea-level pressure</span>
-<span class="sd">  lat: equally spaced latitude column vector</span>
+<span class="sd">      Args:</span>
+<span class="sd">  </span>
+<span class="sd">        ps(lat,): sea-level pressure</span>
+<span class="sd">      </span>
+<span class="sd">        lat: equally spaced latitude column vector</span>
 
-<span class="sd">  method (optional): &#39;max&#39; (default) | &#39;peak&#39;</span>
+<span class="sd">        method (optional): &#39;max&#39; (default) | &#39;peak&#39;</span>
 <span class="sd">  </span>
-<span class="sd">  Returns:</span>
-<span class="sd">  PhiSH: latitude of subtropical sea-level pressure maximum in the SH</span>
-<span class="sd">  PhiNH: latitude of subtropical sea-level pressure maximum in the NH</span>
+<span class="sd">      Returns:</span>
+
+<span class="sd">        PhiSH: latitude of subtropical sea-level pressure maximum in the SH</span>
+
+<span class="sd">        PhiNH: latitude of subtropical sea-level pressure maximum in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span><span class="p">(</span><span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">,</span><span class="s1">&#39;peak&#39;</span><span class="p">])</span>
@@ -454,26 +474,31 @@
 
 <div class="viewcode-block" id="TropD_Metric_STJ"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_STJ">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_STJ</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;adjusted&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 
-  <span class="sd">&#39;&#39;&#39;TropD Subtropical Jet (STJ) metric</span>
+  <span class="sd">&#39;&#39;&#39; TropD Subtropical Jet (STJ) metric</span>
 <span class="sd">  </span>
-<span class="sd">  Args:</span>
-<span class="sd">  U(lat,lev): zonal mean zonal wind</span>
-<span class="sd">  lat: latitude vector</span>
-<span class="sd">  lev: vertical level vector in hPa units</span>
+<span class="sd">      Args:</span>
 <span class="sd">  </span>
-<span class="sd">  method (optional): &#39;adjusted&#39; (default) | &#39;core&#39; | &#39;adjusted_peak&#39; | &#39;core_peak&#39;</span>
+<span class="sd">        U(lat,lev): zonal mean zonal wind</span>
 
-<span class="sd">  &#39;adjusted&#39; : Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</span>
-
-<span class="sd">  &#39;adjusted_peak&#39;: Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</span>
-
-<span class="sd">  &#39;core&#39;: Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</span>
+<span class="sd">        lat: latitude vector</span>
+<span class="sd">      </span>
+<span class="sd">        lev: vertical level vector in hPa units</span>
 <span class="sd">  </span>
-<span class="sd">  &#39;core_peak&#39;: Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</span>
+<span class="sd">        method (optional): </span>
+
+<span class="sd">          &#39;adjusted&#39; : Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</span>
+
+<span class="sd">          &#39;adjusted_peak&#39;: Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</span>
+
+<span class="sd">          &#39;core&#39;: Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</span>
 <span class="sd">  </span>
-<span class="sd">  Returns:</span>
-<span class="sd">  PhiSH: latitude of STJ in the SH</span>
-<span class="sd">  PhiNH: latitude of STJ in the NH</span>
+<span class="sd">          &#39;core_peak&#39;: Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</span>
+<span class="sd">  </span>
+<span class="sd">      Returns:</span>
+
+<span class="sd">        PhiSH: latitude of STJ in the SH</span>
+
+<span class="sd">        PhiNH: latitude of STJ in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
 
   <span class="k">try</span><span class="p">:</span>
@@ -570,27 +595,33 @@
 
 <div class="viewcode-block" id="TropD_Metric_TPB"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_TPB">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_TPB</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;max_gradient&#39;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">Cutoff</span><span class="o">=</span><span class="mi">15</span><span class="o">*</span><span class="mi">1000</span><span class="p">):</span>
 
-  <span class="sd">&#39;&#39;&#39;TropD Tropopause break (TPB) metric</span>
+  <span class="sd">&#39;&#39;&#39; TropD Tropopause break (TPB) metric</span>
 <span class="sd">  </span>
-<span class="sd">  Args:</span>
-<span class="sd">  T(lat,lev): temperature (K)</span>
-<span class="sd">  lat: latitude vector</span>
-<span class="sd">  lev: pressure levels column vector in hPa</span>
+<span class="sd">      Args:</span>
 
-<span class="sd">  method (optional): &#39;max_gradient&#39; (default) |  &#39;max_potemp&#39;  |  &#39;cutoff&#39; </span>
-<span class="sd">  </span>
-<span class="sd">  &#39;max_gradient&#39;: The latitude of maximal poleward gradient of the tropopause height</span>
-<span class="sd">  </span>
-<span class="sd">  &#39;cutoff&#39;: The most equatorward latitude where the tropopause crosses a prescribed cutoff value</span>
-<span class="sd">  </span>
-<span class="sd">  &#39;max_potemp&#39;: The latitude of maximal difference between the potential temperature at the tropopause and at the surface</span>
-<span class="sd">  </span>
-<span class="sd">  Z(lat,lev) (optional): geopotential height (m)</span>
-<span class="sd">  Cutoff (optional, scalar): geopotential height (m) cutoff that marks the location of the tropopause break</span>
+<span class="sd">        T(lat,lev): temperature (K)</span>
 
-<span class="sd">  Returns:</span>
-<span class="sd">  PhiSH: latitude of tropopause break in the SH</span>
-<span class="sd">  PhiNH: latitude of tropopause break in the NH</span>
+<span class="sd">        lat: latitude vector</span>
+
+<span class="sd">        lev: pressure levels column vector in hPa</span>
+
+<span class="sd">        method (optional): </span>
+<span class="sd">  </span>
+<span class="sd">          &#39;max_gradient&#39; (default): The latitude of maximal poleward gradient of the tropopause height</span>
+<span class="sd">  </span>
+<span class="sd">          &#39;cutoff&#39;: The most equatorward latitude where the tropopause crosses a prescribed cutoff value</span>
+<span class="sd">  </span>
+<span class="sd">          &#39;max_potemp&#39;: The latitude of maximal difference between the potential temperature at the tropopause and at the surface</span>
+<span class="sd">  </span>
+<span class="sd">        Z(lat,lev) (optional): geopotential height (m)</span>
+
+<span class="sd">        Cutoff (optional, scalar): geopotential height (m) cutoff that marks the location of the tropopause break</span>
+
+<span class="sd">      Returns:</span>
+
+<span class="sd">        PhiSH: latitude of tropopause break in the SH</span>
+
+<span class="sd">        PhiNH: latitude of tropopause break in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
 
 
@@ -665,29 +696,34 @@
   <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span></div>
   
 
-<div class="viewcode-block" id="TropD_Metric_UAS"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_UAS">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_UAS</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">,</span> <span class="n">Lat_Uncertainty</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="TropD_Metric_UAS"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_UAS">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_UAS</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">,</span> <span class="n">lat_uncertainty</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
   
-  <span class="sd">&#39;&#39;&#39;TropD near-surface zonal wind metric</span>
+  <span class="sd">&#39;&#39;&#39; TropD near-surface zonal wind metric</span>
 <span class="sd">  </span>
-<span class="sd">  Args:</span>
-<span class="sd">  U(lat,lev) or U (lat,)-- Zonal mean zonal wind. Also takes surface wind </span>
-<span class="sd">  lat: latitude vector</span>
-<span class="sd">  lev: vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)</span>
+<span class="sd">      Args:</span>
 
-<span class="sd">  method (optional): &#39;zero_crossing&#39; (default)</span>
-<span class="sd">  &#39;zero_crossing&#39;: the first subtropical latitude where near-surface zonal wind changes from negative to positive</span>
+<span class="sd">        U(lat,lev) or U (lat,)-- Zonal mean zonal wind. Also takes surface wind </span>
+<span class="sd">        </span>
+<span class="sd">        lat: latitude vector</span>
+<span class="sd">        </span>
+<span class="sd">        lev: vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)</span>
 
-<span class="sd">  Lat_Uncertainty (optional): the minimal distance allowed between the first and second zero crossings</span>
+<span class="sd">        method: </span>
+<span class="sd">          &#39;zero_crossing&#39;: the first subtropical latitude where near-surface zonal wind changes from negative to positive</span>
+
+<span class="sd">        lat_uncertainty (optional): the minimal distance allowed between the first and second zero crossings</span>
 <span class="sd">  </span>
-<span class="sd">  Returns:</span>
-<span class="sd">  PhiSH: latitude of first subtropical zero crossing in the SH</span>
-<span class="sd">  PhiNH: latitude of first subtropical zero crossing in the NH</span>
+<span class="sd">      Returns:</span>
+<span class="sd">        </span>
+<span class="sd">        PhiSH: latitude of first subtropical zero crossing in the SH</span>
+
+<span class="sd">        PhiNH: latitude of first subtropical zero crossing in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
 
   <span class="k">try</span><span class="p">:</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">Lat_Uncertainty</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  
+    <span class="k">assert</span> <span class="p">(</span><span class="n">lat_uncertainty</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  
   <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;TropD_Metric_PSI: ERROR : Lat_Uncertainty must be &gt;= 0&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;TropD_Metric_PSI: ERROR : lat_uncertainty must be &gt;= 0&#39;</span><span class="p">)</span>
     
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span><span class="p">(</span><span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;zero_crossing&#39;</span><span class="p">])</span>
@@ -718,10 +754,10 @@
   <span class="k">try</span><span class="p">:</span>
     <span class="k">assert</span><span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;zero_crossing&#39;</span><span class="p">)</span>
     <span class="n">PhiNH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">uas</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">uas_min_lat_NH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span>\
-            <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">uas_min_lat_NH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+            <span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="n">uas_min_lat_NH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">polar_boundary</span><span class="p">)],</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
     <span class="c1"># flip arrays to find the most equatorward zero crossing</span>
     <span class="n">PhiSH</span> <span class="o">=</span> <span class="n">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">uas</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">uas_min_lat_SH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span>\
-            <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">uas_min_lat_SH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">Lat_Uncertainty</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">lat</span><span class="p">[(</span><span class="n">lat</span> <span class="o">&lt;</span> <span class="n">uas_min_lat_SH</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">lat</span> <span class="o">&gt;</span> <span class="o">-</span><span class="n">polar_boundary</span><span class="p">)],</span><span class="mi">0</span><span class="p">),</span> <span class="n">lat_uncertainty</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PhiSH</span><span class="p">,</span> <span class="n">PhiNH</span>
   <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
