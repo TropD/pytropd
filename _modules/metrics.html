@@ -134,35 +134,40 @@
 <div class="viewcode-block" id="TropD_Metric_OLR"><a class="viewcode-back" href="../metrics.html#metrics.TropD_Metric_OLR">[docs]</a><span class="k">def</span> <span class="nf">TropD_Metric_OLR</span><span class="p">(</span><span class="n">olr</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;250W&#39;</span><span class="p">,</span> <span class="n">Cutoff</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">6</span><span class="p">)):</span>
   <span class="sd">&quot;&quot;&quot;Returns TropD Outgoing Longwave Radiation (OLR) metric</span>
 <span class="sd">     </span>
-<span class="sd">     Parameters</span>
-<span class="sd">     ----------</span>
-<span class="sd">     olr(lat,) :  zonal mean TOA olr (positive)</span>
-<span class="sd">     lat -- equally spaced latitude column vector</span>
+<span class="sd">     Positional arguments:</span>
+<span class="sd">     </span>
+<span class="sd">       olr(lat,) --  zonal mean TOA olr (positive)</span>
+<span class="sd">       </span>
+<span class="sd">       lat -- equally spaced latitude column vector</span>
 <span class="sd">        </span>
-<span class="sd">     method (optional) : &#39;250W&#39; (default) | &#39;cutoff&#39; | &#39;10Perc&#39; | &#39;20W&#39; | &#39;max&#39; | &#39;peak&#39;</span>
+<span class="sd">     Keyword arguments:</span>
+
+<span class="sd">       method (optional) -- &#39;250W&#39; (default) | &#39;cutoff&#39; | &#39;10Perc&#39; | &#39;20W&#39; | &#39;max&#39; | &#39;peak&#39;</span>
+<span class="sd">         </span>
+<span class="sd">         Description of methods: </span>
+
+<span class="sd">           &#39;250W&#39;(Default) -- the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</span>
+<span class="sd">           </span>
+<span class="sd">           &#39;20W&#39; -- the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</span>
+<span class="sd">           </span>
+<span class="sd">           &#39;cutoff&#39; -- the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</span>
+<span class="sd">           </span>
+<span class="sd">           &#39;10Perc&#39; -- the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</span>
+<span class="sd">           </span>
+<span class="sd">           &#39;max&#39; -- the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</span>
+<span class="sd">           </span>
+<span class="sd">           &#39;peak&#39; -- the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</span>
+<span class="sd">       </span>
+<span class="sd">       </span>
+<span class="sd">       Cutoff (optional) -- Scalar. For the method &#39;cutoff&#39;, Cutoff specifies the OLR cutoff value. </span>
+<span class="sd">       </span>
+<span class="sd">       n (optional) -- For the &#39;max&#39; method, n is the smoothing parameter in TropD_Calculate_MaxLat</span>
 <span class="sd">     </span>
-<span class="sd">     &#39;250W&#39;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</span>
+<span class="sd">     Returns:</span>
 <span class="sd">     </span>
-<span class="sd">     &#39;20W&#39;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</span>
+<span class="sd">       PhiSH -- latitude of near equator OLR threshold crossing in the SH</span>
 <span class="sd">     </span>
-<span class="sd">     &#39;cutoff&#39;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</span>
-<span class="sd">     </span>
-<span class="sd">     &#39;10Perc&#39;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</span>
-<span class="sd">     </span>
-<span class="sd">     &#39;max&#39;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</span>
-<span class="sd">     </span>
-<span class="sd">     &#39;peak&#39;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</span>
-<span class="sd">     </span>
-<span class="sd">     </span>
-<span class="sd">     Cutoff (optional) : Scalar. For the method &#39;cutoff&#39;, Cutoff specifies the OLR cutoff value. </span>
-<span class="sd">     </span>
-<span class="sd">     n (optional) : For the &#39;max&#39; method, n is the smoothing parameter in TropD_Calculate_MaxLat</span>
-<span class="sd">     </span>
-<span class="sd">     Returns</span>
-<span class="sd">     -------</span>
-<span class="sd">     </span>
-<span class="sd">     PhiSH : latitude of near equator OLR threshold crossing in the SH</span>
-<span class="sd">     PhiNH : latitude of near equator OLR threshold crossing in the NH</span>
+<span class="sd">       PhiNH -- latitude of near equator OLR threshold crossing in the NH</span>
 <span class="sd">  &quot;&quot;&quot;</span>
 
   <span class="k">try</span><span class="p">:</span>

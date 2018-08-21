@@ -2,6 +2,7 @@
 Calculating Metrics
 ====================
 
+.. autofunction::  TropD_Metrics_OLR
 
 .. automodule:: metrics
    :members:
