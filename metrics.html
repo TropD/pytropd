@@ -35,9 +35,6 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="reference.html" title="Reference"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">PyTropD 1.0.0 documentation</a> &raquo;</li> 
@@ -49,53 +46,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-TropD_Metric_OLR">
-<span id="calculating-metrics"></span><h1>Calculating Metrics<a class="headerlink" href="#module-TropD_Metric_OLR" title="Permalink to this headline">¶</a></h1>
-<p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
-<div class="section" id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
-<p>olr(lat,) :  zonal mean TOA olr (positive)
-lat &#8211; equally spaced latitude column vector</p>
-<p>method (optional) : &#8216;250W&#8217; (default) | &#8216;cutoff&#8217; | &#8216;10Perc&#8217; | &#8216;20W&#8217; | &#8216;max&#8217; | &#8216;peak&#8217;</p>
-<p>&#8216;250W&#8217;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
-<p>&#8216;20W&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
-<p>&#8216;cutoff&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
-<p>&#8216;10Perc&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
-<p>&#8216;max&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
-<p>&#8216;peak&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
-<p>Cutoff (optional) : Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</p>
-<p>n (optional) : For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</p>
-</div>
-<div class="section" id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this headline">¶</a></h2>
-<p>PhiSH : latitude of near equator OLR threshold crossing in the SH
-PhiNH : latitude of near equator OLR threshold crossing in the NH</p>
-</div>
-<span class="target" id="module-TropD_Metric_PSI"></span><p>TropD PSI metric 
-Latitude of the meridional mass streamfunction subtropical zero crossing
-Written by Ori Adam Mar.20.2017
-Edited by Alison Ming Jul.4.2017</p>
-<p>Positional arguments:
-V(lat,lev) &#8211; zonal-mean meridional wind
-lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units</p>
-<p>Keyword arguments:  
-method (optional) &#8211; &#8216;Psi_500&#8217; (default) |  &#8216;Psi_500_10Perc&#8217;  |  &#8216;Psi_300_700&#8217; |  &#8216;Psi_500_Int&#8217;  |  &#8216;Psi_Int&#8217;</p>
-<p>&#8216;Psi_500&#8217;{default}: Zero crossing of the stream function (Psi) at the 500hPa level
-&#8216;Psi_500_10Perc&#8217;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
-&#8216;Psi_300_700&#8217;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
-&#8216;Psi_500_Int&#8217;: Zero crossing of the vertically-integrated Psi at the 500 hPa level
-&#8216;Psi_Int&#8217;    : Zero crossing of the column-averaged Psi</p>
-<p>Lat_Uncertainty (optional) &#8211; The minimal distance allowed between the first and second zero crossings. For example, for Lat_Uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.</p>
-<p>Outputs:
-PhiSH &#8211; latitude of Psi zero crossing in the SH
-PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
-<dl class="function">
-<dt id="TropD_Metric_PSI.find_nearest">
-<code class="descclassname">TropD_Metric_PSI.</code><code class="descname">find_nearest</code><span class="sig-paren">(</span><em>array</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TropD_Metric_PSI.html#find_nearest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#TropD_Metric_PSI.find_nearest" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the index of the item in the array nearest to the value</p>
-</dd></dl>
-
+  <div class="section" id="calculating-metrics">
+<h1>Calculating Metrics<a class="headerlink" href="#calculating-metrics" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -104,15 +56,6 @@ PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Calculating Metrics</a><ul>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
-<li><a class="reference internal" href="#returns">Returns</a></li>
-</ul>
-</li>
-</ul>
-
   <h4>Previous topic</h4>
   <p class="topless"><a href="reference.html"
                         title="previous chapter">Reference</a></p>
@@ -146,9 +89,6 @@ PhiNH &#8211; latitude of Psi zero crossing in the NH</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="reference.html" title="Reference"
              >previous</a> |</li>
