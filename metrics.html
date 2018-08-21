@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Reference for metrics &mdash; PyTropD 1.0.0 documentation</title>
+    <title>Description of metrics &mdash; PyTropD 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,7 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyTropD 1.0.0 documentation" href="index.html" />
-    <link rel="prev" title="Reference" href="reference.html" />
+    <link rel="next" title="List of metrics" href="reference.html" />
+    <link rel="prev" title="Additional Functions" href="helper.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -38,259 +39,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-metrics">
-<span id="reference-for-metrics"></span><h1>Reference for metrics<a class="headerlink" href="#module-metrics" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="metrics.TropD_Metric_EDJ">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_EDJ</code><span class="sig-paren">(</span><em>U</em>, <em>lat</em>, <em>lev=array([1])</em>, <em>method='max'</em>, <em>n=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_EDJ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_EDJ" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD EDJ metric</p>
-<p>Latitude of the eddy driven jet (EDJ)</p>
-<p>Latitude of maximum of the zonal wind at the level closest to the 850 hPa level</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>U</strong> (<em>lat,lev</em>) &#8211; Zonal mean zonal wind. Also takes surface wind</li>
-<li><strong>lat</strong> &#8211; latitude vector</li>
-<li><strong>lev</strong> &#8211; vertical level vector in hPa units</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; &#8216;max&#8217; (default) |  &#8216;peak&#8217;</li>
-<li><strong>n</strong> (<em>optional, default = 6</em>) &#8211; rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of EDJ in the SH</p>
-<p>PhiNH: latitude of EDJ in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_OLR">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_OLR</code><span class="sig-paren">(</span><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_OLR" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD Outgoing Longwave Radiation (OLR) metric</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>olr</strong> (<em>lat,</em>) &#8211; zonal mean TOA olr (positive)</li>
-<li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
-<p>&#8216;20W&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
-<p>&#8216;cutoff&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
-<p>&#8216;10Perc&#8217;: the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
-<p>&#8216;max&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
-<p>&#8216;peak&#8217;: the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
-</li>
-<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</li>
-<li><strong>n</strong> (<em>optional</em>) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of near equator OLR threshold crossing in the SH</p>
-<p>PhiNH: latitude of near equator OLR threshold crossing in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_PE">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PE</code><span class="sig-paren">(</span><em>pe</em>, <em>lat</em>, <em>method='zero_crossing'</em>, <em>lat_uncertainty=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PE" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD Precipitation minus Evaporation (PE) metric</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pe</strong> (<em>lat,</em>) &#8211; zonal-mean precipitation minus evaporation</li>
-<li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
-<li><strong>method</strong> &#8211; &#8216;zero_crossing&#8217;: the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.</li>
-<li><strong>lat_uncertainty</strong> (<em>optional</em>) &#8211; The minimal distance allowed between the first and second zero crossings along lat</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of first subtropical P-E zero crossing in the SH</p>
-<p>PhiNH: latitude of first subtropical P-E zero crossing in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_PSI">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PSI</code><span class="sig-paren">(</span><em>V</em>, <em>lat</em>, <em>lev</em>, <em>method='Psi_500'</em>, <em>lat_uncertainty=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PSI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PSI" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD PSI metric
-Latitude of the meridional mass streamfunction subtropical zero crossing</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>V</strong> (<em>lat,lev</em>) &#8211; zonal-mean meridional wind</li>
-<li><strong>lat</strong> &#8211; latitude vector</li>
-<li><strong>lev</strong> &#8211; vertical level vector in hPa units</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;Psi_500&#8217;(default): Zero crossing of the stream function (Psi) at the 500hPa level</p>
-<p>&#8216;Psi_500_10Perc&#8217;: Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level</p>
-<p>&#8216;Psi_300_700&#8217;: Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels</p>
-<p>&#8216;Psi_500_Int&#8217;: Zero crossing of the vertically-integrated Psi at the 500 hPa level</p>
-<p>&#8216;Psi_Int&#8217;    : Zero crossing of the column-averaged Psi</p>
-</li>
-<li><strong>lat_uncertainty</strong> (<em>optional</em>) &#8211; The minimal distance allowed between the first and second zero crossings. For example, for lat_uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of Psi zero crossing in the SH</p>
-<p>PhiNH: latitude of Psi zero crossing in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_PSL">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_PSL</code><span class="sig-paren">(</span><em>ps</em>, <em>lat</em>, <em>method='max'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_PSL"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_PSL" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD PSL metric
-Latitude of maximum of the subtropical sea-level pressure</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ps</strong> (<em>lat,</em>) &#8211; sea-level pressure</li>
-<li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; &#8216;max&#8217; (default) | &#8216;peak&#8217;</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of subtropical sea-level pressure maximum in the SH</p>
-<p>PhiNH: latitude of subtropical sea-level pressure maximum in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_STJ">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_STJ</code><span class="sig-paren">(</span><em>U</em>, <em>lat</em>, <em>lev</em>, <em>method='adjusted'</em>, <em>n=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_STJ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_STJ" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD Subtropical Jet (STJ) metric</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>U</strong> (<em>lat,lev</em>) &#8211; zonal mean zonal wind</li>
-<li><strong>lat</strong> &#8211; latitude vector</li>
-<li><strong>lev</strong> &#8211; vertical level vector in hPa units</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;adjusted&#8217; : Latitude of maximum (smoothing parameter n=6) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</p>
-<p>&#8216;adjusted_peak&#8217;: Latitude of maximum (smoothing parameter n=30) of the zonal wind averaged between the 100 and 400 hPa levels minus the zonal mean zonal wind at the level closes to the 850 hPa level, poleward of 10 degrees and equatorward of the Eddy Driven Jet latitude</p>
-<p>&#8216;core&#8217;: Latitude of maximum of the zonal wind (smoothing parameter n=6) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</p>
-<p>&#8216;core_peak&#8217;: Latitude of maximum of the zonal wind (smoothing parameter n=30) averaged between the 100 and 400 hPa levels, poleward of 10 degrees and equatorward of 70 degrees</p>
-</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of STJ in the SH</p>
-<p>PhiNH: latitude of STJ in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_TPB">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_TPB</code><span class="sig-paren">(</span><em>T</em>, <em>lat</em>, <em>lev</em>, <em>method='max_gradient'</em>, <em>n=0</em>, <em>Z=None</em>, <em>Cutoff=15000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_TPB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_TPB" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD Tropopause break (TPB) metric</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>T</strong> (<em>lat,lev</em>) &#8211; temperature (K)</li>
-<li><strong>lat</strong> &#8211; latitude vector</li>
-<li><strong>lev</strong> &#8211; pressure levels column vector in hPa</li>
-<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;max_gradient&#8217; (default): The latitude of maximal poleward gradient of the tropopause height</p>
-<p>&#8216;cutoff&#8217;: The most equatorward latitude where the tropopause crosses a prescribed cutoff value</p>
-<p>&#8216;max_potemp&#8217;: The latitude of maximal difference between the potential temperature at the tropopause and at the surface</p>
-</li>
-<li><strong>Z</strong> (<em>lat,lev</em>) &#8211; geopotential height (m)</li>
-<li><strong>Cutoff</strong> (<em>optional, scalar</em>) &#8211; geopotential height (m) cutoff that marks the location of the tropopause break</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of tropopause break in the SH</p>
-<p>PhiNH: latitude of tropopause break in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="metrics.TropD_Metric_UAS">
-<code class="descclassname">metrics.</code><code class="descname">TropD_Metric_UAS</code><span class="sig-paren">(</span><em>U</em>, <em>lat</em>, <em>lev=array([1])</em>, <em>method='zero_crossing'</em>, <em>lat_uncertainty=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_UAS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_UAS" title="Permalink to this definition">¶</a></dt>
-<dd><p>TropD near-surface zonal wind metric</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>U</strong> (<em>lat,lev</em>) &#8211; </li>
-<li><strong>lat</strong> &#8211; latitude vector</li>
-<li><strong>lev</strong> &#8211; vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)</li>
-<li><strong>method</strong> &#8211; &#8216;zero_crossing&#8217;: the first subtropical latitude where near-surface zonal wind changes from negative to positive</li>
-<li><strong>lat_uncertainty</strong> (<em>optional</em>) &#8211; the minimal distance allowed between the first and second zero crossings</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>latitude of first subtropical zero crossing in the SH</p>
-<p>PhiNH: latitude of first subtropical zero crossing in the NH</p>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PhiSH</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+  <div class="section" id="description-of-metrics">
+<h1>Description of metrics<a class="headerlink" href="#description-of-metrics" title="Permalink to this headline">¶</a></h1>
 </div>
 
 
@@ -298,21 +48,29 @@ Latitude of maximum of the subtropical sea-level pressure</p>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="reference.html" title="previous chapter">Reference</a></li>
-  </ul></li>
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyTropD</a></h1>
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=tropd&repo=pytropd&type=watch&count=None&size=large"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="helper.html">Additional Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Description of metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">List of metrics</a></li>
 </ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/metrics.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">

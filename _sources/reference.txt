@@ -1,9 +1,8 @@
-============
-Reference
-============
-.. currentmodule:: metrics
+=================
+List of metrics
+=================
 
-:doc:`metrics`
+.. currentmodule:: metrics
 
 .. autosummary::
 
@@ -23,4 +22,10 @@ Reference
   
   TropD_Metric_UAS
 
+.. _Description-of-metrics
 
+Description of metrics
+======================
+
+.. automodule:: metrics
+   :members:
