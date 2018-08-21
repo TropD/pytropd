@@ -3,7 +3,7 @@ Calculating Metrics
 ====================
 
 
-.. automodule:: TropD_Metric_OLR
+.. automodule:: metrics
    :members:
 
 

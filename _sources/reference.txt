@@ -6,6 +6,6 @@ Reference
 
 .. autosummary::
 
-  TropD_Metric_OLR
+  metrics
 
 
