@@ -57,13 +57,21 @@
 <dd><p>TropD EDJ metric</p>
 <p>Latitude of the eddy driven jet (EDJ)</p>
 <p>Latitude of maximum of the zonal wind at the level closest to the 850 hPa level</p>
-<p>U(lat,lev) or U (lat,) &#8211; Zonal mean zonal wind. Also takes surface wind 
+<p>Positional arguments:</p>
+<blockquote>
+<div>U(lat,lev) or U (lat,) &#8211; Zonal mean zonal wind. Also takes surface wind 
 lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units</p>
-<p>method (optional) &#8211; &#8216;max&#8217; (default) |  &#8216;peak&#8217;</p>
+lev &#8211; vertical level vector in hPa units</div></blockquote>
+<p>Keyword arguments:</p>
+<blockquote>
+<div><p>method (optional) &#8211; &#8216;max&#8217; (default) |  &#8216;peak&#8217;</p>
 <p>n (optional, default = 6) &#8211; rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...</p>
-<p>PhiSH &#8211; latitude of EDJ in the SH</p>
+</div></blockquote>
+<p>Returns:</p>
+<blockquote>
+<div><p>PhiSH &#8211; latitude of EDJ in the SH</p>
 <p>PhiNH &#8211; latitude of EDJ in the NH</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="function">

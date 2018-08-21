@@ -62,24 +62,23 @@
 
 <span class="sd">     Latitude of maximum of the zonal wind at the level closest to the 850 hPa level</span>
 <span class="sd">     </span>
-<span class="sd">     Parameters:</span>
-<span class="sd">     -----------</span>
-
-<span class="sd">     U(lat,lev) or U (lat,) -- Zonal mean zonal wind. Also takes surface wind </span>
-<span class="sd">     lat -- latitude vector</span>
-<span class="sd">     lev -- vertical level vector in hPa units</span>
+<span class="sd">     Positional arguments:</span>
+<span class="sd">    </span>
+<span class="sd">       U(lat,lev) or U (lat,) -- Zonal mean zonal wind. Also takes surface wind </span>
+<span class="sd">       lat -- latitude vector</span>
+<span class="sd">       lev -- vertical level vector in hPa units</span>
 <span class="sd">   </span>
-<span class="sd">     method (optional) -- &#39;max&#39; (default) |  &#39;peak&#39;</span>
-<span class="sd">     </span>
-<span class="sd">     n (optional, default = 6) -- rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  </span>
+<span class="sd">     Keyword arguments:</span>
+
+<span class="sd">       method (optional) -- &#39;max&#39; (default) |  &#39;peak&#39;</span>
+<span class="sd">       </span>
+<span class="sd">       n (optional, default = 6) -- rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  </span>
 <span class="sd">   </span>
 <span class="sd">     Returns:</span>
-<span class="sd">     --------</span>
 
-<span class="sd">     PhiSH -- latitude of EDJ in the SH</span>
+<span class="sd">       PhiSH -- latitude of EDJ in the SH</span>
 
-<span class="sd">     PhiNH -- latitude of EDJ in the NH</span>
-
+<span class="sd">       PhiNH -- latitude of EDJ in the NH</span>
 <span class="sd">  &#39;&#39;&#39;</span>
 
   <span class="k">try</span><span class="p">:</span>
