@@ -54,14 +54,14 @@
 <dl class="function">
 <dt id="metrics.TropD_Metric_OLR">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_OLR</code><span class="sig-paren">(</span><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_OLR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
+<dd><p>TropD Outgoing Longwave Radiation (OLR) metric</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>olr</strong> (<em>lat,</em>) &#8211; </li>
-<li><strong>-- equally spaced latitude column vector</strong> (<em>lat</em>) &#8211; </li>
+<li><strong>olr</strong> (<em>lat,</em>) &#8211; zonal mean TOA olr (positive)</li>
+<li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
 <li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
@@ -114,14 +114,14 @@
 <dl class="function">
 <dt>
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_OLR</code><span class="sig-paren">(</span><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
+<dd><p>TropD Outgoing Longwave Radiation (OLR) metric</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>olr</strong> (<em>lat,</em>) &#8211; </li>
-<li><strong>-- equally spaced latitude column vector</strong> (<em>lat</em>) &#8211; </li>
+<li><strong>olr</strong> (<em>lat,</em>) &#8211; zonal mean TOA olr (positive)</li>
+<li><strong>lat</strong> &#8211; equally spaced latitude column vector</li>
 <li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
