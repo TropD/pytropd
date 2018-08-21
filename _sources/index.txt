@@ -46,7 +46,6 @@ The code was translated to Python by Alison Ming with help from Paul William Sta
   tutorial
   reference
   metrics
-  gallery
 
 
 

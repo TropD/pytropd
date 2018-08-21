@@ -1,6 +1,6 @@
 ============
 Reference
-==============
+============
 .. currentmodule:: metrics
 
 :doc:`metrics`
