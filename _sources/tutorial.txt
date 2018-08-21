@@ -6,7 +6,7 @@ Tutorial
 
 First import pytropd and some data.
 
-.. highlight:: python
+.. code-block:: python
 
   In [1]: import pytropd as pyt
 
@@ -18,7 +18,7 @@ First import pytropd and some data.
 
 V is a numpy array containing the mean meridional velocity on (lat, levs). We can calculate the metric of tropical width from the mass streamfunction (PSI) as follows:
 
-.. highlight:: python
+.. code-block:: python
   
   In [4]: Phi_sh, Phi_nh = pyt.TropD_Metric_PSI(V[j,:,:], lat, lev)
 

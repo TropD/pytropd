@@ -42,7 +42,19 @@
   <div class="section" id="tutorial">
 <h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
 <p>First import pytropd and some data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pytropd</span> <span class="kn">as</span> <span class="nn">pyt</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">pytropd.tutorial</span> <span class="kn">import</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">,</span> <span class="n">V</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="k">print</span> <span class="n">V</span>
+</pre></div>
+</div>
 <p>V is a numpy array containing the mean meridional velocity on (lat, levs). We can calculate the metric of tropical width from the mass streamfunction (PSI) as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span> <span class="o">=</span> <span class="n">pyt</span><span class="o">.</span><span class="n">TropD_Metric_PSI</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">j</span><span class="p">,:,:],</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="k">print</span><span class="p">(</span><span class="n">Phi_sh</span><span class="p">,</span> <span class="n">Phi_nh</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>More detailed code examples can be found in the file <code class="docutils literal"><span class="pre">TropD_Example_Calculations.py</span></code>.</p>
 </div>
 
