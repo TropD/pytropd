@@ -42,7 +42,7 @@ for j in range(np.shape(V)[0]):
 
 
 # Calculate metric from annual mean
-V_ANN = TropD_Calculate_Mon2Season(V,np.arange(12))
+V_ANN = TropD_Calculate_Mon2Season(V,season=np.arange(12))
 
 Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],)) # latitude of NH stream function zero crossing from annual mean V
 Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],)) # latitude of SH stream function zero crossing from annual mean V
@@ -57,7 +57,7 @@ plt.plot(time, Phi_psi_nh, linewidth=1, color=green_color, \
         label=r'Latitude of $\Psi_{500}$ zero crossing from monthly mean V')
 plt.plot(np.arange(y1,y2+1)+0.5, Phi_psi_nh_ANN, linewidth=2, color=blue_color,\
         label=r'Latitude of $\Psi_{500}$ zero crossing from annual mean V')
-plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_nh, np.arange(12)),linewidth=2, color='k',\
+plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_nh, season=np.arange(12)),linewidth=2, color='k',\
         label=r'Latitude of $\Psi_{500}$ zero crossing from annual means of monthly metric values')
 plt.xticks(np.arange(1980,2020,5))
 plt.ylabel('latitude')
@@ -66,7 +66,7 @@ plt.legend(loc='best', frameon=False)
 plt.subplot(212)
 plt.plot(time, Phi_psi_sh, linewidth=1, color=green_color)
 plt.plot(np.arange(y1,y2+1)+0.5, Phi_psi_sh_ANN, linewidth=2, color=blue_color)
-plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_sh, np.arange(12)),linewidth=2, color='k')
+plt.plot(np.arange(y1,y2+1)+0.5, TropD_Calculate_Mon2Season(Phi_psi_sh, season=np.arange(12)),linewidth=2, color='k')
 plt.xticks(np.arange(1980,2020,5))
 plt.ylabel('latitude')
 plt.title(r"SH $\Psi_{500}$")
@@ -77,7 +77,7 @@ Phi_psi_nh_L = np.zeros((np.shape(V)[0],)) # latitude of monthly NH Psi zero cro
 Phi_psi_sh_L = np.zeros((np.shape(V)[0],)) # latitude of monthly SH Psi zero crossing
 
 for j in range(np.shape(V)[0]):
-  Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, method='Psi_500', Lat_Uncertainty=10)
+  Phi_psi_sh_L[j], Phi_psi_nh_L[j] = TropD_Metric_PSI(V[j,:,:], lat, lev, method='Psi_500', lat_uncertainty=10)
 
 plt.figure(2)
 plt.plot(time,Phi_psi_nh,linewidth=2,color=green_color,\
@@ -117,8 +117,8 @@ for j in range(np.shape(T)[0]):
   Phi_tpb_sh[j], Phi_tpb_nh[j] = TropD_Metric_TPB(T[j,:,:], lat, lev)
 
 # Calculate tropopause break from annual mean
-T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
-Z_ANN = TropD_Calculate_Mon2Season(Z, np.arange(12))
+T_ANN = TropD_Calculate_Mon2Season(T, season=np.arange(12))
+Z_ANN = TropD_Calculate_Mon2Season(Z, season=np.arange(12))
 
 Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))  # latitude of NH tropopause break from annual mean T
 Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))  # latitude of SH tropopause break from annual mean T
@@ -146,7 +146,7 @@ plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbZ_nh_ANN,linestyle='--',linewidth=1,col
     label='Latitude of tropopause break from annual mean T -- 15km cutoff height')
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbT_nh_ANN,linestyle='--',linewidth=1,color=red_color,\
     label='Latitude of tropopause break from annual mean T -- potential temperature difference')
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh, np.arange(12)),color='k',linewidth=2,\
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_nh, season=np.arange(12)),color='k',linewidth=2,\
     label='Latitude of tropopause break from annual mean of monthly metric values -- potential temperature difference')
 plt.title(r'NH tropopause break')
 plt.ylabel('latitude')
@@ -156,7 +156,7 @@ plt.plot(time,Phi_tpb_sh,linewidth=1,color=green_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpb_sh_ANN,linewidth=2,color=blue_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbZ_sh_ANN,linestyle='--',linewidth=1,color=blue_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_tpbT_sh_ANN,linestyle='--',linewidth=1,color=red_color)
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh, np.arange(12)),color='k',linewidth=2)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_tpb_sh, season=np.arange(12)),color='k',linewidth=2)
 plt.xlabel('Year')
 plt.title(r'SH tropopause break')
 plt.ylabel('latitude')
@@ -179,8 +179,8 @@ olr = np.transpose(olr, (1,0))
 olrcs = np.transpose(olrcs, (1,0))
 
 #Calculate annual mean field
-olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
-olrcs_ANN = TropD_Calculate_Mon2Season(olrcs, np.arange(12))
+olr_ANN = TropD_Calculate_Mon2Season(olr, season=np.arange(12))
+olrcs_ANN = TropD_Calculate_Mon2Season(olrcs, season=np.arange(12))
 
 Phi_olr_nh = np.zeros((np.shape(olr)[0],))            # latitude of NH olr metric                                    
 Phi_olr_sh = np.zeros((np.shape(olr)[0],))            # latitude of SH olr metric
@@ -264,7 +264,7 @@ f_U.close()
 U = np.transpose(U, (2,1,0))
 
 # Calculate STJ latitude from annual mean
-U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
 Phi_stj_nh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))  # latitude of NH STJ from annual mean U
 Phi_stj_sh_ANN_adj = np.zeros((np.shape(U_ANN)[0],))  # latitude of SH STJ from annual mean U
@@ -311,7 +311,7 @@ for j in range(np.shape(U)[0]):
   Phi_edj_sh[j], Phi_edj_nh[j] = TropD_Metric_EDJ(U[j,:,:,] ,lat, lev, method='max')
 
 # Calculate EDJ latitude from annual mean
-U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
 Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of NH EDJ from annual mean U  
 Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],)) # latitude of SH EDJ from annual mean U
@@ -325,14 +325,14 @@ plt.plot(time,Phi_edj_nh,linewidth=1,color=green_color,\
     label='Latitude of EDJ from monthly mean U')
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_edj_nh_ANN,linewidth=2,color=blue_color,\
     label='Latitude of EDJ from annual mean U')
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh, np.arange(12)),color='k',linewidth=2,\
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_nh, season=np.arange(12)),color='k',linewidth=2,\
     label='Latitude of EDJ from annual mean of monthly metric values')
 plt.ylabel('NH EDJ latitude')
 plt.legend(loc='best', frameon=False)
 plt.subplot(212)
 plt.plot(time,Phi_edj_sh,linewidth=1,color=green_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_edj_sh_ANN,linewidth=2,color=blue_color)
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh, np.arange(12)),color='k',linewidth=2)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_edj_sh, season=np.arange(12)),color='k',linewidth=2)
 plt.xlabel('Year')
 plt.ylabel('SH EDJ latitude')
 plt.show()
@@ -358,7 +358,7 @@ f_er.close()
 #Change axes of pr and er to be [time, lat]
 PE = np.transpose(PE, (1,0))
 
-PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
+PE_ANN = TropD_Calculate_Mon2Season(PE, season=np.arange(12))
 
 Phi_pe_nh = np.zeros((np.shape(PE)[0],))         # latitude of NH PminusE metric
 Phi_pe_sh = np.zeros((np.shape(PE)[0],))         # latitude of SH PminusE metri
@@ -379,14 +379,14 @@ plt.plot(time,Phi_pe_nh,linewidth=2,color=green_color,\
     label='Latitude of P minus E zero-crossing')
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_pe_nh_ANN,linewidth=2,color=blue_color,\
     label='Latitude of P minus E zero-crossing from annual mean field')
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh, np.arange(12)),color='k',linewidth=2,\
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_nh, season=np.arange(12)),color='k',linewidth=2,\
     label='Latitude of P minus E zero-crossing from annual mean of monthly metric')
 plt.ylabel('NH P - E zero-crossing')
 plt.legend(loc='best', frameon=False)
 plt.subplot(212)
 plt.plot(time,Phi_pe_sh,linewidth=2,color=green_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_pe_sh_ANN,linewidth=2,color=blue_color)
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh, np.arange(12)),color='k',linewidth=2)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_pe_sh, season=np.arange(12)),color='k',linewidth=2)
 plt.xlabel('Year')
 plt.ylabel('SH P - E zero-crossing')
 plt.show()
@@ -408,8 +408,8 @@ f_U.close()
 U = np.transpose(U, (2,1,0))
 uas = np.transpose(uas, (1,0))
 
-uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
-U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+uas_ANN = TropD_Calculate_Mon2Season(uas, season=np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
 Phi_uas_nh = np.zeros((np.shape(uas)[0],))         # latitude of NH surface zonal wind metric                        
 Phi_uas_sh = np.zeros((np.shape(uas)[0],))         # latitude of SH surface zonal wind metric
@@ -435,7 +435,7 @@ plt.plot(np.arange(y1,y2+1) + 0.5,Phi_uas_nh_ANN,linewidth=2,color=blue_color,\
     label='Latitude of surface zonal wind zero crossing from annual mean field')
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_Uas_nh_ANN,linewidth=2,color=red_color,\
     label='Latitude of 850 hPa zonal wind zero crossing from annual mean field')
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh, np.arange(12)),color='k',linewidth=2,\
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_nh, season=np.arange(12)),color='k',linewidth=2,\
     label='Latitude of surface zonal wind zero crossing from annual mean of monthly metric')
 plt.ylabel('NH uas zero-crossing')
 plt.legend(loc='best', frameon=False)
@@ -443,7 +443,7 @@ plt.subplot(212)
 plt.plot(time,Phi_uas_sh,linewidth=2,color=green_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_uas_sh_ANN,linewidth=2,color=blue_color)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_Uas_sh_ANN,linewidth=2,color=red_color)
-plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh, np.arange(12)),color='k',linewidth=2)
+plt.plot(np.arange(y1,y2+1) + 0.5,TropD_Calculate_Mon2Season(Phi_uas_sh, season=np.arange(12)),color='k',linewidth=2)
 plt.xlabel('Year')
 plt.ylabel('SH uas zero-crossing')
 plt.show()
@@ -459,8 +459,8 @@ f_ps.close()
 #Change axes of ps to be [time, lat]
 ps = np.transpose(ps, (1,0))
 
-ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11])) # calculate DJF means
-ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))  # calculate JJA means
+ps_DJF = TropD_Calculate_Mon2Season(ps, season=np.array([0,1,11])) # calculate DJF means
+ps_JJA = TropD_Calculate_Mon2Season(ps, season=np.array([5,6,7]))  # calculate JJA means
 
 Phi_ps_DJF_nh = np.zeros((np.shape(ps_DJF)[0],)) # latitude of monthly NH max surface pressure
 Phi_ps_JJA_nh = np.zeros((np.shape(ps_JJA)[0],)) # latitude of monthly NH max surface pressure
@@ -500,7 +500,7 @@ f_V.close()
 #Change axes of V to be [time, lat]
 V = np.transpose(V, (2,1,0))
 
-V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
+V_ANN = TropD_Calculate_Mon2Season(V, season=np.arange(12))
 
 Phi_psi_nh_ANN = np.zeros((np.shape(V_ANN)[0],))
 Phi_psi_sh_ANN = np.zeros((np.shape(V_ANN)[0],))
@@ -517,7 +517,7 @@ f_T.close()
 #Change axes of T to be [time, lat]
 T = np.transpose(T, (2,1,0))
 
-T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
+T_ANN = TropD_Calculate_Mon2Season(T, season=np.arange(12))
 
 Phi_tpb_nh_ANN = np.zeros((np.shape(T_ANN)[0],))
 Phi_tpb_sh_ANN = np.zeros((np.shape(T_ANN)[0],))
@@ -534,7 +534,7 @@ f_ps.close()
 #Change axes of ps to be [time, lat]
 ps = np.transpose(ps, (1,0))
 
-ps_ANN = TropD_Calculate_Mon2Season(ps, np.arange(12))
+ps_ANN = TropD_Calculate_Mon2Season(ps, season=np.arange(12))
 
 Phi_ps_nh_ANN = np.zeros((np.shape(ps_ANN)[0],))
 Phi_ps_sh_ANN = np.zeros((np.shape(ps_ANN)[0],))
@@ -551,7 +551,7 @@ f_U.close()
 #Change axes of U to be [time, lat]
 U = np.transpose(U, (2,1,0))
 
-U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
 Phi_edj_nh_ANN = np.zeros((np.shape(U_ANN)[0],))
 Phi_edj_sh_ANN = np.zeros((np.shape(U_ANN)[0],))
@@ -575,7 +575,7 @@ f_olr.close()
 #Change axes of olr to be [time, lat]
 olr = np.transpose(olr, (1,0))
 
-olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
+olr_ANN = TropD_Calculate_Mon2Season(olr, season=np.arange(12))
 
 Phi_olr_nh_ANN = np.zeros((np.shape(olr_ANN)[0],))
 Phi_olr_sh_ANN = np.zeros((np.shape(olr_ANN)[0],))
@@ -602,7 +602,7 @@ pr = np.transpose(pr, (1,0))
 er = np.transpose(er, (1,0))
 
 PE = pr - er
-PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
+PE_ANN = TropD_Calculate_Mon2Season(PE, season=np.arange(12))
 
 Phi_pe_nh_ANN = np.zeros((np.shape(PE_ANN)[0],))
 
@@ -620,7 +620,7 @@ f_uas.close()
 #Change axes of uas to be [time, lat]
 uas = np.transpose(uas, (1,0))
 
-uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
+uas_ANN = TropD_Calculate_Mon2Season(uas, season=np.arange(12))
 
 Phi_uas_nh_ANN = np.zeros((np.shape(uas_ANN)[0],))
 
@@ -687,7 +687,7 @@ f_V.close()
 #Change axes of V to be [time, lat]
 V = np.transpose(V, (2,1,0))
 
-V_ANN = TropD_Calculate_Mon2Season(V, np.arange(12))
+V_ANN = TropD_Calculate_Mon2Season(V, season=np.arange(12))
 
 Phi_psi_nh = np.zeros((np.shape(V)[0],))
 Phi_psi_sh = np.zeros((np.shape(V)[0],))
@@ -732,7 +732,7 @@ f_T.close()
 #Change axes of T to be [time, lat, lev]
 T = np.transpose(T, (2,1,0))
 
-T_ANN = TropD_Calculate_Mon2Season(T, np.arange(12))
+T_ANN = TropD_Calculate_Mon2Season(T, season=np.arange(12))
 
 Phi_tpb_nh = np.zeros((np.shape(T)[0],))
 Phi_tpb_sh = np.zeros((np.shape(T)[0],))
@@ -775,10 +775,10 @@ f_ps.close()
 #Change axes of ps to be [time, lat]
 ps = np.transpose(ps, (1,0))
 
-ps_DJF = TropD_Calculate_Mon2Season(ps, np.array([0,1,11]))
-ps_MAM = TropD_Calculate_Mon2Season(ps, np.array([2,3,4]))
-ps_JJA = TropD_Calculate_Mon2Season(ps, np.array([5,6,7]))
-ps_SON = TropD_Calculate_Mon2Season(ps, np.array([8,9,10]))
+ps_DJF = TropD_Calculate_Mon2Season(ps, season=np.array([0,1,11]))
+ps_MAM = TropD_Calculate_Mon2Season(ps, season=np.array([2,3,4]))
+ps_JJA = TropD_Calculate_Mon2Season(ps, season=np.array([5,6,7]))
+ps_SON = TropD_Calculate_Mon2Season(ps, season=np.array([8,9,10]))
 
 Phi_ps_sh_DJF = np.zeros((np.shape(ps_DJF)[0],))
 Phi_ps_sh_JJA = np.zeros((np.shape(ps_JJA)[0],))
@@ -850,7 +850,7 @@ f_U.close()
 #Change axes of U to be [time, lat]
 U = np.transpose(U, (2,1,0))
 
-U_ANN = TropD_Calculate_Mon2Season(U, np.arange(12))
+U_ANN = TropD_Calculate_Mon2Season(U, season=np.arange(12))
 
 Phi_edj_nh=np.zeros((np.shape(U)[0],))
 Phi_edj_sh=np.zeros((np.shape(U)[0],))
@@ -925,7 +925,7 @@ f_olr.close()
 #Change axes of olr to be [time, lat]
 olr = np.transpose(olr, (1,0))
 
-olr_ANN = TropD_Calculate_Mon2Season(olr, np.arange(12))
+olr_ANN = TropD_Calculate_Mon2Season(olr, season=np.arange(12))
 
 Phi_olr_nh = np.zeros((np.shape(olr)[0],))
 Phi_olr_sh = np.zeros((np.shape(olr)[0],))
@@ -977,7 +977,7 @@ pr = np.transpose(pr, (1,0))
 er = np.transpose(er, (1,0))
 
 PE = pr - er
-PE_ANN = TropD_Calculate_Mon2Season(PE, np.arange(12))
+PE_ANN = TropD_Calculate_Mon2Season(PE, season=np.arange(12))
 
 Phi_pe_nh=np.zeros((np.shape(PE)[0],))
 Phi_pe_sh=np.zeros((np.shape(PE)[0],))
@@ -1020,7 +1020,7 @@ f_uas.close()
 #Change axes of uas to be [time, lat]
 uas = np.transpose(uas, (1,0))
 
-uas_ANN = TropD_Calculate_Mon2Season(uas, np.arange(12))
+uas_ANN = TropD_Calculate_Mon2Season(uas, season=np.arange(12))
 
 Phi_uas_nh=np.zeros((np.shape(uas)[0],))
 Phi_uas_sh=np.zeros((np.shape(uas)[0],))

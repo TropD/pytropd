@@ -2,17 +2,19 @@
    sphinx-quickstart on Sun Aug 19 18:23:07 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-
+===================================
 Welcome to PyTropD's documentation!
 ===================================
 
-PyTropD is a python package intended to calculate different metrics of tropical width as described in [link to paper]. This package is the python equivalent to the original MATLAB |registered| version
+PyTropD is a python package intended to calculate different metrics of tropical width as described in `Adam et al. (2018)`__. This package is the python equivalent to the original MATLAB |registered| version
 
 .. |registered| unicode:: U+00AE .. registered trademark sign
 
+__ https://www.geosci-model-dev-discuss.net/gmd-2018-124/
+
 A quick overview can be found in the :doc:`tutorial`.
 
-This documentation will describe version 1.0, it is still a work in progress.
+This documentation will describe version 1.0. It is still a work in progress.
 
 
 Download and Install
@@ -40,13 +42,10 @@ The code was translated to Python by Alison Ming with help from Paul William Sta
 
 
 .. toctree::
-  :hidden:
+    :hidden:
+    :glob:
 
-  install
-  tutorial
-  reference
-  metrics
-  gallery
+    *
 
 
 

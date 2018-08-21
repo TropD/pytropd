@@ -1,46 +1,61 @@
+# Written by Ori Adam Mar.21.2017
+# Edited by Alison Ming Jul.4.2017
+
 from __future__ import division
 import numpy as np
 import scipy as sp
 from scipy import integrate
 from functions import *
-from metrics import *
 
 def find_nearest(array, value):
-  ''' Find the index of the item in the array nearest to the value 
+  ''' Find the index of the item in the array nearest to the value
+      
+      Args:
+        
+        array: array
+
+        value: value be found
+
+      Returns:
+          
+        int: index of value in array
+
   '''
   array = np.asarray(array)
   idx = (np.abs(array - value)).argmin()
   return idx
 
+#Converted to python by Paul Staten Jul.29.2017
 def TropD_Calculate_MaxLat(F,lat,n=int(6)):
   ''' Find latitude of absolute maximum value for a given interval
 
-  Converted to python by Paul Staten Jul.29.2017
+      Args:
 
-  Positional arguments:
-  F -- vector
-  lat -- ordinate vector, the same length as F
+        F: 1D array
 
-  Keyword arguments:
-  n (optional, default = 6) -- rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
+        lat: ordinate array, the same length as F
 
-  Output:
-  Ymax -- location of max value of F along lat'''
+        n (int): rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
+
+      Returns:
+  
+        float: location of max value of F along lat
+  '''
 
   try:
     assert(isinstance(n, int)) 
   except AssertionError:
-    print 'TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be an integer'
+    print('TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be an integer')
   
   try:
     assert(n>=1) 
   except AssertionError:
-    print 'TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be >= 1'
+    print('TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be >= 1')
 
   try: 
     assert(np.isfinite(F).all())
   except AssertionError:
-    print 'TropD_Calculate_MaxLat: ERROR: input field F has NaN values'
+    print('TropD_Calculate_MaxLat: ERROR: input field F has NaN values')
 
 
   F = F - np.min(F)
@@ -50,59 +65,56 @@ def TropD_Calculate_MaxLat(F,lat,n=int(6)):
 
   return Ymax
 
-def TropD_Calculate_Mon2Season(Fm, Season=np.arange(12), m=0):
+def TropD_Calculate_Mon2season(Fm, season=np.arange(12), m=0):
   ''' Calculate seasonal means from monthly time series
-  Converted to python by Alison Ming Jul.4.2017
 
-  Syntax:
-  >> F = TropD_Calculate_Mon2Season(Fm,Season,m)
+      Args:
+  
+        Fm: array of dimensions (time, latitude, level) or (time, level) or (time, latitude) 
 
-  Positional arguments:
-  Fm -- array of dimensions (time, latitude, level) or (time, level) or (time, latitude) 
-  Season -- vector of months e.g., [0,1,11] for DJF
-  m -- index of first of January
+        season: array of months e.g., [-1,0,1] for DJF
 
-  Keyword arguments:
-  m (optional, default = 1) -- index of first of January 
-  Season (optional, default = np.arange(12)) -- vector of months e.g., [-1,0,1] for DJF
+        m (int): index of first of January
 
-  Output:
-  F = the annual time series of the seasonal means'''
+      Returns:
+
+        ndarray: the annual time series of the seasonal means
+  '''
 
     
   try:
-    assert(np.max(Season)<12 and np.min(Season)>=0)
+    assert(np.max(season)<12 and np.min(season)>=0)
   except AssertionError:
-        print 'Season can only include indices from 1 to 12'
+    print('season can only include indices from 1 to 12')
   
   End_Index = np.shape(Fm)[0]-m+1 - np.mod(np.shape(Fm)[0]-m+1,12)  
   Fm = Fm[m:End_Index,...]
-  F = Fm[m + Season[0]::12,...]
-  if len(Season) > 1:
-    for s in Season[1:]:
+  F = Fm[m + season[0]::12,...]
+  if len(season) > 1:
+    for s in season[1:]:
       F = F + Fm[m + s::12,...]
-    F = F/len(Season)  
+    F = F/len(season)  
 
   return F
 
 
     
 
-def TropD_Calculate_StreamFunction(V, lat, lev, *args,**kwargs):
+def TropD_Calculate_StreamFunction(V, lat, lev):
   ''' TropD calculate the streamfunction by integrating the meridional wind from top of the atmosphere to the surface
 
-  Converted to python by Alison Ming Jul.4.2017
+      Args:
 
-  Syntax:
-  >> psi = TropD_Calculate_StreamFunction(V,lat,lev)
+        V: zonal-mean meridional wind with dimensions (lat, lev)
+      
+        lat: equally spaced latitude array
 
-  Positional arguments:
-  V -- zonal-mean meridional wind with dimensions (lat, lev)
-  lat -- equally spaced latitude vector
-  lev -- vertical level vector in hPa
+        lev: vertical level array in hPa
 
-  Output:
-  psi -- the streamfunction psi(lat,lev) '''
+      Returns:
+  
+        ndarray: the streamfunction psi(lat,lev) 
+  '''
 
     
   EarthRadius = 6371220.0
@@ -122,22 +134,24 @@ def TropD_Calculate_StreamFunction(V, lat, lev, *args,**kwargs):
 def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
   ''' Calculate the Tropopause Height in isobaric coordinates 
 
-  Converted to python by Alison Ming Jul.4.2017
+      Based on the method described in Birner (2010), according to the WMO definition: first level at which the lapse rate <= 2K/km and for which the lapse rate <= 2K/km in all levels at least 2km above the found level 
 
-  Based on the method described in Birner (2010), according to the WMO definition: first level at 
-  which the lapse rate <= 2K/km and for which the lapse rate <= 2K/km in all levels at least 2km 
-  above the found level 
+      Args:
 
-  Positional arguments:
-  T -- Temperature array of dimensions (latitude, levels) on (longitude, latitude, levels)
-  P -- pressure levels in hPa
+        T: Temperature array of dimensions (latitude, levels) on (longitude, latitude, levels)
 
-  Keyword arguments:
-  Z (optional) -- geopotential height [m] or any field with the same dimensions as T
+        P: pressure levels in hPa
 
-  Output:
-  Pt(lat) or Pt(lon,lat) = tropopause level in hPa 
-  Ht(lat) or Ht(lon,lat) = the field Z evaluated at the tropopause. For Z=geopotential heigt, Ht is the tropopause altitude in m '''
+        Z (optional): geopotential height [m] or any field with the same dimensions as T
+
+      Returns:
+
+        ndarray or tuple: 
+
+          If Z = None, returns Pt(lat) or Pt(lon,lat), the tropopause level in hPa 
+
+          If Z is given, returns Pt and Ht with shape (lat) or (lon,lat). The field Z evaluated at the tropopause. For Z=geopotential height, Ht is the tropopause altitude in m 
+  '''
 
 
   Rd = 287.04
@@ -204,39 +218,29 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
     Ht = np.reshape(Ht, (np.shape(T)[0], np.shape(T)[1]))
     Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
     return Pt, Ht
-        #disp('TropD_Calculate_TropopauseHeight: ERROR :  T and Z must have the same dimensions')
   
   else:
     
     Pt = np.reshape(Pt, (np.shape(T)[0], np.shape(T)[1]))
     return Pt
-from types import *
     
-def TropD_Calculate_ZeroCrossing(F, lat, Lat_Uncertainty=0.0,*args,**kwargs):
+#Converted to python by Paul Staten Jul.29.2017
+def TropD_Calculate_ZeroCrossing(F, lat, lat_uncertainty=0.0,*args,**kwargs):
 
-  '''Find latitude of zero crossing
+  ''' Find the first (with increasing index) zero crossing of the function F
 
-  Converted to python by Paul Staten Jul.29.2017
-  Find the first (with increasing index) zero crossing of the function F
-  in the interval lat_int
+      Args:
+  
+        F: array
 
-  Syntax:
-  >>ZC = Calculate_ZeroCrossing(F,lat,Lat_Uncertainty=Lat_Uncertainty)
+        lat: latitude array (same length as F)
 
-  Positional arguments:
-  F -- vector
-  lat -- latitude vector (same length as F)
+        lat_uncertainty (float, optional): The minimal distance allowed between adjacent zero crossings of indetical sign change for example, for lat_uncertainty = 10, if the most equatorward zero crossing is from positive to negative, the function will return a NaN value if an additional zero crossings from positive to negative is found within 10 degrees of that zero crossing.
 
-  Keyword arguments:
-  Lat_Uncertainty (optional) -- [Degrees latitude, default = 0] the minimal
-    distance allowed between adjacent zero crossings of indetical sign change
-    for example, for Lat_Uncertainty = 10, if the most equatorward zero crossing
-    is from positive to negative, the function will return a Nan value if an
-    additional zero crossings from positive to netagive is found within 10 degrees
-    of that zero crossing.
+      Returns:
 
-  Output:
-  ZC -- latitude of zero crossing by linear interpolation'''
+        float: latitude of zero crossing by linear interpolation
+  '''
   # Make sure a zero crossing exists
   a = np.where(F > 0)[0]
   if len(a) == len(F) or not any(a):
@@ -247,7 +251,7 @@ def TropD_Calculate_ZeroCrossing(F, lat, Lat_Uncertainty=0.0,*args,**kwargs):
 
   # If more than one zero crossing exists in proximity to the first zero crossing.
   a = np.where(np.abs(D)>0)[0]
-  if len(a)>2 and np.abs(lat[a[2]] - lat[a[0]]) < Lat_Uncertainty:
+  if len(a)>2 and np.abs(lat[a[2]] - lat[a[0]]) < lat_uncertainty:
     return np.nan
 
   a1 = np.argmax(np.abs(D) > 0)
