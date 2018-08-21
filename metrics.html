@@ -62,27 +62,19 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>olr</strong> (<em>lat,</em>) &#8211; </li>
 <li><strong>-- equally spaced latitude column vector</strong> (<em>lat</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first">
-<li><p class="first"><strong>method</strong> (<em>optional</em>) &#8211;</p>
-<p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
 <p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
 <p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
 <p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
 </li>
-<li><p class="first"><strong>Cutoff</strong> (<em>optional</em>)</p>
-</li>
-<li><p class="first"><strong>n</strong> (<em>optional</em>)</p>
-</li>
+<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
 <p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
 </p>
 </td>
@@ -97,19 +89,16 @@
 <dd><p>TropD EDJ metric</p>
 <p>Latitude of the eddy driven jet (EDJ)</p>
 <p>Latitude of maximum of the zonal wind at the level closest to the 850 hPa level</p>
-<p>Positional arguments:</p>
-<blockquote>
-<div>U(lat,lev) or U (lat,) &#8211; Zonal mean zonal wind. Also takes surface wind
-lat &#8211; latitude vector
-lev &#8211; vertical level vector in hPa units</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>method</strong> (<em>optional</em>)</li>
-<li><strong>n</strong> (<em>optional, default = 6</em>)</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>U</strong> (<em>lat,lev</em>) &#8211; </li>
+<li><strong>-- latitude vector</strong> (<em>lat</em>) &#8211; </li>
+<li><strong>-- vertical level vector in hPa units</strong> (<em>lev</em>) &#8211; </li>
+<li><strong>method</strong> (<em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>optional, default = 6</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -133,27 +122,19 @@ lev &#8211; vertical level vector in hPa units</div></blockquote>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>olr</strong> (<em>lat,</em>) &#8211; </li>
 <li><strong>-- equally spaced latitude column vector</strong> (<em>lat</em>) &#8211; </li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first">
-<li><p class="first"><strong>method</strong> (<em>optional</em>) &#8211;</p>
-<p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<li><strong>method</strong> (<em>optional</em>) &#8211; <p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
 <p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
 <p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
 <p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
 </li>
-<li><p class="first"><strong>Cutoff</strong> (<em>optional</em>)</p>
-</li>
-<li><p class="first"><strong>n</strong> (<em>optional</em>)</p>
-</li>
+<li><strong>Cutoff</strong> (<em>optional</em>) &#8211; </li>
+<li><strong>n</strong> (<em>optional</em>) &#8211; </li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
 <p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
 </p>
 </td>
