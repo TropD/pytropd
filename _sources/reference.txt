@@ -1,11 +1,12 @@
 ============
 Reference
 ==============
+.. currentmodule:: metrics
 
 :doc:`metrics`
 
 .. autosummary::
 
-  metrics
+  TropD_Metric_OLR
 
 
