@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to PyTropD’s documentation! &mdash; PyTropD 1.0.0 documentation</title>
+    <title>Tutorial &mdash; PyTropD 1.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -24,8 +24,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="PyTropD 1.0.0 documentation" href="#" />
-    <link rel="next" title="Installation" href="install.html" />
+    <link rel="top" title="PyTropD 1.0.0 documentation" href="index.html" />
+    <link rel="next" title="List of metrics" href="reference.html" />
+    <link rel="prev" title="Installation" href="install.html" />
    
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -38,29 +39,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="welcome-to-pytropd-s-documentation">
-<h1>Welcome to PyTropD&#8217;s documentation!<a class="headerlink" href="#welcome-to-pytropd-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>PyTropD is a python package intended to calculate different metrics of tropical width as described in <a class="reference external" href="https://www.geosci-model-dev-discuss.net/gmd-2018-124/">Adam et al. (2018)</a>. This package is the python equivalent to the original MATLAB ® version</p>
-<p>This documentation will describe version 1.0. It is still a work in progress.</p>
-<div class="section" id="download-and-install">
-<h2>Download and Install<a class="headerlink" href="#download-and-install" title="Permalink to this headline">¶</a></h2>
-<p>See the <a class="reference internal" href="install.html"><em>Installation</em></a> page for all the details. The project is located in a Github <a class="reference external" href="https://github.com/tropd/pytropd">repository</a>.</p>
-</div>
-<div class="section" id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>There is a step by step <a class="reference internal" href="tutorial.html"><em>Tutorial</em></a> intended to introduce you to many
-aspects of the code.</p>
-<p>There is also a <a class="reference internal" href="reference.html"><em>List of metrics</em></a> with full details.</p>
-</div>
-<div class="section" id="about-pytropd">
-<h2>About PyTropD<a class="headerlink" href="#about-pytropd" title="Permalink to this headline">¶</a></h2>
-<p>The MATLAB ® version was originally developed by the <a class="reference external" href="http://www.issibern.ch/teams/twdip/">ISSI Tropical Width Diagnostics Intercomparison Project</a>.</p>
-<blockquote>
-<div></div></blockquote>
-<p>The code was translated to Python by Alison Ming with help from Paul William Staten and TropD team.</p>
-<div class="toctree-wrapper compound">
-</div>
-</div>
+  <div class="section" id="tutorial">
+<h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>First import pytropd and some data.</p>
+<p>V is a numpy array containing the mean meridional velocity on (lat, levs). We can calculate the metric of tropical width from the mass streamfunction (PSI) as follows:</p>
+<p>More detailed code examples can be found in the file <code class="docutils literal"><span class="pre">TropD_Example_Calculations.py</span></code>.</p>
 </div>
 
 
@@ -69,7 +52,7 @@ aspects of the code.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="#">PyTropD</a></h1>
+<h1 class="logo"><a href="index.html">PyTropD</a></h1>
 
 
 
@@ -84,9 +67,9 @@ aspects of the code.</p>
 
 
 <h3>Navigation</h3>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">List of metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="helper.html">Additional functions</a></li>
 </ul>
@@ -117,7 +100,7 @@ aspects of the code.</p>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.7</a>
       
       |
-      <a href="_sources/index.txt"
+      <a href="_sources/tutorial.txt"
           rel="nofollow">Page source</a>
     </div>
 
