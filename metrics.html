@@ -55,27 +55,39 @@
 <dt id="metrics.TropD_Metric_OLR">
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_OLR</code><span class="sig-paren">(</span><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#metrics.TropD_Metric_OLR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
+<p>Positional arguments:</p>
 <blockquote>
 <div><p>olr(lat,) &#8211;  zonal mean TOA olr (positive)</p>
 <p>lat &#8211; equally spaced latitude column vector</p>
 </div></blockquote>
-<blockquote>
-<div><p>method (optional)</p>
-<blockquote>
-<div><p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first">
+<li><p class="first"><strong>method</strong> (<em>optional</em>) &#8211;</p>
+<p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
 <p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
 <p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
 <p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
-</div></blockquote>
-<p>Cutoff (optional) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</p>
-<p>n (optional) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</p>
-</div></blockquote>
-<blockquote>
-<div><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
+</li>
+<li><p class="first"><strong>Cutoff</strong> (<em>optional</em>)</p>
+</li>
+<li><p class="first"><strong>n</strong> (<em>optional</em>)</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
 <p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
-</div></blockquote>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <span class="target" id="module-metrics"></span><dl class="function">
@@ -113,27 +125,39 @@ lev &#8211; vertical level vector in hPa units</div></blockquote>
 <dt>
 <code class="descclassname">metrics.</code><code class="descname">TropD_Metric_OLR</code><span class="sig-paren">(</span><em>olr</em>, <em>lat</em>, <em>method='250W'</em>, <em>Cutoff=50</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics.html#TropD_Metric_OLR"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Returns TropD Outgoing Longwave Radiation (OLR) metric</p>
+<p>Positional arguments:</p>
 <blockquote>
 <div><p>olr(lat,) &#8211;  zonal mean TOA olr (positive)</p>
 <p>lat &#8211; equally spaced latitude column vector</p>
 </div></blockquote>
-<blockquote>
-<div><p>method (optional)</p>
-<blockquote>
-<div><p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body"><ul class="first">
+<li><p class="first"><strong>method</strong> (<em>optional</em>) &#8211;</p>
+<p>&#8216;250W&#8217;(Default) &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2</p>
 <p>&#8216;20W&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2</p>
 <p>&#8216;cutoff&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value</p>
 <p>&#8216;10Perc&#8217; &#8211; the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum</p>
 <p>&#8216;max&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat</p>
 <p>&#8216;peak&#8217; &#8211; the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat</p>
-</div></blockquote>
-<p>Cutoff (optional) &#8211; Scalar. For the method &#8216;cutoff&#8217;, Cutoff specifies the OLR cutoff value.</p>
-<p>n (optional) &#8211; For the &#8216;max&#8217; method, n is the smoothing parameter in TropD_Calculate_MaxLat</p>
-</div></blockquote>
-<blockquote>
-<div><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
+</li>
+<li><p class="first"><strong>Cutoff</strong> (<em>optional</em>)</p>
+</li>
+<li><p class="first"><strong>n</strong> (<em>optional</em>)</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p>PhiSH &#8211; latitude of near equator OLR threshold crossing in the SH</p>
 <p>PhiNH &#8211; latitude of near equator OLR threshold crossing in the NH</p>
-</div></blockquote>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
