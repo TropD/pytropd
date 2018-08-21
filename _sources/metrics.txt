@@ -4,7 +4,7 @@ Calculating Metrics
 
 .. currentmodule:: metrics
 
-.. autofunction:: TropD_Metrics_OLR
+.. autofunction:: TropD_Metric_OLR
 
 .. automodule:: metrics
    :members:
