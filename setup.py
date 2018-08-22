@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 # PyTropD installation script
-import setuptools
+from setuptools import setup
+from os import path
 
-setuptools.setup (name="pytropd",
+setup (name="pytropd",
 	version="1.0.0",
         description = "Calculation of metrics of tropical width",
 	long_description = """
