@@ -12,7 +12,7 @@ PyTropD is a software package designed to calculate various metrics of tropical 
         license = "GPL-3",
         author="Alison Ming, Paul William Staten",
         author_email="admg26@gmail.com",
-        url="",
+        url="https://tropd.github.io/pytropd/index.html",
 	requires=['numpy','matplotlib','scipy'],
 	packages=["pytropd"],
         classifiers=["Programming Language :: Python :: 2"],
