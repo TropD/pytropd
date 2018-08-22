@@ -17,6 +17,8 @@ Pip install
 
   ``pip install pytropd``
 
+Note that this method will only pull the package but not the additional Netcdf validation files needed if you want to run the tutorial and example calculations. You can download the data files from Github below.
+
 From Github
 ===========
 
