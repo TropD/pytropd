@@ -33,7 +33,7 @@ def TropD_Calculate_MaxLat(F,lat,n=int(6)):
 
         F: 1D array
 
-        lat: ordinate array, the same length as F
+        lat: equally spaced latitude array
 
         n (int): rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
 
@@ -101,11 +101,11 @@ def TropD_Calculate_Mon2Season(Fm, season=np.arange(12), m=0):
     
 
 def TropD_Calculate_StreamFunction(V, lat, lev):
-  ''' TropD calculate the streamfunction by integrating the meridional wind from top of the atmosphere to the surface
+  ''' Calculate streamfunction by integrating meridional wind from top of the atmosphere to surface
 
       Args:
 
-        V: zonal-mean meridional wind with dimensions (lat, lev)
+        V: array of zonal-mean meridional wind with dimensions (lat, lev)
       
         lat: equally spaced latitude array
 
