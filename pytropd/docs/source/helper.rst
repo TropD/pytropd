@@ -12,7 +12,7 @@ Additional functions
   
   TropD_Calculate_Mon2Season
   
-  TropD_Calculate_Streamfunction
+  TropD_Calculate_StreamFunction
   
   TropD_Calculate_TropopauseHeight
   
