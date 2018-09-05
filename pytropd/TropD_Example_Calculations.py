@@ -12,9 +12,8 @@ from matplotlib import rc
 ## Set display and meta parameters
 y1 = 1979
 y2 = 2016
-time = np.linspace(y1,y2,12*(y2-y1+1))
-#time=linspace(y1,y2 + 1,dot(12,(y2 - y1 + 1)) + 1)
-#time=(time(arange(1,end() - 1)) + time(arange(2,end()))) / 2
+time = np.linspace(y1,y2+1,12*(y2-y1+1)+1)
+time = (time[:-1] + time[1:]) / 2
 red_color     = (1,0.3,0.4)
 orange_color  = (255/256,140/256,0) 
 blue_color    = (0,0.447,0.741)
@@ -277,15 +276,15 @@ Phi_stj_sh_ANN_core = np.zeros((np.shape(U_ANN)[0],)) # latitude of SH STJ from 
 for j in range(np.shape(U_ANN)[0]):
   # Default method =  'adjusted'
   Phi_stj_sh_ANN_adj [j], Phi_stj_nh_ANN_adj[j] = pyt.TropD_Metric_STJ(U_ANN[j,:,:], lat, lev)
-  Phi_stj_sh_ANN_core[j], Phi_stj_nh_ANN_core[j] = pyt.TropD_Metric_STJ(U_ANN[j,:,:], lat, lev, method='core')
+  Phi_stj_sh_ANN_core[j], Phi_stj_nh_ANN_core[j] = pyt.TropD_Metric_STJ(U_ANN[j,:,:], lat, lev, method='core_peak')
 
 
 plt.figure(6)
 plt.subplot(211)
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_nh_ANN_adj,linewidth=2,color=green_color,\
-    label='Latitude of STJ from anual mean U, using \'adjusted\' method')
+    label='Latitude of STJ from anual mean U, using \'adjusted peak\' method')
 plt.plot(np.arange(y1,y2+1) + 0.5,Phi_stj_nh_ANN_core,linewidth=2,color=blue_color,\
-    label='Latitude of STJ from anual mean U, using \'core\' method')
+    label='Latitude of STJ from anual mean U, using \'core peak\' method')
 plt.ylabel('NH STJ latitude')
 plt.legend(loc='best', frameon=False)
 plt.subplot(212)

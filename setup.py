@@ -4,11 +4,14 @@
 from setuptools import setup
 from os import path
 
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+      long_description = f.read()
+
 setup (name="pytropd",
-	version="1.0.0",
+	version="1.0.2",
         description = "Calculation of metrics of tropical width",
-	long_description = """
-PyTropD is a software package designed to calculate various metrics of tropical width and is the python equivalent of the Matlab package,TropD""",
+	long_description=long_description,
         license = "GPL-3",
         author="Alison Ming, Paul William Staten",
         author_email="admg26@gmail.com",

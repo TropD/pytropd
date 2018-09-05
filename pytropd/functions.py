@@ -225,7 +225,7 @@ def TropD_Calculate_TropopauseHeight(T ,P, Z=None):
     return Pt
     
 #Converted to python by Paul Staten Jul.29.2017
-def TropD_Calculate_ZeroCrossing(F, lat, lat_uncertainty=0.0,*args,**kwargs):
+def TropD_Calculate_ZeroCrossing(F, lat, lat_uncertainty=0.0):
 
   ''' Find the first (with increasing index) zero crossing of the function F
 
