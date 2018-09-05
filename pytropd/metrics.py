@@ -14,7 +14,7 @@ def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
        U (lat,lev) or U (lat,): Zonal mean zonal wind. Also takes surface wind 
        lat : latitude vector
        lev: vertical level vector in hPa units
-       method (str, optional): 'max' (default) |  'peak'
+       method (str, optional): 'peak' (default) |  'max'
        n (int, optional): 6 (default). Rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
      
      Returns:
@@ -378,7 +378,7 @@ def TropD_Metric_PSL(ps, lat, method='peak', n=0):
       
         lat: equally spaced latitude column vector
 
-        method (str, optional): 'max' (default) | 'peak'
+        method (str, optional): 'peak' (default) | 'max'
   
       Returns:
 
