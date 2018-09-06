@@ -1,13 +1,16 @@
 Metadata-Version: 1.1
 Name: pytropd
-Version: 1.0.1
+Version: 1.0.5
 Summary: Calculation of metrics of tropical width
 Home-page: https://tropd.github.io/pytropd/index.html
 Author: Alison Ming, Paul William Staten
 Author-email: admg26@gmail.com
 License: GPL-3
 Description: 
-        PyTropD is a software package designed to calculate various metrics of tropical width and is the python equivalent of the Matlab package,TropD
+        PyTropD is a software package designed to calculate various metrics of tropical width and is the python equivalent of the Matlab package,TropD.
+        
+        https://tropd.github.io/pytropd/reference.html
+        
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 2
 Requires: numpy

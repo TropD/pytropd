@@ -4,8 +4,7 @@ from __future__ import division
 import numpy as np
 from functions import *
 
-def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
-  
+def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='peak', n=0, n_fit=1):
   '''TropD Eddy Driven Jet (EDJ) metric
        
      Latitude of maximum of the zonal wind at the level closest to the 850 hPa level
@@ -14,8 +13,15 @@ def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
        U (lat,lev) or U (lat,): Zonal mean zonal wind. Also takes surface wind 
        lat : latitude vector
        lev: vertical level vector in hPa units
-       method (str, optional): 'peak' (default) |  'max'
-       n (int, optional): 6 (default). Rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
+
+       method (str, optional): 'peak' (default) |  'max' | 'fit'
+       
+        peak (Default): Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=30)
+        
+        max: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=6)
+        fit: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level using a quadratic polynomial fit of data from gridpoints surrounding the gridpoint of the maximum
+        
+       n (int, optional): If n is not set (0), n=6 (default) is used in TropD_Calculate_MaxLat. Rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
      
      Returns:
        tuple: PhiSH (ndarray), PhiNH (ndarray) Latitude of EDJ in SH and NH
@@ -48,10 +54,12 @@ def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
 
     else:
+      #Default value of n=6 is used
       PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)])
       PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)])
+  
   elif method == 'peak':
     if n:
       PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
@@ -63,6 +71,40 @@ def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='max', n=0):
               lat[(lat > eq_boundary) & (lat < polar_boundary)],n=30)
       PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)],n=30)
+  
+  elif method == 'fit':
+    Uh = u[(lat > eq_boundary) & (lat < polar_boundary)]
+    Lat = lat[(lat > eq_boundary) & (lat < polar_boundary)]
+    m = np.nanmax(Uh)
+    Im = np.nanargmax(Uh)
+     
+    if (Im == 0 or Im == len(Uh)-1):
+      PhiNH = Lat[Im]
+    
+    elif (n_fit > Im or n_fit > len(Uh)-Im+1):
+      N = np.min(Im, len(Uh)-Im+1)
+      p = np.polyfit(Lat[Im-N:Im+N+1], Uh[Im-N:Im+N+1],2) 
+      PhiNH = -p[1]/(2*p[0])
+    else:
+      p = np.polyfit(Lat[Im-n_fit:Im+n_fit+1], Uh[Im-n_fit:Im+n_fit+1],2) 
+      PhiNH = -p[1]/(2*p[0])
+    
+    Uh = u[(lat > -polar_boundary) & (lat < -eq_boundary)]
+    Lat = lat[(lat > -polar_boundary) & (lat < -eq_boundary)]
+    
+    m = np.nanmax(Uh)
+    Im = np.nanargmax(Uh)
+    
+    if (Im == 0 or Im == len(Uh)-1):
+      PhiSH = Lat[Im]
+    
+    elif (n_fit > Im or n_fit > len(Uh)-Im+1):
+      N = np.min(Im, len(Uh)-Im+1)
+      p = np.polyfit(Lat[Im-N:Im+N+1], Uh[Im-N:Im+N+1],2) 
+      PhiSH = -p[1]/(2*p[0])
+    else:
+      p = np.polyfit(Lat[Im-n_fit:Im+n_fit+1], Uh[Im-n_fit:Im+n_fit+1],2) 
+      PhiSH = -p[1]/(2*p[0])
   
   else:
     print('TropD_Metric_EDJ: ERROR: unrecognized method ', method)
