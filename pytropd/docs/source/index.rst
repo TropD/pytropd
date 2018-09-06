@@ -13,7 +13,7 @@ PyTropD is a python package intended to calculate different metrics of tropical 
 
 __ https://www.geosci-model-dev-discuss.net/gmd-2018-124/
 
-This documentation will describe version 1.0. It is still a work in progress.
+This documentation will describe version 1.0.5.
 
 
 Download and Install
