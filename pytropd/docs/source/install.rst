@@ -11,7 +11,7 @@ You'll need to install the following packages:
 * `Numpy (>=1.12.0) and Scipy <https://www.scipy.org/install.html>`_
 * `Matplotlib <https://matplotlib.org/users/installing.html>`_ 
 * `PyTropD <https://github.com/tropd/pytropd/>`_  
-
+            
 Pip install
 ===========
 

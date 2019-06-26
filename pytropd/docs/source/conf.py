@@ -14,6 +14,8 @@
 
 import sys
 import os
+#import alabaster
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -31,6 +33,8 @@ print sys.path
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+#html_theme_path = [alabaster.get_path()]
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -42,24 +46,24 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+#    'alabaster',
 ]
-
 
 #    'IPython.sphinxext.ipython_console_highlighting',
 #    'IPython.sphinxext.ipython_directive'
 
 #'sphinxcontrib.fulltoc',
 
-html_theme_options = {
-    'github_user': 'tropd',
-    'github_repo': 'pytropd',
-    'github_button': True,
-    'github_type':'watch',
-    'github_count': None,
-}
+#html_theme_options = {
+#    'github_user': 'tropd',
+#    'github_repo': 'pytropd',
+#    'github_button': True,
+#    'github_type':'watch',
+#    'github_count': None,
+#}
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+## Add any paths that contain templates here, relative to this directory.
+#templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -126,7 +130,8 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'classic'
+#html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -170,8 +175,8 @@ html_static_path = ['_static']
 # typographically correct entities.
 #html_use_smartypants = True
 
-# Custom sidebar templates, maps document names to template names.
-html_sidebars = {'**':['about.html', 'navigation.html', 'searchbox.html']}
+## Custom sidebar templates, maps document names to template names.
+#html_sidebars = {'**':['about.html', 'navigation.html', 'searchbox.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
