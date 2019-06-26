@@ -1,11 +1,10 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 
-from __future__ import division
+#from __future__ import division
 import numpy as np
 import scipy as sp
 from scipy import integrate
-from functions import *
 
 def find_nearest(array, value):
   ''' Find the index of the item in the array nearest to the value

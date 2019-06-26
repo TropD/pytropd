@@ -2,7 +2,7 @@
 # Edited by Alison Ming Jul.4.2017
 from __future__ import division
 import numpy as np
-from functions import *
+from . import functions as f
 
 def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='peak', n=0, n_fit=1):
   '''TropD Eddy Driven Jet (EDJ) metric
@@ -42,34 +42,34 @@ def TropD_Metric_EDJ(U, lat, lev=np.array([1]), method='peak', n=0, n_fit=1):
   polar_boundary = 70
   
   if len(lev) > 1:
-    u = U[:,find_nearest(lev, 850)]
+    u = U[:,f.find_nearest(lev, 850)]
   else:
     u = np.copy(U)
     
   if method == 'max':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
 
     else:
       #Default value of n=6 is used
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)])
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)])
   
   elif method == 'peak':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)],n=30)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)],n=30)
   
   elif method == 'fit':
@@ -168,54 +168,54 @@ def TropD_Metric_OLR(olr, lat, method='250W', Cutoff=50, n=int(6)):
   subpolar_boundary = 40
   polar_boundary = 60
   # NH
-  olr_max_lat_NH = TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
+  olr_max_lat_NH = f.TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
                     lat[(lat > eq_boundary) & (lat < subpolar_boundary)])
   olr_max_NH = max(olr[(lat > eq_boundary) & (lat < subpolar_boundary)])
 
   # SH
-  olr_max_lat_SH = TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
+  olr_max_lat_SH = f.TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
                     lat[(lat > -subpolar_boundary) & (lat < -eq_boundary)])
   olr_max_SH = max(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)])
 
   if method == '20W':
-    PhiNH = TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - olr_max_NH + 20,\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - olr_max_NH + 20,\
                     lat[(lat > olr_max_lat_NH) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & \
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & \
                     (lat > -polar_boundary)],0) - olr_max_SH + 20,\
                     np.flip(lat[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0))
 
   elif method == '250W':
-    PhiNH = TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - 250,\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - 250,\
                     lat[(lat > olr_max_lat_NH) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) - 250,\
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) - 250,\
                     np.flip(lat[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0))
 
   elif method == 'cutoff':
-    PhiNH = TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - Cutoff,\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] - Cutoff,\
                     lat[(lat > olr_max_lat_NH) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) - Cutoff,\
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) - Cutoff,\
                     np.flip(lat[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0))
   
   elif method == '10Perc':
-    PhiNH = TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] / olr_max_NH - 0.9,\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(olr[(lat > olr_max_lat_NH) & (lat < polar_boundary)] / olr_max_NH - 0.9,\
                     lat[(lat > olr_max_lat_NH) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) \
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(olr[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0) \
                     / olr_max_SH - 0.9, np.flip(lat[(lat < olr_max_lat_SH) & (lat > -polar_boundary)],0))
 
   elif method == 'max':
     if Cutoff_is_set:
-      PhiNH = TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
                     lat[(lat > eq_boundary) & (lat < subpolar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
                     lat[(lat > -subpolar_boundary) & (lat < -eq_boundary)], n=n)
     else:
       PhiNH = np.copy(olr_max_lat_NH)
       PhiSH = np.copy(olr_max_lat_SH)
  
   elif method == 'peak':
-    PhiNH = TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
+    PhiNH = f.TropD_Calculate_MaxLat(olr[(lat > eq_boundary) & (lat < subpolar_boundary)],\
                     lat[(lat > eq_boundary) & (lat < subpolar_boundary)],n=30)
-    PhiSH = TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
+    PhiSH = f.TropD_Calculate_MaxLat(olr[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
                     lat[(lat > -subpolar_boundary) & (lat < -eq_boundary)], n=30)
 
   else:
@@ -267,27 +267,27 @@ def TropD_Metric_PE(pe,lat,method='zero_crossing',lat_uncertainty=0.0):
 
     
   # NH
-  M1 = TropD_Calculate_MaxLat(-pe[(lat > eq_boundary) & (lat < subpolar_boundary)],\
+  M1 = f.TropD_Calculate_MaxLat(-pe[(lat > eq_boundary) & (lat < subpolar_boundary)],\
                  lat[(lat > eq_boundary) & (lat < subpolar_boundary)], n=30)
-  ZC1 = TropD_Calculate_ZeroCrossing(pe[(lat > M1) & (lat < polar_boundary)], \
+  ZC1 = f.TropD_Calculate_ZeroCrossing(pe[(lat > M1) & (lat < polar_boundary)], \
                  lat[(lat > M1) & (lat < polar_boundary)], lat_uncertainty=lat_uncertainty)
   if np.interp(ZC1, lat, ped) > 0:
     PhiNH = ZC1
   else:
-    PhiNH = TropD_Calculate_ZeroCrossing(pe[(lat > ZC1) & (lat < polar_boundary)], \
+    PhiNH = f.TropD_Calculate_ZeroCrossing(pe[(lat > ZC1) & (lat < polar_boundary)], \
                   lat[(lat > ZC1) & (lat < polar_boundary)], lat_uncertainty=lat_uncertainty)
   
   # SH
   # flip arrays to find the most equatorward zero crossing
-  M1 = TropD_Calculate_MaxLat(np.flip(-pe[(lat < -eq_boundary) & (lat > -subpolar_boundary)],0),\
+  M1 = f.TropD_Calculate_MaxLat(np.flip(-pe[(lat < -eq_boundary) & (lat > -subpolar_boundary)],0),\
                  np.flip(lat[(lat < -eq_boundary) & (lat > -subpolar_boundary)],0), n=30)               
-  ZC1 = TropD_Calculate_ZeroCrossing(np.flip(pe[(lat < M1) & (lat > -polar_boundary)],0), \
+  ZC1 = f.TropD_Calculate_ZeroCrossing(np.flip(pe[(lat < M1) & (lat > -polar_boundary)],0), \
                  np.flip(lat[(lat < M1) & (lat > -polar_boundary)],0), lat_uncertainty=lat_uncertainty)
 
   if np.interp(ZC1, lat, ped) < 0:
     PhiSH = ZC1
   else:
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(pe[(lat < ZC1) & (lat > -polar_boundary)],0), \
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(pe[(lat < ZC1) & (lat > -polar_boundary)],0), \
                   np.flip(lat[(lat < ZC1) & (lat > -polar_boundary)],0), lat_uncertainty=lat_uncertainty)
 
   return PhiSH, PhiNH
@@ -339,7 +339,7 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', lat_uncertainty=0):
   subpolar_boundary = 30
   polar_boundary = 60
     
-  Psi = TropD_Calculate_StreamFunction(V, lat, lev)
+  Psi = f.TropD_Calculate_StreamFunction(V, lat, lev)
   Psi[np.isnan(Psi)]=0
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
@@ -350,7 +350,7 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', lat_uncertainty=0):
     
   if ( method == 'Psi_500' or method == 'Psi_500_10Perc'):
     # Use Psi at the level nearest to 500 hPa
-    P = Psi[:,find_nearest(lev, 500)]
+    P = Psi[:,f.find_nearest(lev, 500)]
 
   elif method == 'Psi_300_700':
     # Use Psi averaged between the 300 and 700 hPa level
@@ -362,7 +362,7 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', lat_uncertainty=0):
     PPsi_temp = sp.integrate.cumtrapz(Psi*COS, lev, axis=1)
     PPsi = np.zeros(np.shape(Psi))
     PPsi[:,1:] = PPsi_temp
-    P = PPsi[:,find_nearest(lev, 500)]
+    P = PPsi[:,f.find_nearest(lev, 500)]
      
   elif method == 'Psi_Int':
     # Use vertical mean of Psi 
@@ -377,33 +377,33 @@ def TropD_Metric_PSI(V, lat, lev, method='Psi_500', lat_uncertainty=0):
   # 3. Find the zero crossing between the above latitudes
 
   # NH
-  Lmax = TropD_Calculate_MaxLat(P[(lat > 0) & (lat < subpolar_boundary)],\
+  Lmax = f.TropD_Calculate_MaxLat(P[(lat > 0) & (lat < subpolar_boundary)],\
                                 lat[(lat > 0) & (lat < subpolar_boundary)])
 
-  Lmin = TropD_Calculate_MaxLat(-P[(lat > Lmax) & (lat < polar_boundary)],\
+  Lmin = f.TropD_Calculate_MaxLat(-P[(lat > Lmax) & (lat < polar_boundary)],\
                                 lat[(lat > Lmax) & (lat < polar_boundary)])
   if method == 'Psi_500_10Perc':
     Pmax = max(P[(lat > 0) & (lat < subpolar_boundary)])
-    PhiNH = TropD_Calculate_ZeroCrossing(P[(lat > Lmax) & (lat < Lmin)] - 0.1*Pmax,\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(P[(lat > Lmax) & (lat < Lmin)] - 0.1*Pmax,\
             lat[(lat > Lmax) & (lat < Lmin)])
 
   else:
-    PhiNH = TropD_Calculate_ZeroCrossing(P[(lat > Lmax) & (lat < Lmin)],\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(P[(lat > Lmax) & (lat < Lmin)],\
             lat[(lat > Lmax) & (lat < Lmin)], lat_uncertainty=lat_uncertainty)
   
   # SH
-  Lmax = TropD_Calculate_MaxLat(-P[(lat < 0) & (lat > -subpolar_boundary)],\
+  Lmax = f.TropD_Calculate_MaxLat(-P[(lat < 0) & (lat > -subpolar_boundary)],\
          lat[(lat < 0) & (lat > -subpolar_boundary)])
 
-  Lmin = TropD_Calculate_MaxLat(P[(lat < Lmax) & (lat > -polar_boundary)],\
+  Lmin = f.TropD_Calculate_MaxLat(P[(lat < Lmax) & (lat > -polar_boundary)],\
          lat[(lat < Lmax) & (lat > -polar_boundary)])
 
   if method == 'Psi_500_10Perc':
     Pmin = min(P[(lat < 0) & (lat > -subpolar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0) + 0.1*Pmin,\
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0) + 0.1*Pmin,\
             np.flip(lat[(lat < Lmax) & (lat > Lmin)], 0))
   else:
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0),\
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(P[(lat < Lmax) & (lat > Lmin)], 0),\
             np.flip(lat[(lat < Lmax) & (lat > Lmin)], 0), lat_uncertainty=lat_uncertainty)
   return PhiSH, PhiNH
 
@@ -435,33 +435,33 @@ def TropD_Metric_PSL(ps, lat, method='peak', n=0):
   try:
     assert (not hasattr(n, "__len__") and n >= 0)  
   except AssertionError:
-    print 'TropD_Metric_PSL: ERROR : the smoothing parameter n must be >= 0'
+    print('TropD_Metric_PSL: ERROR : the smoothing parameter n must be >= 0')
 
   eq_boundary = 15
   polar_boundary = 60
     
   if method == 'max':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
              lat[(lat > eq_boundary) & (lat < polar_boundary)],n=n)
-      PhiSH = TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)])
-      PhiSH = TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)])
 
   elif method == 'peak':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(ps[(lat > eq_boundary) & (lat < polar_boundary)],\
               lat[(lat > eq_boundary) & (lat < polar_boundary)], n=30)
-      PhiSH = TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(ps[(lat > -polar_boundary) & (lat < -eq_boundary)],\
               lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=30)
   else:
     print('TropD_Metric_PSL: ERROR: unrecognized method ', method)
@@ -513,7 +513,7 @@ def TropD_Metric_STJ(U, lat, lev, method='adjusted_peak', n=0):
   lev_int = lev[(lev >= 100) & (lev <= 400)]
 
   if (method == 'adjusted_peak' or method == 'adjusted_max'): 
-    idx_850 = find_nearest(lev, 850)
+    idx_850 = f.find_nearest(lev, 850)
 
     # Pressure weighted vertical mean of U minus near surface U
     if len(lev_int) > 1:
@@ -538,53 +538,53 @@ def TropD_Metric_STJ(U, lat, lev, method='adjusted_peak', n=0):
 
   if method == 'core_peak':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
           lat[(lat > eq_boundary) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
           lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
           lat[(lat > eq_boundary) & (lat < polar_boundary)],n=30)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
           lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=30)
 
   elif method == 'core_max':
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
           lat[(lat > eq_boundary) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < - eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < - eq_boundary)],\
           lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < polar_boundary)],\
           lat[(lat > eq_boundary) & (lat < polar_boundary)], n=6)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > -polar_boundary) & (lat < -eq_boundary)],\
           lat[(lat > -polar_boundary) & (lat < -eq_boundary)], n=6)
 
   elif method == 'adjusted_peak':
     PhiSH_EDJ, PhiNH_EDJ = TropD_Metric_EDJ(U,lat,lev)
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
           lat[(lat > eq_boundary) & (lat < PhiNH_EDJ)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
           lat[(lat > PhiSH_EDJ) & (lat < -eq_boundary)], n=n)
 
     else:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
           lat[(lat > eq_boundary) & (lat < PhiNH_EDJ)], n=30)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
           lat[(lat > PhiSH_EDJ) & (lat < -eq_boundary)], n=30)
 
   elif method == 'adjusted_max':
     PhiSH_EDJ,PhiNH_EDJ = TropD_Metric_EDJ(U,lat,lev)
     if n:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
           lat[(lat > eq_boundary) & (lat < PhiNH_EDJ)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
           lat[(lat > PhiSH_EDJ) & (lat < -eq_boundary)], n=n)
     else:
-      PhiNH = TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
+      PhiNH = f.TropD_Calculate_MaxLat(u[(lat > eq_boundary) & (lat < PhiNH_EDJ)],\
           lat[(lat > eq_boundary) & (lat < PhiNH_EDJ)], n=6)
-      PhiSH = TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
+      PhiSH = f.TropD_Calculate_MaxLat(u[(lat > PhiSH_EDJ) & (lat < -eq_boundary)],\
           lat[(lat > PhiSH_EDJ) & (lat < -eq_boundary)], n=6)
 
   return PhiSH, PhiNH    
@@ -635,41 +635,41 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
   polar_boundary = 60
 
   if method == 'max_gradient':
-    Pt = TropD_Calculate_TropopauseHeight(T,lev)
+    Pt = f.TropD_Calculate_TropopauseHeight(T,lev)
     Ptd = np.diff(Pt) / (lat[1] - lat[0])
     lat2 = (lat[1:] + lat[:-1]) / 2
     
     if (n >= 1):
-      PhiNH = TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
               lat2[(lat2 > 0) & (lat2 < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
+      PhiSH = f.TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
               lat2[(lat2 > -polar_boundary) & (lat2 < 0)], n=n)
     
     else:
-      PhiNH = TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(Ptd[:,(lat2 > 0) & (lat2 < polar_boundary)],\
               lat2[(lat2 > 0) & (lat2 < polar_boundary)])
-      PhiSH = TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
+      PhiSH = f.TropD_Calculate_MaxLat(-Ptd[:,(lat2 > -polar_boundary) & (lat2 < 0)],\
               lat2[(lat2 > -polar_boundary) & (lat2 < 0)])
      
   elif method == 'max_potemp':
     XF = np.tile((lev / 1000) ** k, (len(lat), 1))
     PT = T / XF
-    Pt, PTt = TropD_Calculate_TropopauseHeight(T, lev, Z=PT)
+    Pt, PTt = f.TropD_Calculate_TropopauseHeight(T, lev, Z=PT)
     PTdif = PTt - np.nanmin(PT, axis = 1)
     if (n >= 1):
-      PhiNH = TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
               lat[(lat > 0) & (lat < polar_boundary)], n=n)
-      PhiSH = TropD_Calculate_MaxLat(PTdif[:,(lat > - polar_boundary) & (lat < 0)],\
+      PhiSH = f.TropD_Calculate_MaxLat(PTdif[:,(lat > - polar_boundary) & (lat < 0)],\
               lat[(lat > -polar_boundary) & (lat < 0)], n=n)
     
     else:
-      PhiNH = TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
+      PhiNH = f.TropD_Calculate_MaxLat(PTdif[:,(lat > 0) & (lat < polar_boundary)],\
               lat[(lat > 0) & (lat < polar_boundary)], n=30)
-      PhiSH = TropD_Calculate_MaxLat(PTdif[:,(lat > - polar_boundary) & (lat < 0)],\
+      PhiSH = f.TropD_Calculate_MaxLat(PTdif[:,(lat > - polar_boundary) & (lat < 0)],\
               lat[(lat > -polar_boundary) & (lat < 0)], n=30)
    
   elif method == 'cutoff':
-    Pt, Ht = TropD_Calculate_TropopauseHeight(T, lev, Z)
+    Pt, Ht = f.TropD_Calculate_TropopauseHeight(T, lev, Z)
     
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
@@ -678,9 +678,9 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
     
     polar_boundary = 60
       
-    PhiNH = TropD_Calculate_ZeroCrossing(Ht[(lat > 0) & (lat < polar_boundary)] - Cutoff,
+    PhiNH = f.TropD_Calculate_ZeroCrossing(Ht[(lat > 0) & (lat < polar_boundary)] - Cutoff,
               lat[(lat > 0) & (lat < polar_boundary)])
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(Ht[(lat < 0) & (lat > -polar_boundary)], 0) - Cutoff,
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(Ht[(lat < 0) & (lat > -polar_boundary)], 0) - Cutoff,
               np.flip(lat[(lat < 0) & (lat > -polar_boundary)], 0))
   
   else:
@@ -722,7 +722,7 @@ def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', lat_unce
     print('TropD_Metric_PSI: ERROR : unrecognized method ', method)
     
   if len(lev) > 1:
-    uas = U[:,find_nearest(lev, 850)]
+    uas = U[:,f.find_nearest(lev, 850)]
   else:
     uas = np.copy(U)
     
@@ -737,17 +737,17 @@ def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', lat_unce
   polar_boundary = 60
 
   # NH
-  uas_min_lat_NH = TropD_Calculate_MaxLat(-uas[(lat > eq_boundary) & (lat < subpolar_boundary)],\
+  uas_min_lat_NH = f.TropD_Calculate_MaxLat(-uas[(lat > eq_boundary) & (lat < subpolar_boundary)],\
                    lat[(lat > eq_boundary) & (lat < subpolar_boundary)])
   # SH
-  uas_min_lat_SH = TropD_Calculate_MaxLat(-uas[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
+  uas_min_lat_SH = f.TropD_Calculate_MaxLat(-uas[(lat > -subpolar_boundary) & (lat < -eq_boundary)],\
       lat[(lat > -subpolar_boundary) & (lat < -eq_boundary)])
   try:
     assert(method == 'zero_crossing')
-    PhiNH = TropD_Calculate_ZeroCrossing(uas[(lat > uas_min_lat_NH) & (lat < polar_boundary)],\
+    PhiNH = f.TropD_Calculate_ZeroCrossing(uas[(lat > uas_min_lat_NH) & (lat < polar_boundary)],\
             lat[(lat > uas_min_lat_NH) & (lat < polar_boundary)], lat_uncertainty=lat_uncertainty)
     # flip arrays to find the most equatorward zero crossing
-    PhiSH = TropD_Calculate_ZeroCrossing(np.flip(uas[(lat < uas_min_lat_SH) & (lat > -polar_boundary)],0),\
+    PhiSH = f.TropD_Calculate_ZeroCrossing(np.flip(uas[(lat < uas_min_lat_SH) & (lat > -polar_boundary)],0),\
             np.flip(lat[(lat < uas_min_lat_SH) & (lat > -polar_boundary)],0), lat_uncertainty=lat_uncertainty)
 
     return PhiSH, PhiNH
