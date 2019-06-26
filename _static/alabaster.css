@@ -1,74 +1,19 @@
-{%- set theme_body_bg = theme_body_bg or theme_base_bg %}
-{%- set theme_code_highlight_bg = theme_code_highlight_bg or theme_body_bg %}
-{%- set theme_sidebar_header = theme_sidebar_header or theme_gray_1 %}
-{%- set theme_sidebar_link = theme_sidebar_link or theme_gray_1 %}
-{%- set theme_anchor_hover_fg = theme_anchor_hover_fg or theme_gray_1 %}
-
-{%- set theme_footnote_border = theme_footnote_border or theme_gray_2 %}
-{%- set theme_pre_bg = theme_pre_bg or theme_gray_2 %}
-
-{%- set theme_head_font_family = theme_head_font_family or theme_font_family %}
-
-{#- set up admonition styling #}
-{#- - basic level #}
-{%- set theme_admonition_xref_bg = theme_admonition_xref_bg or theme_xref_bg %}
-{%- set theme_admonition_bg = theme_admonition_bg or theme_gray_2 %}
-{%- set theme_note_bg = theme_note_bg or theme_gray_2 %}
-{%- set theme_seealso_bg = theme_seealso_bg or theme_gray_2 %}
-
-{#- - critical level #}
-{%- set theme_danger_bg = theme_danger_bg or theme_pink_1 %}
-{%- set theme_danger_border = theme_danger_border or theme_pink_2 %}
-{%- set theme_danger_shadow = theme_danger_shadow or theme_pink_3 %}
-
-{%- set theme_error_bg = theme_error_bg or theme_pink_1 %}
-{%- set theme_error_border = theme_error_border or theme_pink_2 %}
-{%- set theme_error_shadow = theme_error_shadow or theme_pink_3 %}
-
-{#- - warning level #}
-{%- set theme_caution_bg = theme_caution_bg or theme_pink_1 %}
-{%- set theme_caution_border = theme_caution_border or theme_pink_2 %}
-
-{%- set theme_attention_bg = theme_attention_bg or theme_pink_1 %}
-{%- set theme_attention_border = theme_attention_border or theme_pink_2 %}
-
-{%- set theme_warn_bg = theme_warn_bg or theme_pink_1 %}
-{%- set theme_warn_border = theme_warn_border or theme_pink_2 %}
-
-{#- - normal level #}
-{%- set theme_important_bg = theme_important_bg or theme_gray_2 %}
-{%- set theme_tip_bg = theme_tip_bg or theme_gray_2 %}
-{%- set theme_hint_bg = theme_hint_bg or theme_gray_2 %}
-
-{#- /set up admonition styling #}
-
-{%- set theme_shadow = theme_shadow or theme_gray_2 %}
-
-
-{%- set theme_topic_bg = theme_topic_bg or theme_gray_2 %}
-
-{%- set theme_narrow_sidebar_link = theme_narrow_sidebar_link or theme_gray_3 %}
-{%- set theme_sidebar_hr = theme_sidebar_hr or theme_gray_3 %}
-
-{%- set theme_relbar_border = theme_relbar_border or theme_gray_2 -%}
-
-
 @import url("basic.css");
 
 /* -- page layout ----------------------------------------------------------- */
 
 body {
-    font-family: {{ theme_font_family }};
-    font-size: {{ theme_font_size }};
-    background-color: {{ theme_base_bg }};
-    color: {{ theme_base_text }};
+    font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
+    font-size: ;
+    background-color: ;
+    color: ;
     margin: 0;
     padding: 0;
 }
 
 
 div.document {
-    width: {{ theme_page_width }};
+    width: 940px;
     margin: 30px auto 0 auto;
 }
 
@@ -78,60 +23,60 @@ div.documentwrapper {
 }
 
 div.bodywrapper {
-    margin: 0 0 0 {{ theme_sidebar_width }};
+    margin: 0 0 0 220px;
 }
 
 div.sphinxsidebar {
-    width: {{ theme_sidebar_width }};
+    width: 220px;
     font-size: 14px;
     line-height: 1.5;
 }
 
 hr {
-    border: 1px solid {{ theme_hr_border }};
+    border: 1px solid ;
 }
 
 div.body {
-    background-color: {{ theme_body_bg  }};
-    color: {{ theme_body_text }};
+    background-color: ;
+    color: #3E4349;
     padding: 0 30px 0 30px;
 }
 
 div.body > .section {
-    text-align: {{ theme_body_text_align }};
+    text-align: left;
 }
 
 div.footer {
-    width: {{ theme_page_width }};
+    width: 940px;
     margin: 20px auto 30px auto;
     font-size: 14px;
-    color: {{ theme_footer_text }};
+    color: #888;
     text-align: right;
 }
 
 div.footer a {
-    color: {{ theme_footer_text }};
+    color: #888;
 }
 
 p.caption {
-    font-family: {{ theme_caption_font_family }};
-    font-size: {{ theme_caption_font_size }};
+    font-family: ;
+    font-size: ;
 }
 
-{% if theme_show_related|lower == 'false' %}
+
 div.relations {
     display: none;
 }
-{% endif %}
+
 
 div.sphinxsidebar a {
-    color: {{ theme_sidebar_link }};
+    color: #444;
     text-decoration: none;
-    border-bottom: 1px dotted {{ theme_sidebar_link_underscore }};
+    border-bottom: 1px dotted #999;
 }
 
 div.sphinxsidebar a:hover {
-    border-bottom: 1px solid {{ theme_sidebar_link_underscore }};
+    border-bottom: 1px solid #999;
 }
 
 div.sphinxsidebarwrapper {
@@ -148,7 +93,7 @@ div.sphinxsidebarwrapper h1.logo {
     margin-top: -10px;
     text-align: center;
     margin-bottom: 5px;
-    text-align: {{ theme_logo_text_align }};
+    text-align: left;
 }
 
 div.sphinxsidebarwrapper h1.logo-name {
@@ -157,13 +102,13 @@ div.sphinxsidebarwrapper h1.logo-name {
 
 div.sphinxsidebarwrapper p.blurb {
     margin-top: 0;
-    font-style: {{ theme_description_font_style }};
+    font-style: normal;
 }
 
 div.sphinxsidebar h3,
 div.sphinxsidebar h4 {
-    font-family: {{ theme_head_font_family }};
-    color: {{ theme_sidebar_header }};
+    font-family: 'Garamond', 'Georgia', serif;
+    color: #444;
     font-size: 24px;
     font-weight: normal;
     margin: 0 0 5px 0;
@@ -175,7 +120,7 @@ div.sphinxsidebar h4 {
 }
 
 div.sphinxsidebar h3 a {
-    color: {{ theme_sidebar_link }};
+    color: #444;
 }
 
 div.sphinxsidebar p.logo a,
@@ -186,14 +131,14 @@ div.sphinxsidebar h3 a:hover {
 }
 
 div.sphinxsidebar p {
-    color: {{ theme_sidebar_text }};
+    color: #555;
     margin: 10px 0;
 }
 
 div.sphinxsidebar ul {
     margin: 10px 0;
     padding: 0;
-    color: {{ theme_sidebar_list }};
+    color: #000;
 }
 
 div.sphinxsidebar ul li.toctree-l1 > a {
@@ -205,16 +150,16 @@ div.sphinxsidebar ul li.toctree-l2 > a {
 }
 
 div.sphinxsidebar input {
-    border: 1px solid {{ theme_sidebar_search_button }};
-    font-family: {{ theme_font_family }};
+    border: 1px solid #CCC;
+    font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
     font-size: 1em;
 }
 
 div.sphinxsidebar hr {
     border: none;
     height: 1px;
-    color: {{ theme_sidebar_hr }};
-    background: {{ theme_sidebar_hr }};
+    color: #AAA;
+    background: #AAA;
 
     text-align: left;
     margin-left: 0;
@@ -237,12 +182,12 @@ div.sphinxsidebar h3.donation {
 /* -- body styles ----------------------------------------------------------- */
 
 a {
-    color: {{ theme_link }};
+    color: #004B6B;
     text-decoration: underline;
 }
 
 a:hover {
-    color: {{ theme_link_hover }};
+    color: #6D4100;
     text-decoration: underline;
 }
 
@@ -252,7 +197,7 @@ div.body h3,
 div.body h4,
 div.body h5,
 div.body h6 {
-    font-family: {{ theme_head_font_family }};
+    font-family: 'Garamond', 'Georgia', serif;
     font-weight: normal;
     margin: 30px 0px 10px 0px;
     padding: 0;
@@ -266,14 +211,14 @@ div.body h5 { font-size: 100%; }
 div.body h6 { font-size: 100%; }
 
 a.headerlink {
-    color: {{ theme_anchor }};
+    color: #DDD;
     padding: 0 4px;
     text-decoration: none;
 }
 
 a.headerlink:hover {
-    color: {{ theme_anchor_hover_fg }};
-    background: {{ theme_anchor_hover_bg }};
+    color: #444;
+    background: #EAEAEA;
 }
 
 div.body p, div.body dd, div.body li {
@@ -283,17 +228,17 @@ div.body p, div.body dd, div.body li {
 div.admonition {
     margin: 20px 0px;
     padding: 10px 30px;
-    background-color: {{ theme_admonition_bg }};
-    border: 1px solid {{ theme_admonition_border }};
+    background-color: #EEE;
+    border: 1px solid ;
 }
 
 div.admonition tt.xref, div.admonition code.xref, div.admonition a tt {
-    background-color: {{ theme_admonition_xref_bg }};
-    border-bottom: 1px solid {{ theme_admonition_xref_border }};
+    background-color: ;
+    border-bottom: 1px solid ;
 }
 
 div.admonition p.admonition-title {
-    font-family: {{ theme_head_font_family }};
+    font-family: 'Garamond', 'Georgia', serif;
     font-weight: normal;
     font-size: 24px;
     margin: 0 0 10px 0;
@@ -306,71 +251,71 @@ div.admonition p.last {
 }
 
 div.highlight {
-    background-color: {{ theme_code_highlight_bg }};
+    background-color: ;
 }
 
 dt:target, .highlight {
-    background: {{ theme_highlight_bg }};
+    background: ;
 }
 
 div.warning {
-    background-color: {{ theme_warn_bg }};
-    border: 1px solid {{ theme_warn_border }};
+    background-color: #FCC;
+    border: 1px solid #FAA;
 }
 
 div.danger {
-    background-color: {{ theme_danger_bg }};
-    border: 1px solid {{ theme_danger_border }};
-    -moz-box-shadow: 2px 2px 4px {{ theme_danger_shadow }};
-    -webkit-box-shadow: 2px 2px 4px {{ theme_danger_shadow }};
-    box-shadow: 2px 2px 4px {{ theme_danger_shadow }};
+    background-color: #FCC;
+    border: 1px solid #FAA;
+    -moz-box-shadow: 2px 2px 4px ;
+    -webkit-box-shadow: 2px 2px 4px ;
+    box-shadow: 2px 2px 4px ;
 }
 
 div.error {
-    background-color: {{ theme_error_bg }};
-    border: 1px solid {{ theme_error_border }};
-    -moz-box-shadow: 2px 2px 4px {{ theme_error_shadow }};
-    -webkit-box-shadow: 2px 2px 4px {{ theme_error_shadow }};
-    box-shadow: 2px 2px 4px {{ theme_error_shadow }};
+    background-color: #FCC;
+    border: 1px solid #FAA;
+    -moz-box-shadow: 2px 2px 4px ;
+    -webkit-box-shadow: 2px 2px 4px ;
+    box-shadow: 2px 2px 4px ;
 }
 
 div.caution {
-    background-color: {{ theme_caution_bg }};
-    border: 1px solid {{ theme_caution_border }};
+    background-color: #FCC;
+    border: 1px solid #FAA;
 }
 
 div.attention {
-    background-color: {{ theme_attention_bg }};
-    border: 1px solid {{ theme_attention_border }};
+    background-color: #FCC;
+    border: 1px solid #FAA;
 }
 
 div.important {
-    background-color: {{ theme_important_bg }};
-    border: 1px solid {{ theme_important_border }};
+    background-color: #EEE;
+    border: 1px solid ;
 }
 
 div.note {
-    background-color: {{ theme_note_bg }};
-    border: 1px solid {{ theme_note_border }};
+    background-color: #EEE;
+    border: 1px solid #CCC;
 }
 
 div.tip {
-    background-color: {{ theme_tip_bg }};
-    border: 1px solid {{ theme_tip_border }};
+    background-color: #EEE;
+    border: 1px solid ;
 }
 
 div.hint {
-    background-color: {{ theme_hint_bg }};
-    border: 1px solid {{ theme_hint_border }};
+    background-color: #EEE;
+    border: 1px solid ;
 }
 
 div.seealso {
-    background-color: {{ theme_seealso_bg }};
-    border: 1px solid {{ theme_seealso_border }};
+    background-color: #EEE;
+    border: 1px solid #CCC;
 }
 
 div.topic {
-    background-color: {{ theme_topic_bg }};
+    background-color: #EEE;
 }
 
 p.admonition-title {
@@ -382,12 +327,12 @@ p.admonition-title:after {
 }
 
 pre, tt, code {
-    font-family: {{theme_code_font_family}};
-    font-size: {{ theme_code_font_size }};
+    font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    font-size: 0.9em;
 }
 
 .hll {
-    background-color: {{theme_code_highlight}};
+    background-color: #FFC;
     margin: 0 -12px;
     padding: 0 12px;
     display: block;
@@ -405,20 +350,20 @@ tt.descname, code.descname {
 }
 
 img.screenshot {
-    -moz-box-shadow: 2px 2px 4px {{ theme_shadow }};
-    -webkit-box-shadow: 2px 2px 4px {{ theme_shadow }};
-    box-shadow: 2px 2px 4px {{ theme_shadow }};
+    -moz-box-shadow: 2px 2px 4px #EEE;
+    -webkit-box-shadow: 2px 2px 4px #EEE;
+    box-shadow: 2px 2px 4px #EEE;
 }
 
 table.docutils {
-    border: 1px solid {{ theme_table_border }};
-    -moz-box-shadow: 2px 2px 4px {{ theme_shadow }};
-    -webkit-box-shadow: 2px 2px 4px {{ theme_shadow }};
-    box-shadow: 2px 2px 4px {{ theme_shadow }};
+    border: 1px solid ;
+    -moz-box-shadow: 2px 2px 4px #EEE;
+    -webkit-box-shadow: 2px 2px 4px #EEE;
+    box-shadow: 2px 2px 4px #EEE;
 }
 
 table.docutils td, table.docutils th {
-    border: 1px solid {{ theme_table_border }};
+    border: 1px solid ;
     padding: 0.25em 0.7em;
 }
 
@@ -432,8 +377,8 @@ table.field-list, table.footnote {
 table.footnote {
     margin: 15px 0;
     width: 100%;
-    border: 1px solid {{ theme_footnote_border }};
-    background: {{ theme_footnote_bg }};
+    border: 1px solid #EEE;
+    background: #FDFDFD;
     font-size: 0.9em;
 }
 
@@ -494,14 +439,14 @@ ul, ol {
 }
 
 pre {
-    background: {{ theme_pre_bg }};
+    background: #EEE;
     padding: 7px 30px;
     margin: 15px 0px;
     line-height: 1.3em;
 }
 
 div.viewcode-block:target {
-    background: {{ theme_viewcode_target_bg }};
+    background: ;
 }
 
 dl pre, blockquote pre, li pre {
@@ -510,19 +455,19 @@ dl pre, blockquote pre, li pre {
 }
 
 tt, code {
-    background-color: {{ theme_code_bg }};
-    color: {{ theme_code_text }};
+    background-color: ;
+    color: ;
     /* padding: 1px 2px; */
 }
 
 tt.xref, code.xref, a tt {
-    background-color: {{ theme_xref_bg }};
-    border-bottom: 1px solid {{ theme_xref_border }};
+    background-color: ;
+    border-bottom: 1px solid ;
 }
 
 a.reference {
     text-decoration: none;
-    border-bottom: 1px dotted {{ theme_link }};
+    border-bottom: 1px dotted #004B6B;
 }
 
 /* Don't put an underline on images */
@@ -531,22 +476,22 @@ a.image-reference, a.image-reference:hover {
 }
 
 a.reference:hover {
-    border-bottom: 1px solid {{ theme_link_hover }};
+    border-bottom: 1px solid #6D4100;
 }
 
 a.footnote-reference {
     text-decoration: none;
     font-size: 0.7em;
     vertical-align: top;
-    border-bottom: 1px dotted {{ theme_link }};
+    border-bottom: 1px dotted #004B6B;
 }
 
 a.footnote-reference:hover {
-    border-bottom: 1px solid {{ theme_link_hover }};
+    border-bottom: 1px solid #6D4100;
 }
 
 a:hover tt, a:hover code {
-    background: {{ theme_code_hover }};
+    background: ;
 }
 
 
@@ -619,30 +564,26 @@ a:hover tt, a:hover code {
 
     div.documentwrapper {
         float: none;
-        background: {{ theme_base_bg }};
+        background: ;
     }
 
     div.sphinxsidebar {
         display: block;
         float: none;
         width: 102.5%;
-        {%- if theme_fixed_sidebar|lower == 'true' %}
-        margin: -20px -30px 20px -30px;
-        {%- else %}
         margin: 50px -30px -20px -30px;
-        {%- endif %}
         padding: 10px 20px;
-        background: {{ theme_narrow_sidebar_bg }};
-        color: {{ theme_narrow_sidebar_fg }};
+        background: #333;
+        color: #FFF;
     }
 
     div.sphinxsidebar h3, div.sphinxsidebar h4, div.sphinxsidebar p,
     div.sphinxsidebar h3 a {
-        color: {{ theme_base_bg }};
+        color: ;
     }
 
     div.sphinxsidebar a {
-        color: {{ theme_narrow_sidebar_link }};
+        color: #AAA;
     }
 
     div.sphinxsidebar p.logo {
@@ -688,15 +629,6 @@ a:hover tt, a:hover code {
     }
 }
 
-{%- if theme_fixed_sidebar|lower == 'true' %}
-@media screen and (min-width: 876px) {
-    div.sphinxsidebar {
-        position: fixed;
-        margin-left: 0;
-    }
-}
-{%- endif %}
-
 
 /* misc. */
 
@@ -731,12 +663,12 @@ table.docutils.citation, table.docutils.citation td, table.docutils.citation th 
 }
 
 .related.top {
-    border-bottom: 1px solid {{ theme_relbar_border }};
+    border-bottom: 1px solid #EEE;
     margin-bottom: 20px;
 }
 
 .related.bottom {
-    border-top: 1px solid {{ theme_relbar_border }};
+    border-top: 1px solid #EEE;
 }
 
 .related ul {
