@@ -8,7 +8,7 @@ Packages
 You'll need to install the following packages:
 
 * `Python 2.7 or Python 3.6 <http://python.org/download/>`_ 
-* `Numpy (>=1.12.0) and Scipy <https://www.scipy.org/install.html>`_
+* `Numpy (vn>=1.12.0) and Scipy <https://www.scipy.org/install.html>`_
 * `Matplotlib <https://matplotlib.org/users/installing.html>`_ 
 * `PyTropD <https://github.com/tropd/pytropd/>`_  
 
