@@ -1,0 +1,358 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>functions &#8212; PyTropD 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for functions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Written by Ori Adam Mar.21.2017</span>
+<span class="c1"># Edited by Alison Ming Jul.4.2017</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">integrate</span>
+<span class="kn">from</span> <span class="nn">functions</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="find_nearest"><a class="viewcode-back" href="../helper.html#functions.find_nearest">[docs]</a><span class="k">def</span> <span class="nf">find_nearest</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39; Find the index of the item in the array nearest to the value</span>
+<span class="sd">      </span>
+<span class="sd">      Args:</span>
+<span class="sd">        </span>
+<span class="sd">        array: array</span>
+
+<span class="sd">        value: value be found</span>
+
+<span class="sd">      Returns:</span>
+<span class="sd">          </span>
+<span class="sd">        int: index of value in array</span>
+
+<span class="sd">  &#39;&#39;&#39;</span>
+  <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+  <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span> <span class="o">-</span> <span class="n">value</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+  <span class="k">return</span> <span class="n">idx</span></div>
+
+<span class="c1">#Converted to python by Paul Staten Jul.29.2017</span>
+<div class="viewcode-block" id="TropD_Calculate_MaxLat"><a class="viewcode-back" href="../helper.html#functions.TropD_Calculate_MaxLat">[docs]</a><span class="k">def</span> <span class="nf">TropD_Calculate_MaxLat</span><span class="p">(</span><span class="n">F</span><span class="p">,</span><span class="n">lat</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">6</span><span class="p">)):</span>
+  <span class="sd">&#39;&#39;&#39; Find latitude of absolute maximum value for a given interval</span>
+
+<span class="sd">      Args:</span>
+
+<span class="sd">        F: 1D array</span>
+
+<span class="sd">        lat: equally spaced latitude array</span>
+
+<span class="sd">        n (int): rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  </span>
+
+<span class="sd">      Returns:</span>
+<span class="sd">  </span>
+<span class="sd">        float: location of max value of F along lat</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+
+  <span class="k">try</span><span class="p">:</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span> 
+  <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be an integer&#39;</span><span class="p">)</span>
+  
+  <span class="k">try</span><span class="p">:</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">n</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">)</span> 
+  <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TropD_Calculate_MaxLat: ERROR: the smoothing parameter n must be &gt;= 1&#39;</span><span class="p">)</span>
+
+  <span class="k">try</span><span class="p">:</span> 
+    <span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">F</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+  <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TropD_Calculate_MaxLat: ERROR: input field F has NaN values&#39;</span><span class="p">)</span>
+
+
+  <span class="n">F</span> <span class="o">=</span> <span class="n">F</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">F</span><span class="p">)</span>
+  <span class="n">F</span> <span class="o">=</span> <span class="n">F</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> 
+
+  <span class="n">Ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">((</span><span class="n">F</span><span class="o">**</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">lat</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">F</span> <span class="o">**</span> <span class="n">n</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">Ymax</span></div>
+
+<div class="viewcode-block" id="TropD_Calculate_Mon2Season"><a class="viewcode-back" href="../helper.html#functions.TropD_Calculate_Mon2Season">[docs]</a><span class="k">def</span> <span class="nf">TropD_Calculate_Mon2Season</span><span class="p">(</span><span class="n">Fm</span><span class="p">,</span> <span class="n">season</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span> <span class="n">m</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39; Calculate seasonal means from monthly time series</span>
+
+<span class="sd">      Args:</span>
+<span class="sd">  </span>
+<span class="sd">        Fm: array of dimensions (time, latitude, level) or (time, level) or (time, latitude) </span>
+
+<span class="sd">        season: array of months e.g., [-1,0,1] for DJF</span>
+
+<span class="sd">        m (int): index of first of January</span>
+
+<span class="sd">      Returns:</span>
+
+<span class="sd">        ndarray: the annual time series of the seasonal means</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+
+    
+  <span class="k">try</span><span class="p">:</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">season</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">12</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">season</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;season can only include indices from 1 to 12&#39;</span><span class="p">)</span>
+  
+  <span class="n">End_Index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Fm</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Fm</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">12</span><span class="p">)</span>  
+  <span class="n">Fm</span> <span class="o">=</span> <span class="n">Fm</span><span class="p">[</span><span class="n">m</span><span class="p">:</span><span class="n">End_Index</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+  <span class="n">F</span> <span class="o">=</span> <span class="n">Fm</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">season</span><span class="p">[</span><span class="mi">0</span><span class="p">]::</span><span class="mi">12</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">season</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">season</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+      <span class="n">F</span> <span class="o">=</span> <span class="n">F</span> <span class="o">+</span> <span class="n">Fm</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">s</span><span class="p">::</span><span class="mi">12</span><span class="p">,</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">F</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">season</span><span class="p">)</span>  
+
+  <span class="k">return</span> <span class="n">F</span></div>
+
+
+    
+
+<div class="viewcode-block" id="TropD_Calculate_StreamFunction"><a class="viewcode-back" href="../helper.html#functions.TropD_Calculate_StreamFunction">[docs]</a><span class="k">def</span> <span class="nf">TropD_Calculate_StreamFunction</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lev</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39; Calculate streamfunction by integrating meridional wind from top of the atmosphere to surface</span>
+
+<span class="sd">      Args:</span>
+
+<span class="sd">        V: array of zonal-mean meridional wind with dimensions (lat, lev)</span>
+<span class="sd">      </span>
+<span class="sd">        lat: equally spaced latitude array</span>
+
+<span class="sd">        lev: vertical level array in hPa</span>
+
+<span class="sd">      Returns:</span>
+<span class="sd">  </span>
+<span class="sd">        ndarray: the streamfunction psi(lat,lev) </span>
+<span class="sd">  &#39;&#39;&#39;</span>
+
+    
+  <span class="n">EarthRadius</span> <span class="o">=</span> <span class="mf">6371220.0</span>
+  <span class="n">EarthGrav</span> <span class="o">=</span> <span class="mf">9.80616</span>
+  <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">V</span><span class="p">))</span> 
+  <span class="c1"># B = 0 for subsurface data</span>
+  <span class="n">B</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">V</span><span class="p">)]</span><span class="o">=</span><span class="mi">0</span>
+  <span class="n">psi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">V</span><span class="p">))</span>
+
+  <span class="n">COS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lev</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">lev</span><span class="p">))</span>
+
+  <span class="n">psi</span> <span class="o">=</span> <span class="p">(</span><span class="n">EarthRadius</span><span class="o">/</span><span class="n">EarthGrav</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> \
+       <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">cumtrapz</span><span class="p">(</span><span class="n">B</span> <span class="o">*</span> <span class="n">V</span> <span class="o">*</span> <span class="n">COS</span><span class="p">,</span> <span class="n">lev</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
+  
+  <span class="k">return</span> <span class="n">psi</span></div>
+
+<div class="viewcode-block" id="TropD_Calculate_TropopauseHeight"><a class="viewcode-back" href="../helper.html#functions.TropD_Calculate_TropopauseHeight">[docs]</a><span class="k">def</span> <span class="nf">TropD_Calculate_TropopauseHeight</span><span class="p">(</span><span class="n">T</span> <span class="p">,</span><span class="n">P</span><span class="p">,</span> <span class="n">Z</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="sd">&#39;&#39;&#39; Calculate the Tropopause Height in isobaric coordinates </span>
+
+<span class="sd">      Based on the method described in Birner (2010), according to the WMO definition: first level at which the lapse rate &lt;= 2K/km and for which the lapse rate &lt;= 2K/km in all levels at least 2km above the found level </span>
+
+<span class="sd">      Args:</span>
+
+<span class="sd">        T: Temperature array of dimensions (latitude, levels) on (longitude, latitude, levels)</span>
+
+<span class="sd">        P: pressure levels in hPa</span>
+
+<span class="sd">        Z (optional): geopotential height [m] or any field with the same dimensions as T</span>
+
+<span class="sd">      Returns:</span>
+
+<span class="sd">        ndarray or tuple: </span>
+
+<span class="sd">          If Z = None, returns Pt(lat) or Pt(lon,lat), the tropopause level in hPa </span>
+
+<span class="sd">          If Z is given, returns Pt and Ht with shape (lat) or (lon,lat). The field Z evaluated at the tropopause. For Z=geopotential height, Ht is the tropopause altitude in m </span>
+<span class="sd">  &#39;&#39;&#39;</span>
+
+
+  <span class="n">Rd</span> <span class="o">=</span> <span class="mf">287.04</span>
+  <span class="n">Cpd</span> <span class="o">=</span> <span class="mf">1005.7</span>
+  <span class="n">g</span> <span class="o">=</span> <span class="mf">9.80616</span>
+  <span class="n">k</span> <span class="o">=</span> <span class="n">Rd</span><span class="o">/</span><span class="n">Cpd</span>
+  <span class="n">PI</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="n">k</span>
+  <span class="n">Factor</span> <span class="o">=</span> <span class="n">g</span><span class="o">/</span><span class="n">Cpd</span> <span class="o">*</span> <span class="mi">1000</span>
+  
+
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="c1"># make P monotonically decreasing</span>
+  <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">P</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">P</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">Z</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+      <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+  <span class="n">Pk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">((</span><span class="n">P</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+  <span class="n">Pk2</span> <span class="o">=</span> <span class="p">(</span><span class="n">Pk</span><span class="p">[:,:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">Pk</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">:])</span><span class="o">/</span><span class="mi">2</span>
+  
+  <span class="n">T2</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span><span class="p">[:,:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">:])</span><span class="o">/</span><span class="mi">2</span>
+  <span class="n">Pk1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">Pk2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span>
+
+  <span class="n">Gamma</span> <span class="o">=</span> <span class="p">(</span><span class="n">T</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">T</span><span class="p">[:,:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">Pk</span><span class="p">[:,:,</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">Pk</span><span class="p">[:,:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span>\
+          <span class="n">Pk2</span> <span class="o">/</span> <span class="n">T2</span> <span class="o">*</span> <span class="n">Factor</span>
+  <span class="n">Gamma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">2</span><span class="p">]))</span>
+
+  <span class="n">T2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">T2</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+  <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+  
+  <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Gamma</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">G_f</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">Pk1</span><span class="p">,</span> <span class="n">Gamma</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s1">&#39;extrapolate&#39;</span><span class="p">)</span>
+    <span class="n">G1</span> <span class="o">=</span> <span class="n">G_f</span><span class="p">(</span><span class="n">PI</span><span class="p">)</span>
+    <span class="n">T2_f</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">Pk1</span><span class="p">,</span><span class="n">T2</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s1">&#39;extrapolate&#39;</span><span class="p">)</span>
+    <span class="n">T1</span> <span class="o">=</span> <span class="n">T2_f</span><span class="p">(</span><span class="n">PI</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">G1</span> <span class="o">&lt;=</span><span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">PI</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">550</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="n">k</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">PI</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">75</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">**</span><span class="n">k</span><span class="p">)))</span>
+    <span class="n">Pidx</span> <span class="o">=</span> <span class="n">PI</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> 
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">Pidx</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Pidx</span><span class="p">)):</span>
+        <span class="n">dpk_2km</span> <span class="o">=</span>  <span class="o">-</span><span class="mi">2000</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="n">g</span> <span class="o">/</span> <span class="n">Rd</span> <span class="o">/</span> <span class="n">T1</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">Pidx</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+        <span class="n">idx2</span> <span class="o">=</span> <span class="n">find_nearest</span><span class="p">(</span><span class="n">Pidx</span><span class="p">[</span><span class="n">c</span><span class="p">:],</span> <span class="n">Pidx</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">dpk_2km</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">G1</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="n">c</span><span class="p">]:</span><span class="n">idx</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">+</span><span class="n">idx2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span> <span class="o">==</span> <span class="n">idx2</span><span class="p">:</span>
+          <span class="n">Pt</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="n">Pidx</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+          <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">Pt</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+      
+ 
+  <span class="n">Pt</span> <span class="o">=</span> <span class="n">Pt</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">k</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+    
+  <span class="k">if</span> <span class="n">Z</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+    <span class="n">Zt</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Z</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Z</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Z</span><span class="p">)[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">Ht</span> <span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+    
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Ht</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+      <span class="n">f</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">Zt</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
+      <span class="n">Ht</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">Pt</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+    <span class="n">Ht</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Ht</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Pt</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">Pt</span><span class="p">,</span> <span class="n">Ht</span>
+  
+  <span class="k">else</span><span class="p">:</span>
+    
+    <span class="n">Pt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Pt</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">T</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">Pt</span></div>
+    
+<span class="c1">#Converted to python by Paul Staten Jul.29.2017</span>
+<div class="viewcode-block" id="TropD_Calculate_ZeroCrossing"><a class="viewcode-back" href="../helper.html#functions.TropD_Calculate_ZeroCrossing">[docs]</a><span class="k">def</span> <span class="nf">TropD_Calculate_ZeroCrossing</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lat_uncertainty</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+
+  <span class="sd">&#39;&#39;&#39; Find the first (with increasing index) zero crossing of the function F</span>
+
+<span class="sd">      Args:</span>
+<span class="sd">  </span>
+<span class="sd">        F: array</span>
+
+<span class="sd">        lat: latitude array (same length as F)</span>
+
+<span class="sd">        lat_uncertainty (float, optional): The minimal distance allowed between adjacent zero crossings of indetical sign change for example, for lat_uncertainty = 10, if the most equatorward zero crossing is from positive to negative, the function will return a NaN value if an additional zero crossings from positive to negative is found within 10 degrees of that zero crossing.</span>
+
+<span class="sd">      Returns:</span>
+
+<span class="sd">        float: latitude of zero crossing by linear interpolation</span>
+<span class="sd">  &#39;&#39;&#39;</span>
+  <span class="c1"># Make sure a zero crossing exists</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">F</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+  <span class="c1"># Find first zero crossing in index units.</span>
+  <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">F</span><span class="p">))</span>
+
+  <span class="c1"># If more than one zero crossing exists in proximity to the first zero crossing.</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span> <span class="o">-</span> <span class="n">lat</span><span class="p">[</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">&lt;</span> <span class="n">lat_uncertainty</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+  <span class="n">a1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">D</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="c1"># if there is an exact zero, use its latitude...</span>
+  <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">D</span><span class="p">[</span><span class="n">a1</span><span class="p">])</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+    <span class="n">ZC</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">ZC</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">a1</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">a1</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">lat</span><span class="p">[</span><span class="n">a1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="n">a1</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">F</span><span class="p">[</span><span class="n">a1</span><span class="p">])</span>
+  <span class="k">return</span> <span class="n">ZC</span></div>
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">PyTropD</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=tropd&repo=pytropd&type=watch&count=None&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">List of metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../helper.html">Additional functions</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Alison Ming.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
