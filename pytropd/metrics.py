@@ -254,8 +254,8 @@ def TropD_Metric_PE(pe,lat,method='zero_crossing',lat_uncertainty=0.0):
     
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
-      pe = np.flip(pe)
-      lat = np.flip(lat)
+      pe = np.flip(pe,0)
+      lat = np.flip(lat,0)
     
   # The gradient of PE is used to determine whether PE becomes positive at the zero crossing
   ped = np.interp(lat, (lat[:-1] + lat[1:])/2.0, np.diff(pe))
@@ -728,8 +728,8 @@ def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', lat_unce
     
   # make latitude vector monotonically increasing
   if lat[-1] < lat[0]:
-      uas = np.flip(uas)
-      lat = np.flip(lat)
+      uas = np.flip(uas,0)
+      lat = np.flip(lat,0)
 
   # define latitudes of boundaries certain regions 
   eq_boundary = 5

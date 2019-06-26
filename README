@@ -2,3 +2,5 @@
 PyTropD is a software package designed to calculate various metrics of tropical width and is the python equivalent of the Matlab package,TropD.
 
 https://tropd.github.io/pytropd/reference.html
+
+The python 3 version requires numpy vn1.12.0 or later
