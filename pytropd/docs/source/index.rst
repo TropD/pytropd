@@ -39,6 +39,7 @@ The MATLAB |registered| version was originally developed by the `ISSI Tropical W
 
 The code was translated to Python by Alison Ming with help from Paul William Staten and TropD team.
 
+Last updated: 26 June 2019
 
 .. toctree::
     :hidden:
