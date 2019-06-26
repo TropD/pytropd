@@ -23,6 +23,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="PyTropD 1.0.0 documentation" href="index.html" />
     <link rel="prev" title="List of metrics" href="reference.html" />
    
@@ -39,8 +40,186 @@
             
   <div class="section" id="additional-functions">
 <h1>Additional functions<a class="headerlink" href="#additional-functions" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="description-of-additional-functions">
-<h2>Description of additional functions<a class="headerlink" href="#description-of-additional-functions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#functions.find_nearest" title="functions.find_nearest"><code class="xref py py-obj docutils literal"><span class="pre">find_nearest</span></code></a>(array,&nbsp;value)</td>
+<td>Find the index of the item in the array nearest to the value</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#functions.TropD_Calculate_MaxLat" title="functions.TropD_Calculate_MaxLat"><code class="xref py py-obj docutils literal"><span class="pre">TropD_Calculate_MaxLat</span></code></a>(F,&nbsp;lat[,&nbsp;n])</td>
+<td>Find latitude of absolute maximum value for a given interval</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#functions.TropD_Calculate_Mon2Season" title="functions.TropD_Calculate_Mon2Season"><code class="xref py py-obj docutils literal"><span class="pre">TropD_Calculate_Mon2Season</span></code></a>(Fm[,&nbsp;season,&nbsp;m])</td>
+<td>Calculate seasonal means from monthly time series</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#functions.TropD_Calculate_StreamFunction" title="functions.TropD_Calculate_StreamFunction"><code class="xref py py-obj docutils literal"><span class="pre">TropD_Calculate_StreamFunction</span></code></a>(V,&nbsp;lat,&nbsp;lev)</td>
+<td>Calculate streamfunction by integrating meridional wind from top of the atmosphere to surface</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#functions.TropD_Calculate_TropopauseHeight" title="functions.TropD_Calculate_TropopauseHeight"><code class="xref py py-obj docutils literal"><span class="pre">TropD_Calculate_TropopauseHeight</span></code></a>(T,&nbsp;P[,&nbsp;Z])</td>
+<td>Calculate the Tropopause Height in isobaric coordinates</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#functions.TropD_Calculate_ZeroCrossing" title="functions.TropD_Calculate_ZeroCrossing"><code class="xref py py-obj docutils literal"><span class="pre">TropD_Calculate_ZeroCrossing</span></code></a>(F,&nbsp;lat[,&nbsp;...])</td>
+<td>Find the first (with increasing index) zero crossing of the function F</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="module-functions">
+<span id="description-of-additional-functions"></span><h2>Description of additional functions<a class="headerlink" href="#module-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="functions.TropD_Calculate_MaxLat">
+<code class="descclassname">functions.</code><code class="descname">TropD_Calculate_MaxLat</code><span class="sig-paren">(</span><em>F</em>, <em>lat</em>, <em>n=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#TropD_Calculate_MaxLat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.TropD_Calculate_MaxLat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find latitude of absolute maximum value for a given interval</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>F</strong> &#8211; 1D array</li>
+<li><strong>lat</strong> &#8211; equally spaced latitude array</li>
+<li><strong>n</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">location of max value of F along lat</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.TropD_Calculate_Mon2Season">
+<code class="descclassname">functions.</code><code class="descname">TropD_Calculate_Mon2Season</code><span class="sig-paren">(</span><em>Fm</em>, <em>season=array([ 0</em>, <em>1</em>, <em>2</em>, <em>3</em>, <em>4</em>, <em>5</em>, <em>6</em>, <em>7</em>, <em>8</em>, <em>9</em>, <em>10</em>, <em>11])</em>, <em>m=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#TropD_Calculate_Mon2Season"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.TropD_Calculate_Mon2Season" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate seasonal means from monthly time series</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>Fm</strong> &#8211; array of dimensions (time, latitude, level) or (time, level) or (time, latitude)</li>
+<li><strong>season</strong> &#8211; array of months e.g., [-1,0,1] for DJF</li>
+<li><strong>m</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) &#8211; index of first of January</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the annual time series of the seasonal means</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.TropD_Calculate_StreamFunction">
+<code class="descclassname">functions.</code><code class="descname">TropD_Calculate_StreamFunction</code><span class="sig-paren">(</span><em>V</em>, <em>lat</em>, <em>lev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#TropD_Calculate_StreamFunction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.TropD_Calculate_StreamFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate streamfunction by integrating meridional wind from top of the atmosphere to surface</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>V</strong> &#8211; array of zonal-mean meridional wind with dimensions (lat, lev)</li>
+<li><strong>lat</strong> &#8211; equally spaced latitude array</li>
+<li><strong>lev</strong> &#8211; vertical level array in hPa</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the streamfunction psi(lat,lev)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.TropD_Calculate_TropopauseHeight">
+<code class="descclassname">functions.</code><code class="descname">TropD_Calculate_TropopauseHeight</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>Z=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#TropD_Calculate_TropopauseHeight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.TropD_Calculate_TropopauseHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Tropopause Height in isobaric coordinates</p>
+<p>Based on the method described in Birner (2010), according to the WMO definition: first level at which the lapse rate &lt;= 2K/km and for which the lapse rate &lt;= 2K/km in all levels at least 2km above the found level</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>T</strong> &#8211; Temperature array of dimensions (latitude, levels) on (longitude, latitude, levels)</li>
+<li><strong>P</strong> &#8211; pressure levels in hPa</li>
+<li><strong>Z</strong> (<em>optional</em>) &#8211; geopotential height [m] or any field with the same dimensions as T</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p>If Z = None, returns Pt(lat) or Pt(lon,lat), the tropopause level in hPa</p>
+<p>If Z is given, returns Pt and Ht with shape (lat) or (lon,lat). The field Z evaluated at the tropopause. For Z=geopotential height, Ht is the tropopause altitude in m</p>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ndarray or tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.TropD_Calculate_ZeroCrossing">
+<code class="descclassname">functions.</code><code class="descname">TropD_Calculate_ZeroCrossing</code><span class="sig-paren">(</span><em>F</em>, <em>lat</em>, <em>lat_uncertainty=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#TropD_Calculate_ZeroCrossing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.TropD_Calculate_ZeroCrossing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the first (with increasing index) zero crossing of the function F</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>F</strong> &#8211; array</li>
+<li><strong>lat</strong> &#8211; latitude array (same length as F)</li>
+<li><strong>lat_uncertainty</strong> (<em>float, optional</em>) &#8211; The minimal distance allowed between adjacent zero crossings of indetical sign change for example, for lat_uncertainty = 10, if the most equatorward zero crossing is from positive to negative, the function will return a NaN value if an additional zero crossings from positive to negative is found within 10 degrees of that zero crossing.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">latitude of zero crossing by linear interpolation</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.python.org/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="functions.find_nearest">
+<code class="descclassname">functions.</code><code class="descname">find_nearest</code><span class="sig-paren">(</span><em>array</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/functions.html#find_nearest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#functions.find_nearest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the index of the item in the array nearest to the value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>array</strong> &#8211; array</li>
+<li><strong>value</strong> &#8211; value be found</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">index of value in array</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 </div>
 
@@ -70,7 +249,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">List of metrics</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Additional functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#description-of-additional-functions">Description of additional functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-functions">Description of additional functions</a></li>
 </ul>
 </li>
 </ul>
