@@ -1,4 +1,4 @@
-*.pyc
+pytropd.egg-info/*
 build/
 dist/
 
