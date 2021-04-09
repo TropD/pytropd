@@ -1,4 +1,11 @@
 pytropd.egg-info/*
 build/
 dist/
-
+pytropd/__pycache__/*
+ 
+ 
+ 
+ 
+ 
+ 
+ 
