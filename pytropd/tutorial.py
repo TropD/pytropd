@@ -5,7 +5,7 @@ import os
 
 def buildV():
   dirname = os.path.dirname(__file__)
-  filename = os.path.join(dirname, '../ValidationData/va.nc')
+  filename = os.path.join(dirname, 'ValidationData/va.nc')
   ## 1) PSI -- Streamfunction zero crossing
   #read meridional velocity V(time,lat,lev), latitude and level
   f_V = netcdf.netcdf_file(filename,'r')
