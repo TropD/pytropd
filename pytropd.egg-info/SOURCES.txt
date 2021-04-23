@@ -37,4 +37,5 @@ pytropd/tutorial.py
 pytropd.egg-info/PKG-INFO
 pytropd.egg-info/SOURCES.txt
 pytropd.egg-info/dependency_links.txt
+pytropd.egg-info/requires.txt
 pytropd.egg-info/top_level.txt
