@@ -844,7 +844,7 @@ def Shah_et_al_2020_GWL_zonalmean(tracer_2d_strat=None,lat=None,pressure_strat=N
   
     Parameters
     ==========
-    tracer_3d_strat: numpy array (dimensions: lat x pressure x time)
+    tracer_2d_strat: numpy array (dimensions: lat x pressure x time)
     latitude: numpy array in degrees (1-D)
     pressure: numpy array (1-D)
     time: numpy array (1-D)
@@ -1005,7 +1005,7 @@ def Shah_et_al_2020_one_sigma_zonalmean(tracer_2d_strat=None,lat=None,pressure_s
   
     Parameters
     ==========
-    tracer_3d_strat: numpy array (dimensions: lat x pressure x time)
+    tracer_2d_strat: numpy array (dimensions: lat x pressure x time)
     latitude: numpy array in degrees (1-D)
     pressure: numpy array (1-D)
     time: numpy array (1-D)
