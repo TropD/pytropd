@@ -684,7 +684,7 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
   
   else:
     print('TropD_Metric_TPB: ERROR : Unrecognized method ', method)
-
+  print(np.shape(PhiSH),np.shape(PhiNH))
   return PhiSH, PhiNH
   
 
@@ -713,12 +713,12 @@ def TropD_Metric_UAS(U, lat, lev=np.array([1]), method='zero_crossing', lat_unce
   try:
     assert (lat_uncertainty >= 0)  
   except AssertionError:
-    print('TropD_Metric_PSI: ERROR : lat_uncertainty must be >= 0')
+    print('TropD_Metric_UAS: ERROR : lat_uncertainty must be >= 0')
     
   try:
     assert(method in ['zero_crossing'])
   except AssertionError:
-    print('TropD_Metric_PSI: ERROR : unrecognized method ', method)
+    print('TropD_Metric_UAS: ERROR : unrecognized method ', method)
     
   if len(lev) > 1:
     uas = U[:,f.find_nearest(lev, 850)]
