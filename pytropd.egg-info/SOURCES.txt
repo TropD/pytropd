@@ -31,12 +31,13 @@ ValidationMetrics/UAS.nc
 ValidationMetrics/UAS_ANN.nc
 pytropd/TropD_Example_Calculations.py
 pytropd/__init__.py
-pytropd/adiff.py
-pytropd/edj1.py
 pytropd/functions.py
 pytropd/metrics.py
-pytropd/pyg_metrics.py
+pytropd/pygeode_metrics.py
+pytropd/pygtest.py
 pytropd/tutorial.py
+pytropd/xarray_metrics.py
+pytropd/xrtest.py
 pytropd.egg-info/PKG-INFO
 pytropd.egg-info/SOURCES.txt
 pytropd.egg-info/dependency_links.txt

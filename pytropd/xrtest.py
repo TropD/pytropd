@@ -1,7 +1,7 @@
 import numpy as np
 import xarray as xr
 import pandas as pd
-import xarray_metrics as pyt_metrics
+import pytropd as pyt
 from scipy import interpolate
 
 ##Validate metrics
@@ -17,7 +17,7 @@ v_data['time'] = pd.date_range(start='1979-01-01', periods=v_data.sizes['time'],
 #yearly mean of data
 v_annual = v_data.groupby('time.year').mean('time')
 
-psi_metrics = v_annual.pyt_metrics.psi()         
+psi_metrics = v_annual.pyt_metrics.xr_psi()         
 
 psi_metric_validation_data = xr.open_dataset('./ValidationMetrics/PSI_ANN.nc')         
 
@@ -39,7 +39,7 @@ T_data['time'] = pd.date_range(start='1979-01-01', periods=T_data.sizes['time'],
 #yearly mean of data
 T_annual = T_data.groupby('time.year').mean('time')
 
-tpb_metrics = T_annual.pyt_metrics.tpb()         
+tpb_metrics = T_annual.pyt_metrics.xr_tpb()         
 
 tpb_metric_validation_data = xr.open_dataset('./ValidationMetrics/TPB_ANN.nc')         
 
@@ -67,10 +67,10 @@ psl_MAM = psl_MAM_select.groupby(psl_MAM_select.time.dt.year).mean("time")
 psl_JJA = psl_JJA_select.groupby(psl_JJA_select.time.dt.year).mean("time")    
 psl_SON = psl_SON_select.groupby(psl_SON_select.time.dt.year).mean("time")    
 
-psl_DJF_metrics = psl_DJF.pyt_metrics.psl()   
-psl_MAM_metrics = psl_MAM.pyt_metrics.psl()   
-psl_JJA_metrics = psl_JJA.pyt_metrics.psl()   
-psl_SON_metrics = psl_SON.pyt_metrics.psl()   
+psl_DJF_metrics = psl_DJF.pyt_metrics.xr_psl()   
+psl_MAM_metrics = psl_MAM.pyt_metrics.xr_psl()   
+psl_JJA_metrics = psl_JJA.pyt_metrics.xr_psl()   
+psl_SON_metrics = psl_SON.pyt_metrics.xr_psl()   
 
 psl_DJF_metric_validation_data = xr.open_dataset('./ValidationMetrics/PSL_DJF.nc')    
 psl_MAM_metric_validation_data = xr.open_dataset('./ValidationMetrics/PSL_MAM.nc')    
@@ -112,7 +112,7 @@ u_data['time'] = pd.date_range(start='1979-01-01', periods=u_data.sizes['time'],
 #yearly mean of data
 u_annual = u_data.groupby('time.year').mean('time')
 
-edj_metrics = u_annual.pyt_metrics.edj()         
+edj_metrics = u_annual.pyt_metrics.xr_edj()         
 
 edj_metric_validation_data = xr.open_dataset('./ValidationMetrics/EDJ_ANN.nc')         
 
@@ -126,7 +126,7 @@ else:
 #yearly mean of data
 u_annual = u_data.groupby('time.year').mean('time')
 
-stj_metrics = u_annual.pyt_metrics.stj()         
+stj_metrics = u_annual.pyt_metrics.xr_stj()         
 
 stj_metric_validation_data = xr.open_dataset('./ValidationMetrics/STJ_ANN.nc')         
 
@@ -147,7 +147,7 @@ olr_data['time'] = pd.date_range(start='1979-01-01', periods=olr_data.sizes['tim
 #yearly mean of data
 olr_annual = olr_data.groupby('time.year').mean('time')
 
-olr_metrics = olr_annual.pyt_metrics.olr()         
+olr_metrics = olr_annual.pyt_metrics.xr_olr()         
 
 olr_metric_validation_data = xr.open_dataset('./ValidationMetrics/OLR_ANN.nc')         
 
@@ -174,7 +174,7 @@ pe_data['time'] = pd.date_range(start='1979-01-01', periods=pe_data.sizes['time'
 #yearly mean of data
 pe_annual = pe_data.groupby('time.year').mean('time')
 
-pe_metrics = pe_annual.pyt_metrics.pe()         
+pe_metrics = pe_annual.pyt_metrics.xr_pe()         
 
 pe_metric_validation_data = xr.open_dataset('./ValidationMetrics/PE_ANN.nc')         
 
@@ -194,7 +194,7 @@ uas_data['time'] = pd.date_range(start='1979-01-01', periods=uas_data.sizes['tim
 #yearly mean of data
 uas_annual = uas_data.groupby('time.year').mean('time')
 
-uas_metrics = uas_annual.pyt_metrics.uas()         
+uas_metrics = uas_annual.pyt_metrics.xr_uas()         
 
 uas_metric_validation_data = xr.open_dataset('./ValidationMetrics/UAS_ANN.nc')         
 

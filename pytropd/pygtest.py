@@ -1,6 +1,6 @@
 import numpy as np
 import pygeode as pyg
-import pygeode_metrics as pyt
+import pytropd as pyt
 ##Validate metrics
 # Check calculations with precalculated values from file within roundoff error
 #Psi500
@@ -21,7 +21,7 @@ v_data = v_data.replace_axes(time=time_axis)
 #yearly mean of data
 v_annual = v_data.va.yearlymean()
 
-psi_metrics = pyt.psi(v_annual)     
+psi_metrics = pyt.pyg_psi(v_annual)     
 
 psi_metric_validation_data = pyg.open('./ValidationMetrics/PSI_ANN.nc')         
 
@@ -40,7 +40,7 @@ T_data = T_data.replace_axes(time=time_axis)
 #yearly mean of data
 T_annual = T_data.ta.yearlymean()
 
-tpb_metrics = pyt.tpb(T_annual)         
+tpb_metrics = pyt.pyg_tpb(T_annual)         
 
 tpb_metric_validation_data = pyg.open('./ValidationMetrics/TPB_ANN.nc')         
 
@@ -62,10 +62,10 @@ psl_data = psl_data.replace_axes(time=time_axis)
 psl_seasonal_mean = psl_data.psl.seasonalmean()
 
 #calculate metrics
-psl_DJF_metrics = pyt.psl(psl_seasonal_mean(season=1))
-psl_MAM_metrics = pyt.psl(psl_seasonal_mean(season=2))
-psl_JJA_metrics = pyt.psl(psl_seasonal_mean(season=3))
-psl_SON_metrics = pyt.psl(psl_seasonal_mean(season=4))
+psl_DJF_metrics = pyt.pyg_psl(psl_seasonal_mean(season=1))
+psl_MAM_metrics = pyt.pyg_psl(psl_seasonal_mean(season=2))
+psl_JJA_metrics = pyt.pyg_psl(psl_seasonal_mean(season=3))
+psl_SON_metrics = pyt.pyg_psl(psl_seasonal_mean(season=4))
 
 psl_DJF_metric_validation_data = pyg.open('./ValidationMetrics/PSL_DJF.nc')    
 psl_MAM_metric_validation_data = pyg.open('./ValidationMetrics/PSL_MAM.nc')    
@@ -106,7 +106,7 @@ u_data = u_data.replace_axes(time=time_axis, lat=pyg.Lat(u_data.lat[:]))
 #yearly mean of data
 u_annual = u_data.ua.yearlymean()
 
-edj_metrics = pyt.edj(u_annual)         
+edj_metrics = pyt.pyg_edj(u_annual)         
 
 edj_metric_validation_data = pyg.open('./ValidationMetrics/EDJ_ANN.nc')         
 
@@ -118,7 +118,7 @@ else:
 
 # Subtropical jet
 
-stj_metrics = pyt.stj(u_annual)         
+stj_metrics = pyt.pyg_stj(u_annual)         
 
 stj_metric_validation_data = pyg.open('./ValidationMetrics/STJ_ANN.nc')         
 
@@ -139,7 +139,7 @@ olr_data = olr_data.replace_axes(time=time_axis)
 #yearly mean of data
 olr_annual = olr_data.rlnt.yearlymean()
 
-olr_metrics = pyt.olr(olr_annual)         
+olr_metrics = pyt.pyg_olr(olr_annual)         
 
 olr_metric_validation_data = pyg.open('./ValidationMetrics/OLR_ANN.nc')         
 
@@ -167,7 +167,7 @@ pe_data = (pr_data.pr - er).rename('pe')
 #yearly mean of data
 pe_annual = pe_data.yearlymean()
 
-pe_metrics = pyt.pe(pe_data)         
+pe_metrics = pyt.pyg_pe(pe_data)         
 
 pe_metric_validation_data = pyg.open('./ValidationMetrics/PE_ANN.nc')         
 
@@ -187,7 +187,7 @@ uas_data = uas_data.replace_axes(time=time_axis)
 #yearly mean of data
 uas_annual = uas_data.uas.yearlymean()
 
-uas_metrics = pyt.uas(uas_annual)         
+uas_metrics = pyt.pyg_uas(uas_annual)         
 
 uas_metric_validation_data = pyg.open('./ValidationMetrics/UAS_ANN.nc')         
 

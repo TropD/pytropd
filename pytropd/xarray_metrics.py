@@ -1,9 +1,10 @@
 import xarray as xr
-import pytropd as pyt
-import numpy as np
 
 @xr.register_dataset_accessor("pyt_metrics")
 class MetricAccessor:
+    import pytropd as pyt
+    import numpy as np
+
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
         self.params = {}
@@ -24,12 +25,12 @@ class MetricAccessor:
                                          )
 
     def metrics(self, data):
-      """Return the PyTropD metrics this data."""
+      """Return the self.pytropD metrics this data."""
       
       # Compute the relevant metric
-      metric_function = getattr(pyt, 'TropD_Metric_' + self.metric_name.upper()) 
+      metric_function = getattr(self.pyt, 'TropD_Metric_' + self.metric_name.upper()) 
       metric_lats = metric_function(data, lat=self.latitudes, **self.params)
-      return np.squeeze(np.array(metric_lats))
+      return self.np.squeeze(self.np.array(metric_lats))
 
 
     def extract_property_name(self, property_name): 
@@ -94,10 +95,10 @@ class MetricAccessor:
       return dataset_keys[index[0]]
     
     def validate_data(self, property_name):   
-      ## metrics that take 1D variable as input
+      ## metrics that take 1D variable as iself.nput
       #if self.metric_name in ['olr','pe','psl']:
       #  max_axes = 1
-      ##metrics that take 2D variable as input
+      ##metrics that take 2D variable as iself.nput
       #elif self.metric_name in ['edj', 'psi','stj','tpb','uas']:
       #  max_axes = 2
       
@@ -123,13 +124,13 @@ class MetricAccessor:
         self.params['lev'] = pressure
 
       #  #do we need to transpose values so that dimensions are (lat,pres)?
-      #  if np.shape(data_array)[1] != len(pressure):
+      #  if self.np.shape(data_array)[1] != len(pressure):
       #    data_array = data_array.transpose()
-      #    assert np.shape(data_array)[1] == len(pressure)
+      #    assert self.np.shape(data_array)[1] == len(pressure)
       #self.data_values = data_array
 
 
-    def edj(self,**params):
+    def xr_edj(self,**params):
     
       '''TropD Eddy Driven Jet (EDJ) metric
            
@@ -166,9 +167,9 @@ class MetricAccessor:
                                 ) 
       # define coordinates
 
-      return edj_lats.assign_coords(metrics=("metrics", np.array([0,1])))
+      return edj_lats.assign_coords(metrics=("metrics", self.np.array([0,1])))
 
-    def olr(self, **params):
+    def xr_olr(self, **params):
   
       """TropD Outgoing Longwave Radiation (OLR) metric
          
@@ -219,13 +220,14 @@ class MetricAccessor:
                                 ) 
       # define coordinates
       metric_attrs = {'Description':'SH and NH latitudes'}
-      return olr_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return olr_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
   
-    def pe(self, **params):
+    def xr_pe(self, **params):
     
       ''' TropD Precipitation minus Evaporation (PE) metric
          Var should contain one axis :class:`pyg.Lat`.  
     
+    import xarray as xr
          Parameters:
             pe(lat,): zonal-mean precipitation minus evaporation
        
@@ -257,10 +259,10 @@ class MetricAccessor:
       # define coordinates
       metric_attrs = {'Description':'SH and NH latitudes'}
 
-      return pe_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return pe_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
     
     
-    def psi(self,**params):
+    def xr_psi(self,**params):
     
       ''' TropD Mass streamfunction (PSI) metric
 
@@ -310,11 +312,11 @@ class MetricAccessor:
       # define coordinates
 
       metric_attrs = {'Description':'SH and NH latitudes'}
-      return psi_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return psi_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
       #Validate data and extract data
     
     
-    def psl(self,**params):
+    def xr_psl(self,**params):
     
       ''' TropD Sea-level pressure (PSL) metric
           Latitude of maximum of the subtropical sea-level pressure
@@ -348,10 +350,10 @@ class MetricAccessor:
       # define coordinates
 
       metric_attrs = {'Description':'SH and NH latitudes'}
-      return psl_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return psl_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
     
     
-    def stj(self,**params):
+    def xr_stj(self,**params):
     
       '''TropD Eddy Driven Jet (STJ) metric
            
@@ -389,10 +391,10 @@ class MetricAccessor:
       # define coordinates
 
       metric_attrs = {'Description':'SH and NH latitudes'}
-      return stj_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return stj_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
     
     
-    def tpb(self,**params):
+    def xr_tpb(self,**params):
     
       ''' TropD Tropopause break (TPB) metric
          Var should contain axes :class:`pyg.Lat`and :class:`pyg.Pres` 
@@ -435,10 +437,10 @@ class MetricAccessor:
       # define coordinates
       metric_attrs = {'Description':'SH and NH latitudes'}
 
-      return tbp_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return tbp_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
     
     
-    def uas(self,**params):
+    def xr_uas(self,**params):
     
       ''' TropD near-surface zonal wind (UAS) metric
          Var should contain axis :class:`pyg.Lat. If :class:`pyg.Pres` is included, the nearest level to the surface is used.
@@ -449,7 +451,7 @@ class MetricAccessor:
             
             lat: latitude vector
             
-            lev: vertical level vector in hPa units. lev=np.array([1]) for single-level input zonal wind U(lat,)
+            lev: vertical level vector in hPa units. lev=self.np.array([1]) for single-level iself.nput zonal wind U(lat,)
     
             method (str): 
               'zero_crossing': the first subtropical latitude where near-surface zonal wind changes from negative to positive
@@ -477,7 +479,7 @@ class MetricAccessor:
       # define coordinates
 
       metric_attrs = {'Description':'SH and NH latitudes'}
-      return uas_lats.assign_coords(metrics=("metrics", np.array([0,1]), metric_attrs))
+      return uas_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
     
     
     

@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README')) as f:
       long_description = f.read()
 
 setup (name="pytropd",
-	version="1.1",
+	version="2.0",
         description = "Calculation of metrics of tropical width",
 	long_description=long_description,
         license = "GPL-3",

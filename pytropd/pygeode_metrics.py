@@ -3,6 +3,7 @@ import numpy as np
 import pytropd as pyt
 from pygeode.axis import NamedAxis
 import pygeode as pyg
+from scipy import interpolate
 
 class MetricVar (Var):
   ''''''
@@ -23,9 +24,18 @@ class MetricVar (Var):
     self.metric = metric
 
     self.needs_paxis = self.pressure_axis_needed()
+    
+    # make sure data is a dataset not a var
+    if isinstance(data, pyg.Var): 
+      data =pyg.asdataset(data)
+
     data = self.extract_property_name(data, property_name=['lat','Latitude'])
     data = self.extract_property_name(data, property_name=['pres','Pressure'])
-    var = self.find_relevant_variable(data)
+    #if dataset only contains one pyg.Var, assume
+    #this is the correct variable for the metric and return it
+    #otherwise, find check the name of the variable for the closest match
+    # If none found, raise error.
+    var = self.extract_property_name(data, property_name=self.metric_property_name[self.metric])
 
     self.var = var.squeeze()
     self.params = params
@@ -235,21 +245,10 @@ class MetricVar (Var):
       return getattr(data, dataset_keys[index[0]])
   
   
-  def find_relevant_variable(self, data):
-  
-    #if pyg.Var given, return this
-    if isinstance(data, pyg.Var): return data
-  
-    #if data is a pyg.Dataset and only contains one pyg.Var, assume
-    #this is the correct variable for the metric and return it
-    #otherwise, find check the name of the variable for the closest match
-    # If none found, raise error.
-    if isinstance(data, pyg.Dataset):
-      return self.extract_property_name(data, property_name=self.metric_property_name[self.metric])
 
 
 
-def edj(data,**params):
+def pyg_edj(data,**params):
 
   '''TropD Eddy Driven Jet (EDJ) metric
 
@@ -283,7 +282,7 @@ def edj(data,**params):
   Attributes:
     {}
   Type:  SqueezedVar (dtype="float64")
-  >>> print(edj(U))
+  >>> print(pyg_edj(U))
   <Var 'EDJ_metrics'>:
     Shape:  (Metrics)  (2)
   Axes:
@@ -299,7 +298,7 @@ def edj(data,**params):
   return EDJ_Var
 
 
-def olr(var, **params):
+def pyg_olr(var, **params):
 
   """TropD Outgoing Longwave Radiation (OLR) metric
      
@@ -362,7 +361,7 @@ def olr(var, **params):
 
   return OLR_Var
 
-def pe(var, **params):
+def pyg_pe(var, **params):
 
   ''' TropD Precipitation minus Evaporation (PE) metric
      Var should contain one axis :class:`pyg.Lat`.  
@@ -385,7 +384,7 @@ def pe(var, **params):
   >>> import pygeode as pyg
   >>> from pygeode.tutorial import t2 
   >>> pe_data = -pyg.cosd(t2.lat*2)  #fake pe data
-  >>> print(pe(pe_data))                                                                                                   
+  >>> print(pyg_pe(pe_data))                                                                                                   
   <Var 'PE_metrics'>:
     Shape:  (Metrics)  (2)
     Axes:
@@ -393,7 +392,7 @@ def pe(var, **params):
     Attributes:
       {}
     Type:  Replace_axes (dtype="float64")
-  >>> print(pe(pe_data)[:])                                                                                                
+  >>> print(pyg_pe(pe_data)[:])                                                                                                
   [-45.  45.]
   '''     
 
@@ -401,7 +400,7 @@ def pe(var, **params):
 
   return PE_Var
 
-def psi(var,**params):
+def pyg_psi(var,**params):
 
   ''' TropD Mass streamfunction (PSI) metric
 
@@ -446,7 +445,7 @@ def psi(var,**params):
     Attributes:
       {}
     Type:  Mul_Var (dtype="float64")
-  >>> print(psi(V_data)
+  >>> print(pyg_psi(V_data)
   <Var '(-sind(lat)*cos(pres))'>:
     Shape:  (lat,pres)  (31,20)
     Axes:
@@ -455,7 +454,7 @@ def psi(var,**params):
     Attributes:
       {}
     Type:  Mul_Var (dtype="float64")
-   >>> print(psi(V_data)[:])                                                                                                
+   >>> print(pyg_psi(V_data)[:])                                                                                                
    [-30.  30.]
   '''
 
@@ -463,7 +462,7 @@ def psi(var,**params):
 
   return PSI_Var
 
-def psl(var,**params):
+def pyg_psl(var,**params):
 
   ''' TropD Sea-level pressure (PSL) metric
       Latitude of maximum of the subtropical sea-level pressure
@@ -492,7 +491,7 @@ def psl(var,**params):
     Attributes:
       {}
     Type:  Add_Var (dtype="float64")
-  >>> print(psl(psl_data))                                                                                                
+  >>> print(pyg_psl(psl_data))                                                                                                
   <Var 'PSL_metrics'>:
     Shape:  (Metrics)  (2)
     Axes:
@@ -500,7 +499,7 @@ def psl(var,**params):
     Attributes:
       {}
     Type:  Replace_axes (dtype="float64")
-  >>>  print(psl(psl_data)[:])                                                                                             
+  >>>  print(pyg_psl(psl_data)[:])                                                                                             
   [-53.99926851  53.99926851]
   '''
 
@@ -508,7 +507,7 @@ def psl(var,**params):
 
   return PSL_Var
 
-def stj(var,**params):
+def pyg_stj(var,**params):
 
   '''TropD Eddy Driven Jet (STJ) metric
        
@@ -542,7 +541,7 @@ def stj(var,**params):
   Attributes:
     {}
   Type:  SqueezedVar (dtype="float64")
-  >>> print(stj(U))
+  >>> print(pyg_stj(U))
   <Var 'STJ_metrics'>:
   Shape:  (Metrics)  (2)
   Axes:
@@ -550,7 +549,7 @@ def stj(var,**params):
   Attributes:
     {}
   Type:  Replace_axes (dtype="float64")
-  >>> print(stj(U)[:])                                                                                                    
+  >>> print(pyg_stj(U)[:])                                                                                                    
   [-41.56747902  41.56747902]
   '''
 
@@ -558,7 +557,7 @@ def stj(var,**params):
 
   return STJ_Var
 
-def tpb(var,**params):
+def pyg_tpb(var,**params):
 
   ''' TropD Tropopause break (TPB) metric
      Var should contain axes :class:`pyg.Lat`and :class:`pyg.Pres` 
@@ -591,7 +590,7 @@ def tpb(var,**params):
 
   return TPB_Var
 
-def uas(var,**params):
+def pyg_uas(var,**params):
 
   ''' TropD near-surface zonal wind (UAS) metric
      Var should contain axis :class:`pyg.Lat. If :class:`pyg.Pres` is included, the nearest level to the surface is used.
@@ -626,7 +625,7 @@ def uas(var,**params):
     Attributes:
       {}
     Type:  Mul_Var (dtype="float64")
-  >>> print(uas(U_data))                                                                                                  
+  >>> print(pyg_uas(U_data))                                                                                                  
   <Var 'UAS_metrics'>:
     Shape:  (Metrics)  (2)
     Axes:
@@ -634,7 +633,7 @@ def uas(var,**params):
     Attributes:
       {}
     Type:  Replace_axes (dtype="float64")
-  >>> print(uas(U_data)[:])                                                                                               
+  >>> print(pyg_uas(U_data)[:])                                                                                               
   [-45.  45.]
   '''
 

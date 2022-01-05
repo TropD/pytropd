@@ -684,7 +684,7 @@ def TropD_Metric_TPB(T, lat, lev, method='max_gradient', n=0, Z=None, Cutoff=15*
   
   else:
     print('TropD_Metric_TPB: ERROR : Unrecognized method ', method)
-  print(np.shape(PhiSH),np.shape(PhiNH))
+
   return PhiSH, PhiNH
   
 
