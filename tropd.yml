@@ -1,0 +1,21 @@
+name: tropd #name of your env
+channels:
+        - conda-forge
+        - defaults
+        - aph42
+dependencies:
+        - python==3.7.*
+        - numpy >= 1.19
+        - matplotlib
+        - scipy >= 1.5
+        - netCDF4
+        - xarray
+        - black
+        - pytest
+        - ipython
+        - pygeode
+        - mypy
+        - flake8
+        - jupyterlab
+
+# do conda env create -f tropd.yml or conda env update -f tropd.yml""
