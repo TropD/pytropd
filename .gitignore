@@ -6,3 +6,4 @@ pytropd/__pycache__/*
 .flake8
 mypy.ini
 __pycache__
+.vscode
