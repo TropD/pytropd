@@ -9,7 +9,6 @@ from scipy.interpolate import interp1d
 from .functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
-    TropD_Calculate_Mon2Season,
     TropD_Calculate_StreamFunction,
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
@@ -73,7 +72,7 @@ def TropD_Metric_EDJ(U, lat, lev=None, method="peak", n_fit=1, **maxlat_kwargs):
             f"last axes of U w/ shape {U_grid_shape},"
             " not aligned with input grid of shape " + str(input_grid_shape)
         )
-    if not method in ["max", "peak", "fit"]:
+    if method not in ["max", "peak", "fit"]:
         raise ValueError("unrecognized method " + method)
     n_fit = int(n_fit)
 
@@ -107,7 +106,6 @@ def TropD_Metric_EDJ(U, lat, lev=None, method="peak", n_fit=1, **maxlat_kwargs):
             lath = lat[hem_mask]
             Phi = np.zeros(u850.shape[:-1])
             for i, Uh in enumerate(u_flat[:, hem_mask]):
-                m = np.nanmax(Uh)
                 Im = np.nanargmax(Uh)
                 phi_ind = np.unravel_index(i, u850.shape[:-1])
 
@@ -154,7 +152,7 @@ def TropD_Metric_OLR(olr, lat, method="250W", Cutoff=None, **maxlat_kwargs):
                       hemisphere where OLR crosses a specified cutoff value
 
             '10Perc': the 1st latitude poleward of the tropical OLR max in each
-                      hemisphere where OLR is 10\% smaller than the tropical
+                      hemisphere where OLR is 10% smaller than the tropical
                       OLR max
 
             'max': the latitude of the tropical olr max in each hemisphere
@@ -408,7 +406,7 @@ def TropD_Metric_PSI(
             'Psi_500'(default): Zero crossing of the streamfunction (Psi)
                                 at 500hPa
 
-            'Psi_500_10Perc': Crossing of 10\% of the extremum value of Psi in
+            'Psi_500_10Perc': Crossing of 10% of the extremum value of Psi in
                               each hemisphere at the 500hPa level
 
             'Psi_300_700': Zero crossing of Psi vertically averaged between the
@@ -744,7 +742,7 @@ def TropD_Metric_TPB(
     NHmask = (lat > eq_boundary) & (lat < polar_boundary)
     SHmask = (lat < -eq_boundary) & (lat > -polar_boundary)
 
-    if "max_" in method:  #'max_gradient' or 'max_potemp'
+    if "max_" in method:  # 'max_gradient' or 'max_potemp'
         if method == "max_potemp":
             maxlat_kwargs["n"] = maxlat_kwargs.get("n", 30)
             PT = T / (lev / 1000.0) ** KAPPA
@@ -865,7 +863,7 @@ def TropD_Metric_UAS(U, lat, lev=None, method="zero_crossing", lat_uncertainty=0
 # Stratospheric metrics
 #
 
-## Written by Kasturi Shah
+# Written by Kasturi Shah
 # Last updated: August 3 2020
 # converted to python by Alison Ming 8 April 2021
 
