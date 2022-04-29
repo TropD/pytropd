@@ -13,14 +13,17 @@ data_dir = root / "ValidationData"
 metrics_dir = root / "ValidationMetrics"
 
 v_data = xr.open_dataset(data_dir / "va.nc")
+u_data = xr.open_dataset(data_dir / "ua.nc")
+comb_data = xr.merge([v_data, u_data])
+comb_data = comb_data.rename(ua="u", va="v")
 
 # Define a time axis
-v_data["time"] = pd.date_range(
+comb_data["time"] = pd.date_range(
     start="1979-01-01", periods=v_data.sizes["time"], freq="MS"
 )
 
 # yearly mean of data
-v_annual = v_data.groupby("time.year").mean("time")
+v_annual = comb_data.groupby("time.year").mean("time")
 
 psi_metrics = v_annual.pyt_metrics.xr_psi()
 

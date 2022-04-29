@@ -834,7 +834,7 @@ def TropD_Metric_TPB(
 def TropD_Metric_UAS(
     U: np.ndarray,
     lat: np.ndarray,
-    lev: np.ndarray = None,
+    lev: Optional[np.ndarray] = None,
     method: str = "zero_crossing",
     lat_uncertainty: float = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
