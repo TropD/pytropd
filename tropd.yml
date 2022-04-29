@@ -17,5 +17,7 @@ dependencies:
         - mypy
         - flake8
         - jupyterlab
+        - pooch
+        - dask
 
 # do conda env create -f tropd.yml or conda env update -f tropd.yml""

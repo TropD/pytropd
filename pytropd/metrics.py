@@ -1,6 +1,7 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 # rewrite for readability/vectorization - sjs 1.27.22
+from typing import Dict, Optional, Tuple
 import warnings
 import numpy as np
 from numpy.polynomial import polynomial
@@ -18,55 +19,64 @@ from .functions import (
 KAPPA = 287.04 / 1005.7
 
 
-def TropD_Metric_EDJ(U, lat, lev=None, method="peak", n_fit=1, **maxlat_kwargs):
+def TropD_Metric_EDJ(
+    U: np.ndarray,
+    lat: np.ndarray,
+    lev: Optional[np.ndarray] = None,
+    method: str = "peak",
+    n_fit: int = 1,
+    **maxlat_kwargs,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Eddy Driven Jet (EDJ) metric
+    TropD Eddy Driven Jet (EDJ) Metric
 
     Latitude of maximum of the zonal wind at the level closest to 850 hPa
 
-    Args:
+    Parameters
+    ----------
+    U : numpy.ndarray (dim1, ..., lat[, lev])
+        N-dimensional array of zonal-mean zonal wind data. Also accepts surface/
+        850hPa wind
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray, optional (lev,)
+        vertical level array in hPa, used to find wind closest to 850hPa. if not
+        provided, last axis is assumed to be lat
+    method : {"peak", "max", "fit"}, optional
+        Method for determining latitude of maximum zonal wind, by default "peak":
 
-        U (...,lat,lev) or (...,lat): Zonal mean zonal wind. Also accepts
-                                      surface wind/850
-        lat : latitude vector
-        lev: vertical level vector in hPa units, optional
+        * "peak" : Latitude of the maximum of the zonal wind at the level closest
+                   to 850hPa (smoothing parameter ``n=30``)
+        * "max" : Latitude of the maximum of the zonal wind at the level closest to
+                  850hPa (smoothing parameter ``n=6``)
+        * "fit" : Latitude of the maximum of the zonal wind at the level closest to
+                  850hPa using a quadratic polynomial fit of data from grid points
+                  surrounding the grid point of the maximum
 
-        method (str, optional): 'peak' (default) |  'max' | 'fit'
+    n_fit : int, optional
+        used when ``method="fit"``, determines the number of points around the max to use
+        while fitting, by default 1
+    **kwargs : optional
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+        for ``method="fit"``)
 
-            peak (Default): Latitude of the maximum of the zonal wind at the
-                            level closest to 850hPa (smoothing parameter n=30)
+        n : int, optional
+            Rank of moment used to calculate the location of max, e.g.,
+            ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, 30 if ``method="peak"``
 
-            max: Latitude of the maximum of the zonal wind at the level closest
-                 to 850hPa (smoothing parameter n=6)
-
-            fit: Latitude of the maximum of the zonal wind at the level closest
-                 to 850hPa using a quadratic polynomial fit of data from grid
-                 points surrounding the grid point of the maximum
-
-    Kwargs:
-
-        n_fit (int, optional): used when method = fit, determines
-                               the number of points around the max to use
-                               while fitting
-
-        **other keyword args are passed on to TropD_Calculate_MaxLat
-        (not used for method = fit)
-
-        n (int, optional): If n is not set, n=6 (default) if method = max,
-                n=30 (default) if method = peak
-                Rank of moment used to calculate the location of max,
-                e.g., n = 1,2,4,6,8,...
-
-    Returns:
-
-       PhiSH, PhiNH (ndarrays) SH/NH latitude of EDJ
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
+        N-2(N-1) dimensional SH latitudes of the EDJ
+    PHiNH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
+        N-2(N-1) dimensional NH latitudes of the EDJ
     """
 
     U = np.asarray(U)
     lat = np.asarray(lat)
     get_lev = lev is not None
     U_grid_shape = U.shape[-2:] if get_lev else U.shape[-1]
-    input_grid_shape = (lat.size, lev.size) if get_lev else lat.size
+    input_grid_shape = (lat.size, lev.size) if get_lev else lat.size  # type: ignore
     if U_grid_shape != input_grid_shape:
         raise ValueError(
             f"last axes of U w/ shape {U_grid_shape},"
@@ -82,7 +92,7 @@ def TropD_Metric_EDJ(U, lat, lev=None, method="peak", n_fit=1, **maxlat_kwargs):
     SHmask = (lat > -polar_boundary) & (lat < -eq_boundary)
 
     if get_lev:
-        u850 = U[..., find_nearest(lev, 850.0)]
+        u850 = U[..., find_nearest(lev, 850.0)]  # type: ignore
     else:
         u850 = U
 
@@ -129,49 +139,58 @@ def TropD_Metric_EDJ(U, lat, lev=None, method="peak", n_fit=1, **maxlat_kwargs):
     return PhiSH, PhiNH
 
 
-def TropD_Metric_OLR(olr, lat, method="250W", Cutoff=None, **maxlat_kwargs):
+def TropD_Metric_OLR(
+    olr: np.ndarray,
+    lat: np.ndarray,
+    method: str = "250W",
+    Cutoff: Optional[float] = None,
+    **maxlat_kwargs,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Outgoing Longwave Radiation (OLR) metric
+    TropD Outgoing Longwave Radiation (OLR) Metric
 
-    Args:
+    Latitude of maximum OLR or first latitude poleward of maximum where OLR reaches
+    crosses a predefined cutoff
 
-        olr(dim1,dim2,...,lat,): zonal mean TOA olr (positive)
+    Parameters
+    ----------
+    olr : numpy.ndarray (dim1, ..., lat)
+        zonal mean TOA olr (positive)
+    lat : numpy.ndarray (lat,)
+        latitude array
+    method : {"250W", "20W", "cutoff", "10Perc", "max", "peak"}, optional
+        Method for determining the OLR maximum/threshold, by default "250W":
 
-        lat: corresponding latitude column vector
+        * "250W": the 1st latitude poleward of the tropical OLR max in each hemisphere
+                    where OLR crosses :math:`250W/m^2`
+        * "20W": the 1st latitude poleward of the tropical OLR max in each hemisphere
+                where OLR crosses [the tropical OLR max minus :math:`20W/m^2`]
+        * "cutoff": the 1st latitude poleward of the tropical OLR max in each
+                    hemisphere where OLR crosses a specified cutoff value
+        * "10Perc": the 1st latitude poleward of the tropical OLR max in each
+                    hemisphere where OLR is 10% smaller than the tropical OLR max
+        * "max": the latitude of the tropical olr max in each hemisphere with
+                    smoothing parameter ``n=6``
+        * "peak": the latitude of maximum of tropical olr in each hemisphere with
+                smoothing parameter ``n=30``
 
-        method (str, optional):
+    Cutoff : float, optional
+        if ``method="cutoff"``, specifies the OLR cutoff value in :math:`W/m^2`
 
-            '250W'(Default): the 1st latitude poleward of the tropical OLR max
-                             in each hemisphere where OLR crosses 250W/m^2
+    **kwargs : optional
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+        for ``method="fit"``)
 
-            '20W': the 1st latitude poleward of the tropical OLR max in each
-                   hemisphere where OLR crosses [the tropical OLR max
-                   minus 20W/m^2]
+        n : int, optional
+            Rank of moment used to calculate the location of max, e.g.,
+            ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, 30 if ``method="peak"``
 
-            'cutoff': the 1st latitude poleward of the tropical OLR max in each
-                      hemisphere where OLR crosses a specified cutoff value
-
-            '10Perc': the 1st latitude poleward of the tropical OLR max in each
-                      hemisphere where OLR is 10% smaller than the tropical
-                      OLR max
-
-            'max': the latitude of the tropical olr max in each hemisphere
-                   with the smoothing paramerer n=6
-
-            'peak': the latitude of maximum of tropical olr in each hemisphere
-                    with the smoothing parameter n=30
-
-        Cutoff (optional): (float) For the method 'cutoff', Cutoff specifies
-                           the OLR cutoff value.
-
-        n (int, optional): For the 'max' method, n is the smoothing parameter
-                           in TropD_Calculate_MaxLat
-
-    Returns:
-
-        PhiSH, PhiNH (ndarrays): SH/NH latitude of near-equator OLR
-                                 max/threshold crossing
-
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional SH latitudes of the near-equator OLR max/threshold crossing
+    PhiNH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional NH latitudes of the near-equator OLR max/threshold crossing
     """
 
     olr = np.asarray(olr)
@@ -229,8 +248,8 @@ def TropD_Metric_OLR(olr, lat, method="250W", Cutoff=None, **maxlat_kwargs):
             NHCutoff = 0.9 * olr_max_NH
             SHCutoff = 0.9 * olr_max_SH
         else:  # method == cutoff
-            NHCutoff = Cutoff
-            SHCutoff = Cutoff
+            NHCutoff = Cutoff  # type: ignore
+            SHCutoff = Cutoff  # type: ignore
 
         # identify regions poleward of the OLR max in both hemispheres
         NHmask = (lat > eq_boundary) & (lat < polar_boundary)
@@ -258,29 +277,40 @@ def TropD_Metric_OLR(olr, lat, method="250W", Cutoff=None, **maxlat_kwargs):
     return PhiSH, PhiNH
 
 
-def TropD_Metric_PE(pe, lat, method="zero_crossing", lat_uncertainty=0.0):
+def TropD_Metric_PE(
+    pe: np.ndarray,
+    lat: np.ndarray,
+    method: str = "zero_crossing",
+    lat_uncertainty: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Precipitation minus Evaporation (PE) metric
+    TropD Precipitation Minus Evaporation (PE) Metric
 
-    Args:
+    Find the first zero crossing of zonal-mean precipitation minus evaporation poleward
+    of the subtropical minimum
 
-        pe(dim1, dim2, ..., lat,): zonal-mean precipitation minus evaporation
+    Parameters
+    ----------
+    pe : numpy.ndarray (dim1,  ..., lat,)
+        zonal-mean precipitation minus evaporation
+    lat : numpy.ndarray (lat,)
+        latitude array
+    method : {"zero_crossing"}, optional
+        Method to compute the zero crossing for precipitation minus evaporation, by
+        default "zero_crossing":
+        * "zero_crossing": the first latitude poleward of the subtropical P-E min
+                           where P-E changes from negative to positive.
 
-        lat: latitude column vector, aligned with last axis of pe
+    lat_uncertainty : float, optional
+        The minimal distance allowed between adjacent zero crossings in degrees,
+        by default 0.0
 
-    method (str):
-
-        'zero_crossing': the first latitude poleward of the subtropical P-E min
-                         where P-E changes from negative to positive.
-                         Only method so far
-
-    lat_uncertainty (optional): (float) The minimal distance allowed between
-                                adjacent zero crossings, same units as lat
-
-    Returns:
-
-        PhiSH, PhiNH (ndarrays): SH/NH latitude of 1st subtropical P-E
-                                 zero crossing
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional SH latitudes of the 1st subtropical P-E zero crossing
+    PhiNH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional NH latitudes of the 1st subtropical P-E zero crossing
     """
 
     pe = np.atleast_2d(pe)
@@ -385,48 +415,49 @@ def TropD_Metric_PE(pe, lat, method="zero_crossing", lat_uncertainty=0.0):
 
 
 def TropD_Metric_PSI(
-    V, lat, lev, method="Psi_500", lat_uncertainty=0, patch_10perc=False
-):
+    V: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray,
+    method: str = "Psi_500",
+    lat_uncertainty: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Mass streamfunction (PSI) metric
+    TropD Mass Streamfunction (PSI) Metric
 
-    Latitude of the subtropical zero crossing of the
-    meridional mass streamfunction
+    Latitude of the subtropical zero crossing of the meridional mass streamfunction
 
-    Args:
+    Parameters
+    ----------
+    V : numpy.ndarray (dim1, ..., lat, lev)
+        N-dimensional zonal-mean meridional wind
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray (lev,)
+        vertical level array in hPa
+    method : {"Psi_500", "Psi_500_10Perc", "Psi_300_700", "Psi_500_Int", "Psi_Int"},
+    optional
+        Method of determining which Psi zero crossing to return, by default "Psi_500":
 
-        V(dim1,dim2,...,lat,lev): zonal-mean meridional wind
+        * "Psi_500": Zero crossing of the streamfunction (Psi) at 500hPa
+        * "Psi_500_10Perc": Crossing of 10% of the extremum value of Psi in each
+                            hemisphere at the 500hPa level
+        * "Psi_300_700": Zero crossing of Psi vertically averaged between the 300hPa
+                         and 700 hPa levels
+        * "Psi_500_Int": Zero crossing of the vertically-integrated Psi at 500 hPa
+        * "Psi_Int" : Zero crossing of the column-averaged Psi
 
-        lat: latitude vector, of same length as 2nd to last axis of V
+    lat_uncertainty : float, optional
+        The minimal distance allowed between the adjacent zero crossings, same units as
+        lat, by default 0.0. e.g., for ``lat_uncertainty=10``, this function will return
+        NaN if another zero crossing is within 10 degrees of the most equatorward
+        zero crossing.
 
-        lev: vertical level vector in hPa, same length as last axis of V
-
-        method (str, optional):
-
-            'Psi_500'(default): Zero crossing of the streamfunction (Psi)
-                                at 500hPa
-
-            'Psi_500_10Perc': Crossing of 10% of the extremum value of Psi in
-                              each hemisphere at the 500hPa level
-
-            'Psi_300_700': Zero crossing of Psi vertically averaged between the
-                           300hPa and 700 hPa levels
-
-            'Psi_500_Int': Zero crossing of the vertically-integrated Psi
-                           at 500 hPa
-
-            'Psi_Int' : Zero crossing of the column-averaged Psi
-
-        lat_uncertainty (optional): (float) The minimal distance allowed
-                                    between the adjacent zero crossings, same
-                                    units as lat. i.e., for lat_uncertainty
-                                    = 10, this function will return NaN if
-                                    another zero crossing is within 10 degrees
-                                    of the most equatorward zero crossing.
-
-    Returns:
-
-        PhiSH, PhiNH (ndarrays): Latitude of Psi zero crossing in SH and NH
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional SH latitudes of the Psi zero crossing
+    PhiNH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional NH latitudes of the Psi zero crossing
     """
 
     # type casting/input checking
@@ -504,14 +535,9 @@ def TropD_Metric_PSI(
         PmaxNH = P[..., NH_subpolar_mask].max(axis=-1)[..., None]
         PminSH = P[..., SH_subpolar_mask].min(axis=-1)[..., None]
         PhiNH = TropD_Calculate_ZeroCrossing(PNH_in_between - 0.1 * PmaxNH, latNH)
-        if patch_10perc:
-            PhiSH = TropD_Calculate_ZeroCrossing(
-                PSH_in_between[..., ::-1] - 0.1 * PminSH, latSH[::-1]
-            )
-        else:
-            PhiSH = TropD_Calculate_ZeroCrossing(
-                PSH_in_between[..., ::-1] + 0.1 * PminSH, latSH[::-1]
-            )
+        PhiSH = TropD_Calculate_ZeroCrossing(
+            PSH_in_between[..., ::-1] - 0.1 * PminSH, latSH[::-1]
+        )
     else:
         PhiNH = TropD_Calculate_ZeroCrossing(
             PNH_in_between, latNH, lat_uncertainty=lat_uncertainty
@@ -523,29 +549,44 @@ def TropD_Metric_PSI(
     return PhiSH, PhiNH
 
 
-def TropD_Metric_PSL(ps, lat, method="peak", **maxlat_kwargs):
+def TropD_Metric_PSL(
+    ps: np.ndarray, lat: np.ndarray, method: str = "peak", **maxlat_kwargs
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Sea-level pressure (PSL) metric
+    TropD Sea-level Pressure (PSL) Metric
 
     Latitude of maximum of the subtropical sea-level pressure
 
-    Args:
+    Parameters
+    ----------
+    ps : np.ndarray (dim1, ..., lat)
+        N-dimensional sea-level pressure
+    lat : np.ndarray (lat,)
+        latitude array
+    method : {"peak", "max"}, optional
+        Method for determining latitude of max PSL, by default "peak":
 
-        ps(...,lat): sea-level pressure
+        * "peak" : latitude of the maximum of subtropical sea-level pressure (smoothing
+                   parameter ``n=30``)
+        * "max" : latitude of the maximum of subtropical sea-level pressure (smoothing
+                  parameter ``n=6``)
 
-        lat: latitude column vector, same size as last dim of ps
+    **kwargs : optional
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+        for ``method="fit"``)
 
-        method (str, optional): 'peak' (default) | 'max'
+        n : int, optional
+            Rank of moment used to calculate the location of max, e.g.,
+            ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, 30 if ``method="peak"``
 
-        **other kwargs are passed on to TropD_Calculate_MaxLat
-
-        n: smoothing parameter. Default n=6 with method "max",
-           n=30 with method "peak"
-
-    Returns:
-
-        PhiSH, PhiNH: (ndarrays) SH/NH latitude of subtropical PSL maximum
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional SH latitudes of the subtropical PSL maximum
+    PhiNH : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional NH latitudes of the subtropical PSL maximum
     """
+
     ps = np.asarray(ps)
     lat = np.asarray(lat)
     if ps.shape[-1] != lat.size:
@@ -574,43 +615,50 @@ def TropD_Metric_PSL(ps, lat, method="peak", **maxlat_kwargs):
     return PhiSH, PhiNH
 
 
-def TropD_Metric_STJ(U, lat, lev, method="adjusted_peak", **maxlat_kwargs):
+def TropD_Metric_STJ(
+    U: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray,
+    method: str = "adjusted_peak",
+    **maxlat_kwargs,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Subtropical Jet (STJ) metric
+    TropD Subtropical Jet (STJ) Metric
 
-    Args:
+    Latitude of the (adjusted) maximum upper-level zonal-mean zonal wind
 
-        U(...,lat,lev): zonal mean zonal wind
+    Parameters
+    ----------
+    U : numpy.ndarray (dim1,...,lat,lev,)
+        N-dimensional zonal-mean zonal wind
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray (lev,)
+        vertical level array in hPa
+    method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max"}, optional
+        Method for determing the latitude of the STJ maximum, by default "adjusted_peak":
 
-        lat: latitude vector, same length as 2nd last axis of U
+        * "adjusted_peak": Latitude of maximum (smoothing parameter``n=30``) of [the
+                           zonal wind averaged between 100 and 400 hPa] minus [the zonal
+                           mean zonal wind at the level closest to 850hPa], poleward of
+                           10 degrees and equatorward of the Eddy Driven Jet latitude
+        * "adjusted_max": Latitude of maximum (smoothing parameter ``n=6``) of [the
+                          zonal wind averaged between 100 and 400 hPa] minus [the zonal
+                          mean zonal wind at the level closest to 850hPa], poleward of 10
+                          degrees and equatorward of the Eddy Driven Jet latitude
+        * "core_peak": Latitude of maximum (smoothing parameter ``n=30``) of the zonal
+                       wind averaged between 100 and 400 hPa, poleward of 10 degrees and
+                       equatorward of 70 degrees
+        * "core_max": Latitude of maximum (smoothing parameter ``n=6``) of the zonal wind
+                      averaged between 100 and 400 hPa, poleward of 10 degrees and
+                      equatorward of 70 degrees
 
-        lev: vertical level vector in hPa, same length as last axis of U
-
-        method (str, optional):
-
-            'adjusted_peak': (default) Latitude of maximum (smoothing parameter
-                             n=30) of [the zonal wind averaged between 100 and
-                             400 hPa] minus [the zonal mean zonal wind at the
-                             level closest to 850hPa], poleward of 10 degrees
-                             and equatorward of the Eddy Driven Jet latitude
-
-            'adjusted_max': Latitude of maximum (smoothing parameter n=6) of
-                            [the zonal wind averaged between 100 and 400 hPa]
-                            minus [the zonal mean zonal wind at the level
-                            closest to 850hPa], poleward of 10 degrees and
-                            equatorward of the Eddy Driven Jet latitude
-
-            'core_peak': Latitude of maximum (smoothing parameter n=30) of
-                         the zonal wind averaged between 100 and 400 hPa,
-                         poleward of 10 degrees and equatorward of 70 degrees
-
-            'core_max': Latitude of maximum (smoothing parameter n=6) of
-                        the zonal wind averaged between 100 and 400 hPa,
-                        poleward of 10 degrees and equatorward of 70 degrees
-
-    Returns:
-
-        PhiSH, PhiNH (ndarrays) SH/NH latitudes of STJ
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional SH latitudes of the STJ
+    PHiNH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional NH latitudes of the STJ
     """
 
     U = np.asarray(U)
@@ -673,50 +721,57 @@ def TropD_Metric_STJ(U, lat, lev, method="adjusted_peak", **maxlat_kwargs):
 
 
 def TropD_Metric_TPB(
-    T,
-    lat,
-    lev,
-    method="max_gradient",
-    Z=None,
-    Cutoff=1.5e4,
-    trop_kwargs={},
+    T: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray,
+    method: str = "max_gradient",
+    Z: Optional[np.ndarray] = None,
+    Cutoff: float = 1.5e4,
+    trop_kwargs: Dict = {},
     **maxlat_kwargs,
-):
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD Tropopause break (TPB) metric
+    TropD Tropopause Break (TPB) Metric
 
-    Args:
+    Finds the latitude of the tropopause break
 
-        T(...,lat,lev): temperature (K)
+    Parameters
+    ----------
+    T : numpy.ndarray (dim1, ..., lat, lev)
+        N-dimensional temperature array (K)
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray (lev,)
+        vertical levels array in hPa
+    method : {"max_gradient", "cutoff", "max_potemp"}, optional
+        Method to identify tropopause break, by default "max_gradient":
 
-        lat: latitude vector, aligned with 2nd last axis in T
+        * "max_gradient": The latitude of maximal poleward gradient of the tropopause
+                          height
 
-        lev: pressure levels column vector (hPa), aligned with last axis of T
+        * "cutoff": The most equatorward latitude where the tropopause crosses
+                    a prescribed cutoff value
 
-        method (str, optional):
+        * "max_potemp": The latitude of maximal difference between the potential
+                        temperature at the tropopause and at the surface
 
-            'max_gradient' (default): The latitude of maximal poleward gradient
-                                      of the tropopause height
+    Z : Optional[numpy.ndarray], optional
+        N-dimensional geopotential height array (m), required by ``method="cutoff"``
+    Cutoff : float, optional
+        Geopotential height cutoff (m) that marks the location of the tropopause break,
+        by default 1.5e4, required by ``method="cutoff"``
+    trop_kwargs : Dict, optional
+        keyword arguments to :py:func:`TropD_Calculate_TropopauseHeight`, by default {}
+    **kwargs : optional
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+        for ``method="cutoff"``)
 
-            'cutoff': The most equatorward latitude where the tropopause
-                      crosses a prescribed cutoff value
-
-            'max_potemp': The latitude of maximal difference between the
-                          potential temperature at the tropopause and at
-                          the surface
-
-        Z(lat,lev) (optional): geopotential height (m)
-
-        Cutoff (optional): (float) Geopotential height cutoff (m) that marks
-                           the location of the tropopause break
-
-        **other kwargs are passed on to TropD_Calculate_MaxLat
-        n (optional): (int) smoothing parameter for calculating latitude of
-                       maximum gradient/potential temp difference
-
-    Returns:
-
-        PhiSH, PhiNH (ndarrays) SH/NH Latitude of tropopause break
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional SH latitudes of the tropopause break
+    PHiNH : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional NH latitudes of the tropopause break
     """
 
     T = np.asarray(T)
@@ -729,6 +784,7 @@ def TropD_Metric_TPB(
         )
     if method not in ["max_gradient", "max_potemp", "cutoff"]:
         raise ValueError("unrecognized method " + method)
+    # TropD_Calculate_TropopauseHeight accepts a Z parameter but we shouldn't use it
     trop_kwargs.pop("Z", None)
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
@@ -775,39 +831,49 @@ def TropD_Metric_TPB(
     return PhiSH, PhiNH
 
 
-def TropD_Metric_UAS(U, lat, lev=None, method="zero_crossing", lat_uncertainty=0):
+def TropD_Metric_UAS(
+    U: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray = None,
+    method: str = "zero_crossing",
+    lat_uncertainty: float = 0.0,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    TropD near-surface zonal wind (UAS) metric
+    TropD Near-Surface Zonal Wind (UAS) Metric
 
-    Args:
+    Parameters
+    ----------
+    U : np.ndarray (dim1, ..., lat[, lev])
+        N-dimensional zonal mean zonal wind array. Also accepts surface wind
+    lat : np.ndarray (lat,)
+        latitude array
+    lev : np.ndarray, optional (lev,)
+        vertical level array in hPa, required if U has final dimension lev
+    method : {"zero_crossing"}, optional
+        Method for identifying the surface wind zero crossing, by default "zero_crossing":
 
-        U (...lat,lev) or (...,lat,): Zonal mean zonal wind. Also accepts
-                                      surface wind
+        * "zero_crossing": the first subtropical latitude where near-surface zonal wind
+                           changes from negative to positive
 
-        lat: latitude vector, of same length as 2nd last axis of U
+    lat_uncertainty : float, optional
+        the minimal distance allowed between adjacent zero crossings in degrees, by
+        default 0.0
 
-        lev (optional): vertical level vector in hPa, not used for input U
-                        with single level
-
-
-        method (str):
-            'zero_crossing': the first subtropical latitude where near-surface
-                             zonal wind changes from negative to positive
-
-        lat_uncertainty (optional): (float) the minimal distance allowed
-                                    between adjacent zero crossings.
-                                    Needs same units as lat
-
-    Returns:
-        PhiSH, PhiNH (ndarrays): NH/SH Latitude of first subtropical zero
-                                 crossing of the near surface zonal wind
+    Returns
+    -------
+    PhiSH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
+        N-2(N-1) dimensional SH latitudes of the first subtropical zero crossing of
+        near-surface zonal wind
+    PHiNH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
+        N-2(N-1) dimensional NH latitudes of the first subtropical zero crossing of
+        near-surface zonal wind
     """
 
     U = np.asarray(U)
     lat = np.asarray(lat)
     get_lev = lev is not None
     U_grid_shape = U.shape[-2:] if get_lev else U.shape[-1]
-    input_grid_shape = (lat.size, lev.size) if get_lev else lat.size
+    input_grid_shape = (lat.size, lev.size) if get_lev else lat.size  # type: ignore
     if U_grid_shape != input_grid_shape:
         raise ValueError(
             f"last axes of U w/ shape {U_grid_shape},"
@@ -817,7 +883,7 @@ def TropD_Metric_UAS(U, lat, lev=None, method="zero_crossing", lat_uncertainty=0
         raise ValueError("unrecognized method " + method)
 
     if get_lev:
-        uas = U[..., find_nearest(lev, 850)]
+        uas = U[..., find_nearest(lev, 850)]  # type: ignore
     else:
         uas = U
 

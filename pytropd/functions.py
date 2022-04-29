@@ -1,6 +1,7 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 # update to Python3, vectorized, and patched bugs - sjs 2.3.22
+from typing import Callable, List, Optional, Tuple, Union, overload
 import warnings
 import numpy as np
 from scipy.integrate import cumtrapz
@@ -13,28 +14,29 @@ SPEC_HEAT_PRES_DRY = 1005.7
 KAPPA = GAS_CONSTANT_DRY / SPEC_HEAT_PRES_DRY
 
 
-def find_nearest(array, value, axis=None, skipna=False):
+def find_nearest(
+    array: np.ndarray, value: float, axis: Optional[int] = None, skipna: bool = False
+) -> np.ndarray:
     """
     Find the index of the item in the array nearest to the value
 
-    Args:
+    Parameters
+    ----------
+    array : numpy.ndarray
+        array to search
+    value : float
+        value to be found
+    axis : int, optional
+        the axis of the array to search. if not given, the array is flattened prior to
+        being searched. If given, output will be (n-1)-dimensional, returning the
+        position of the value within the specified axis
+    skipna : bool, optional
+        whether to skip over NaN in the array, by default False
 
-        array: n-dimensional array
-
-        value: value be found
-
-    Kwargs:
-
-        skipna: whether to skip over NaN in the array, default False
-
-        axis: the axis of the array to search. if not given, the array is
-              flattened prior to being searched. If given, output will be
-              (n-1)-dimensional, returning the position of the value
-              within the specified axis (optional)
-
-    Returns:
-
-        int: index of nearest value in array
+    Returns
+    -------
+    numpy.ndarray
+        index(es) nearest to value in array
     """
 
     array = np.asarray(array)
@@ -53,33 +55,42 @@ def find_nearest(array, value, axis=None, skipna=False):
                 category=RuntimeWarning,
                 stacklevel=2,
             )
-        return np.argmin(np.abs(array - value), axis=axis)
+        argmin: Callable = np.argmin
     else:
-        return np.nanargmin(np.abs(array - value), axis=axis)
+        argmin = np.nanargmin
+
+    nearest_inds: np.ndarray = argmin(np.abs(array - value), axis=axis)  # type: ignore
+
+    return nearest_inds
 
 
 # Converted to python by Paul Staten Jul.29.2017
-def TropD_Calculate_MaxLat(F, lat, n=6, axis=-1):
+def TropD_Calculate_MaxLat(
+    F: np.ndarray, lat: np.ndarray, n: int = 6, axis: int = -1
+) -> np.ndarray:
     """
     Find latitude of absolute maximum value for a given interval
-    ::note:: assumes smoothly varying function
 
-    Args:
+    *Note*: assumes a smoothly varying function
 
-        F: N-dimensional array w/ lat as specified axis (default last), data
-            assumed contingous with invalid data only on ends.
-            interior nans are untested and will prompt warning
+    Parameters
+    ----------
+    F : numpy.ndarray (dim1, ..., dimN-1, lat)
+        N-dimensional array w/ lat as specified axis (default last), data assumed
+        contingous with invalid data only on ends. interior nans are untested and will
+        prompt warning
+    lat : numpy.ndarray
+        latitude array
+    n : int, optional
+        rank of moment used to calculate the position of max value.
+            n = 1,2,4,6,8,... , by default 6
+    axis : int, optional
+        axis corresponding to latitude, by default -1
 
-        lat: latitude array
-
-        n (int): rank of moment used to calculate the position of max value.
-                 n = 1,2,4,6,8,... (default 6)
-
-        axis(int): axis corresponding to latitude, default last
-
-    Returns:
-
-        float: location of max value of F along lat
+    Returns
+    -------
+    numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional array of latitude(s) of max values of F
     """
 
     # type casting
@@ -142,12 +153,12 @@ def TropD_Calculate_MaxLat(F, lat, n=6, axis=-1):
         )
         # now integrate and remove the extra boundary values added by trapz
         nom = (
-            np.trapz(F_filled ** n * lat, lat, axis=-1)
-            - np.trapz(bounds ** n * lat, lat, axis=-1) / 2.0
+            np.trapz(F_filled**n * lat, lat, axis=-1)
+            - np.trapz(bounds**n * lat, lat, axis=-1) / 2.0
         )
         denom = (
-            np.trapz(F_filled ** n, lat, axis=-1)
-            - np.trapz(bounds ** n, lat, axis=-1) / 2.0
+            np.trapz(F_filled**n, lat, axis=-1)
+            - np.trapz(bounds**n, lat, axis=-1) / 2.0
         )
         # weighted integral to account for discrete grid
         Ymax = nom / denom
@@ -155,39 +166,39 @@ def TropD_Calculate_MaxLat(F, lat, n=6, axis=-1):
     # if the grid is normal, just go ahead and integrate
     else:
         # weighted integral to account for discrete grid
-        Ymax = np.trapz((F ** n) * lat, lat, axis=-1) / np.trapz(F ** n, lat, axis=-1)
+        Ymax = np.trapz((F**n) * lat, lat, axis=-1) / np.trapz(F**n, lat, axis=-1)
 
     return Ymax
 
 
 def TropD_Calculate_Mon2Season(
-    Fm, season, m=None, first_jan_idx=0, patch_indexing=True, axis=0
-):
+    Fm: np.ndarray,
+    season: List[int],
+    m: Optional[int] = None,
+    first_jan_idx: int = 0,
+    axis: int = 0,
+) -> np.ndarray:
     """
     Calculate unweighted seasonal means from monthly time series
 
-    Args:
+    Parameters
+    ----------
+    Fm : numpy.ndarray (time, dim2, ..., dimN)
+        N-dimensional array, only utilizes full years-worth of data will be utilized
+    season : list of int
+        0-based list of month indices, e.g., [11,0,1] for DJF
+    m : int, optional
+        deprecated. use first_jan_idx instead.
+    first_jan_idx : int, optional
+        index of first occurence of Jan in Fm, by default 0
+    axis : int, optional
+        time axis to resample along, by default 0
 
-        Fm: array of dimensions (time, dim2, dim3, ... dimN)
-            currently only utilizes full years-worth of data
-
-        season (list): 0-based list of month indices, e.g., [11,0,1] for DJF
-
-        m (int): index of first occurence of Jan in Fm, assumed Fm begins
-                 with Jan, deprecated, use first_jan_idx (optional)
-
-        first_jan_idx (int): index of first occurence of Jan
-                             in Fm, assumed Fm begins with Jan (optional)
-
-        patch_indexing (bool): whether to use patch to fix buggy
-                               indexing, default False to for consistency
-                               w/ previous versions (optional)
-
-    Returns:
-
-        ndarray: the annual time series of the seasonal means
-                 (not weighted for unequal month lengths), due to improper
-                  indexing some input arrays may not behave as expected
+    Returns
+    -------
+    numpy.ndarray (time, dim2, ..., dimN)
+        the annual time series of the seasonal means
+        (not weighted for unequal month lengths)
     """
 
     Fm = np.asarray(Fm)
@@ -208,45 +219,37 @@ def TropD_Calculate_Mon2Season(
     axes_list[axis], axes_list[0] = axes_list[0], axes_list[axis]
     Fm = Fm.transpose(axes_list)
 
-    if patch_indexing:
-        whole_years = (Fm.shape[0] - first_jan_idx) // 12
-        last_jan_idx = whole_years * 12 + first_jan_idx
-    # the original indexing method below results in improper handling
-    # of data with length n*12 - 1, resulting in strange errors or bad
-    # values (23 months only). errors also result when setting first_jan_idx
-    else:
-        last_jan_idx = (
-            Fm.shape[0] - first_jan_idx + 1 - (Fm.shape[0] - first_jan_idx + 1) % 12
-        )
+    whole_years = (Fm.shape[0] - first_jan_idx) // 12
+    last_jan_idx = whole_years * 12 + first_jan_idx
     Fm = Fm[first_jan_idx:last_jan_idx, ...]
-    F = 0
+    F = np.asarray(0.0)
     for s in season:
-        if patch_indexing:
-            F += Fm[s::12, ...]
-        else:
-            F += Fm[first_jan_idx + s :: 12, ...]
+        F += Fm[s::12, ...]
     F /= len(season)
 
     return F
 
 
-def TropD_Calculate_StreamFunction(V, lat, lev):
+def TropD_Calculate_StreamFunction(
+    V: np.ndarray, lat: np.ndarray, lev: np.ndarray
+) -> np.ndarray:
     """
-    Calculate streamfunction by integrating meridional wind
-    from top of the atmosphere to surface
+    Calculates the meridional mass streamfunction by integrating meridional wind from top
+    of the atmosphere to surface
 
-    Args:
+    Parameters
+    ----------
+    V : numpy.ndarray (dim1, ..., dimN-2, lat, lev)
+        N-dimensional array of zonal-mean meridional wind with final 2 axes corresponding to latitude and vertical level, respectively
+    lat : numpy.ndarray
+        equally-spaced latitude array
+    lev : numpy.ndarray
+        vertical level array in hPa
 
-        V: array of zonal-mean meridional wind with dimensions
-                (dim1, dim2, ..., dimN-2, lat, lev)
-
-        lat: equally spaced latitude array
-
-        lev: vertical level array in hPa
-
-    Returns:
-
-        ndarray: the streamfunction psi(dim1, dim2, ..., dimN-2,lat,lev)
+    Returns
+    -------
+    numpy.ndarray (same shape as V)
+        the meridional mass overturning streamfunction (psi)
     """
 
     if V.shape[-2:] != (lat.size, lev.size):
@@ -268,41 +271,62 @@ def TropD_Calculate_StreamFunction(V, lat, lev):
     return psi
 
 
+@overload
 def TropD_Calculate_TropopauseHeight(
-    T, P, Z=None, use_local_idx=False, force_2km=False
-):
+    T: np.ndarray, P: np.ndarray, Z: None
+) -> np.ndarray:
+    ...
+
+
+@overload
+def TropD_Calculate_TropopauseHeight(
+    T: np.ndarray, P: np.ndarray, Z: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    ...
+
+
+def TropD_Calculate_TropopauseHeight(
+    T: np.ndarray,
+    P: np.ndarray,
+    Z: Optional[np.ndarray] = None,
+    use_local_idx: bool = False,
+    force_2km: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
-    Calculate the Tropopause Height in isobaric coordinates
+    Calculate the tropopause height in isobaric coordinates
 
     Based on the method in Birner (2010), according to the WMO definition:
     first level where the lapse rate <= 2K/km AND where the lapse rate <= 2K/km
     for at least 2km above that level
 
-    Args:
+    Parameters
+    ----------
+    T : numpy.ndarray (dim1, ..., dimN-1, lev)
+        N-dimensional temperature array
+    P : numpy.ndarray (lev,)
+        pressure levels in hPa
+    Z : numpy.ndarray (same shape as T), optional
+        N-dimensional array to be interpolated at tropopause, such as
+        geopotential height (m) to yield tropopause height
+    use_local_idx : bool, optional
+        patch to force_use of local column temperature instead of near-surface
+        temperature, by default False
+    force_2km : bool, optional
+        patch to require a full 2km layer for a valid tropopause, by default False
 
-        T(...,levels): N-dimensional temperature array with levels as last axis
-
-        P: pressure levels in hPa, same dimension as last axis of T
-
-        Z (optional): geopotential height (m) or another field
-                      to be interpolated at tropopause, same dimensions as T
-
-    Returns:
-
-        Pt (ndarray): the tropopause level in hPa, with N-1 dimensions
-
-        Optional (if Z is provided):
-
-            Ht (ndarray): with N-1 dimensions. Ht is Z evaluated at the
-                          tropopause. If Z is geopotential height (m), Ht is
-                          the tropopause altitude (m)
+    Returns
+    -------
+    numpy.ndarray (dim1, ..., dimN-1)
+        the tropopause pressure in hPa
+    numpy.ndarray (dim1, ..., dimN-1), optional
+        returned if Z is provided. Corresponds to Z evaluated at the tropopause. If Z is geopotential height, it is tropopause altitude (m)
     """
 
     COMPUTE_Z = Z is not None
 
     T = np.atleast_2d(T)
     if COMPUTE_Z:
-        Z = np.atleast_2d(Z)
+        Z = np.atleast_2d(Z)  # type: ignore
     if T.shape[-1] != P.size:
         raise ValueError(
             f"last axis of temperature data, size {T.shape[-1]}, "
@@ -314,7 +338,7 @@ def TropD_Calculate_TropopauseHeight(
         P = P[::-1]
         T = T[..., ::-1]
         if COMPUTE_Z:
-            Z = Z[..., ::-1]
+            Z = Z[..., ::-1]  # type: ignore
 
     Pk = (P * 100.0) ** KAPPA
     Pk_mid = (Pk[:-1] + Pk[1:]) / 2.0
@@ -379,7 +403,7 @@ def TropD_Calculate_TropopauseHeight(
         # need to loop over individual columns again
         for i in range(Ht.size):
             icol = np.unravel_index(i, Ht.shape)
-            f = interp1d(P, Z[icol], axis=-1)
+            f = interp1d(P, Z[icol], axis=-1)  # type: ignore
             Ht[icol] = f(Pt[icol])
 
         return Pt, Ht
@@ -389,38 +413,32 @@ def TropD_Calculate_TropopauseHeight(
 
 # Converted to python by Paul Staten Jul.29.2017
 def TropD_Calculate_ZeroCrossing(
-    F, lat, lat_uncertainty=0.0, axis=-1, patch_exact_zero=False
-):
+    F: np.ndarray, lat: np.ndarray, lat_uncertainty: float = 0.0, axis: int = -1
+) -> np.ndarray:
     """
     Find the first (with increasing index) zero crossing of the function F
 
-    Args:
+    Parameters
+    ----------
+    F : numpy.ndarray (dim1, ..., dimN-1, lat)
+        N dimensional array to search
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lat_uncertainty : float, optional
+        same unit as lat. The minimum distance allowed between adjacent zero crossings of
+        identical sign change, by default 0.0. For example, for lat_uncertainty = 10, if
+        the most equatorward zero crossing is from positive to negative, NaN is returned
+        if an additional zero crossing from positive to negative is found within 10
+        degrees of the first one.
+    axis : int, optional
+        axis corresponding to latitude, by default -1 (last)
+    patch_exact_zero : bool, optional
+        _description_, by default False
 
-        F: N dimensional array with lat as final dim, or specified by axis
-
-        lat: latitude array, same length as last axis of F
-
-    Kwargs:
-
-        lat_uncertainty (optional): (float) same unit as lat. The minimum
-                                    distance allowed between adjacent zero
-                                    crossings of identical sign change. For
-                                    example, for lat_uncertainty = 10, if the
-                                    most equatorward zero crossing is from
-                                    positive to negative, NaN is returned if an
-                                    additional zero crossing from positive to
-                                    negative is found within 10 degrees of the
-                                    first one.
-
-        axis: latitude axis (default last)
-
-        patch_exact_zero (optional): choose the exact latitude corresponding
-                                     to 0 if True, otherwise return the grid
-                                     point just prior (default, bug?)
-
-    Returns:
-
-        float: latitude of zero crossing by linear interpolation
+    Returns
+    -------
+    np.ndarray
+        latitude(s) of zero crossing by linear interpolation
     """
 
     F = np.atleast_2d(F)
@@ -469,7 +487,7 @@ def TropD_Calculate_ZeroCrossing(
         a1 = a[0]
         # if there is an exact zero, use its latitude...
         if np.abs(Di[a1]) == 1:
-            ZC[iband] = lat[a1 + patch_exact_zero]
+            ZC[iband] = lat[a1 + 1]
         else:  # np.abs(D[a1]) == 2 (directly from + to - or - to +)
             ZC[iband] = (
                 -Fi[a1] * (lat[a1 + 1] - lat[a1]) / (Fi[a1 + 1] - Fi[a1]) + lat[a1]
