@@ -147,57 +147,6 @@ class TestMon2Season:
         with pytest.raises(IndexError):
             TropD_Calculate_Mon2Season(data, range(12), axis=3)
 
-    # proof patch works
-    def test_indexing_patch1(self, patch=True):
-        data = 13 * [1.0, 3.0] + 12 * [
-            4.0,
-        ]
-        result = TropD_Calculate_Mon2Season(
-            data, range(12), first_jan_idx=2, patch_indexing=patch
-        )
-        assert (result == np.array([2.0, 2.0, 4.0])).all()
-
-    def test_indexing_patch2(self, patch=True):
-        data = 12 * [1.0, 3.0] + 11 * [
-            4.0,
-        ]
-        result = TropD_Calculate_Mon2Season(data, range(12), patch_indexing=patch)
-        assert (result == np.array([2.0, 2.0])).all()
-
-    def test_indexing_patch3(self, patch=True):
-        data = 11 * [
-            4.0,
-        ]
-        result = TropD_Calculate_Mon2Season(data, range(12), patch_indexing=patch)
-        assert result.size == 0
-
-    def test_indexing_patch4(self, patch=True):
-        data = 6 * [1.0, 3.0] + 11 * [
-            4.0,
-        ]
-        result = TropD_Calculate_Mon2Season(data, range(12), patch_indexing=patch)
-        if patch:
-            ans = np.array([2.0])
-        else:
-            ans = np.array([2.0, 47.0 / 12.0])
-        assert np.allclose(result, ans)
-
-    # bug tests to prove need for patch
-    def test_indexing_bug1(self):
-        with pytest.raises(ValueError):
-            self.test_indexing_patch1(patch=False)
-
-    def test_indexing_bug2(self):
-        with pytest.raises(ValueError):
-            self.test_indexing_patch2(patch=False)
-
-    def test_indexing_bug3(self):
-        with pytest.raises(ValueError):
-            self.test_indexing_patch3(patch=False)
-
-    def test_indexing_bug4(self):
-        self.test_indexing_patch4(patch=False)
-
 
 class TestStreamFunction:
     def test_functionality(self, slice_end=None):
@@ -243,21 +192,6 @@ class TestZeroCrossing:
         assert np.allclose(
             TropD_Calculate_ZeroCrossing(data[:slice_end], lats, axis=axis), 45.0
         )
-
-    def test_bug_exact_zero(self, patch_exact_zero=False):
-        data = np.arange(-20.0, 21.0, 4.0)
-        lats = np.linspace(0, 90, data.size)
-        if patch_exact_zero:
-            center = 45.0
-        else:
-            center = 36.0
-        assert np.allclose(
-            TropD_Calculate_ZeroCrossing(data, lats, patch_exact_zero=patch_exact_zero),
-            center,
-        )
-
-    def test_patch_exact_zero(self):
-        self.test_bug_exact_zero(patch_exact_zero=True)
 
     def test_too_small(self):
         data = np.arange(-20, 22.0, 20.0)

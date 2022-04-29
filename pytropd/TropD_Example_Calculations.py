@@ -195,7 +195,7 @@ if DRAW_FIGS:
     # Change axes of V to be [time, lat, lev]
     V = np.transpose(V, (2, 1, 0))
     # Calculate metric from annual mean
-    V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=range(12))
+    V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=list(range(12)))
 
     # latitude of monthly Psi zero crossing
     # Default method = 'Psi500'
@@ -203,8 +203,8 @@ if DRAW_FIGS:
     # latitude of NH/SH stream function zero crossing from annual mean V
     Phi_psi_sh_ANN, Phi_psi_nh_ANN = pyt.TropD_Metric_PSI(V_ANN, lat, lev)
 
-    Phi_psi_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_psi_nh, season=range(12))
-    Phi_psi_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_psi_sh, season=range(12))
+    Phi_psi_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_psi_nh, season=list(range(12)))
+    Phi_psi_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_psi_sh, season=list(range(12)))
 
     plt.figure(1, figsize=(7, 7))
     plt.subplot(211)
@@ -291,8 +291,8 @@ if DRAW_FIGS:
     T = np.transpose(T, (2, 1, 0))
     Z = np.transpose(Z, (2, 1, 0))
     # Calculate tropopause break from annual mean
-    T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=range(12))
-    Z_ANN = pyt.TropD_Calculate_Mon2Season(Z, season=range(12))
+    T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=list(range(12)))
+    Z_ANN = pyt.TropD_Calculate_Mon2Season(Z, season=list(range(12)))
 
     # Default method = "max_gradient". Latitude of maximal poleward gradient
     Phi_tpb_sh, Phi_tpb_nh = pyt.TropD_Metric_TPB(T, lat, lev)
@@ -310,8 +310,8 @@ if DRAW_FIGS:
         T_ANN, lat, lev, Z=Z_ANN, method="cutoff"
     )
 
-    Phi_tpb_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_tpb_nh, season=range(12))
-    Phi_tpb_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_tpb_sh, season=range(12))
+    Phi_tpb_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_tpb_nh, season=list(range(12)))
+    Phi_tpb_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_tpb_sh, season=list(range(12)))
 
     plt.figure(3, figsize=(7, 7))
     plt.subplot(211)
@@ -382,8 +382,8 @@ if DRAW_FIGS:
     olr = np.transpose(olr, (1, 0))
     olrcs = np.transpose(olrcs, (1, 0))
     # Calculate annual mean field
-    olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=range(12))
-    olrcs_ANN = pyt.TropD_Calculate_Mon2Season(olrcs, season=range(12))
+    olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=list(range(12)))
+    olrcs_ANN = pyt.TropD_Calculate_Mon2Season(olrcs, season=list(range(12)))
 
     # latitude of olr metric
     # Default method = '250W'
@@ -492,7 +492,7 @@ if DRAW_FIGS:
     U = np.transpose(U, (2, 1, 0))
 
     # Calculate STJ latitude from annual mean
-    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=range(12))
+    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
     # latitude of STJ from annual mean U
     # Default method =  'adjusted_peak'
     Phi_stj_sh_ANN_adj, Phi_stj_nh_ANN_adj = pyt.TropD_Metric_STJ(
@@ -540,12 +540,12 @@ if DRAW_FIGS:
     Phi_edj_sh, Phi_edj_nh = pyt.TropD_Metric_EDJ(U, lat, lev, method="max")
 
     # Calculate EDJ latitude from annual mean
-    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=range(12))
+    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
     # latitude of EDJ from annual mean U
     Phi_edj_sh_ANN, Phi_edj_nh_ANN = pyt.TropD_Metric_EDJ(U_ANN, lat, lev)
 
-    Phi_edj_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_edj_nh, season=range(12))
-    Phi_edj_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_edj_sh, season=range(12))
+    Phi_edj_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_edj_nh, season=list(range(12)))
+    Phi_edj_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_edj_sh, season=list(range(12)))
 
     plt.figure(7, figsize=(7, 7))
     plt.subplot(211)
@@ -587,7 +587,7 @@ if DRAW_FIGS:
     # Change axes of pr and er to be [time, lat]
     PE = np.transpose(PE, (1, 0))
 
-    PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=range(12))
+    PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=list(range(12)))
 
     # latitude of PminusE metric
     # Default method = 'zero_crossing'
@@ -595,8 +595,8 @@ if DRAW_FIGS:
     # latitude of PminusE metric from annual mean PminusE
     Phi_pe_sh_ANN, Phi_pe_nh_ANN = pyt.TropD_Metric_PE(PE_ANN, lat)
 
-    Phi_pe_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_pe_nh, season=range(12))
-    Phi_pe_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_pe_sh, season=range(12))
+    Phi_pe_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_pe_nh, season=list(range(12)))
+    Phi_pe_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_pe_sh, season=list(range(12)))
 
     plt.figure(8, figsize=(7, 7))
     plt.subplot(211)
@@ -639,8 +639,8 @@ if DRAW_FIGS:
     U = np.transpose(U, (2, 1, 0))
     uas = np.transpose(uas, (1, 0))
 
-    uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=range(12))
-    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=range(12))
+    uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=list(range(12)))
+    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
 
     # latitude of surface zonal wind metric
     Phi_uas_sh, Phi_uas_nh = pyt.TropD_Metric_UAS(uas, lat)
@@ -649,8 +649,8 @@ if DRAW_FIGS:
     # latitude of surface zonal wind metric from annual mean zonal wind
     Phi_Uas_sh_ANN, Phi_Uas_nh_ANN = pyt.TropD_Metric_UAS(U_ANN, lat, lev)
 
-    Phi_uas_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_uas_nh, season=range(12))
-    Phi_uas_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_uas_sh, season=range(12))
+    Phi_uas_nh_mean = pyt.TropD_Calculate_Mon2Season(Phi_uas_nh, season=list(range(12)))
+    Phi_uas_sh_mean = pyt.TropD_Calculate_Mon2Season(Phi_uas_sh, season=list(range(12)))
 
     plt.figure(9, figsize=(7, 7))
     plt.subplot(211)
@@ -753,7 +753,7 @@ if DRAW_FIGS:
     V, lat, lev = get_arrs_from_nc(data_files["va"], ["va", "lat", "lev"])
     # Change axes of V to be [time, lat]
     V = np.transpose(V, (2, 1, 0))
-    V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=range(12))
+    V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=list(range(12)))
     Phi_psi_sh_ANN, Phi_psi_nh_ANN = pyt.TropD_Metric_PSI(V_ANN, lat, lev)
 
     # Tropopause break
@@ -761,7 +761,7 @@ if DRAW_FIGS:
     T = get_arrs_from_nc(data_files["ta"], "ta")
     # Change axes of T to be [time, lat]
     T = np.transpose(T, (2, 1, 0))
-    T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=range(12))
+    T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=list(range(12)))
     Phi_tpb_sh_ANN, Phi_tpb_nh_ANN = pyt.TropD_Metric_TPB(T_ANN, lat, lev)
 
     # Surface pressure max
@@ -769,7 +769,7 @@ if DRAW_FIGS:
     ps = get_arrs_from_nc(data_files["psl"], "psl")
     # Change axes of ps to be [time, lat]
     ps = np.transpose(ps, (1, 0))
-    ps_ANN = pyt.TropD_Calculate_Mon2Season(ps, season=range(12))
+    ps_ANN = pyt.TropD_Calculate_Mon2Season(ps, season=list(range(12)))
     Phi_ps_sh_ANN, Phi_ps_nh_ANN = pyt.TropD_Metric_PSL(ps_ANN, lat)
 
     # Eddy driven jet
@@ -777,7 +777,7 @@ if DRAW_FIGS:
     U = get_arrs_from_nc(data_files["ua"], "ua")
     # Change axes of U to be [time, lat]
     U = np.transpose(U, (2, 1, 0))
-    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=range(12))
+    U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
     Phi_edj_sh_ANN, Phi_edj_nh_ANN = pyt.TropD_Metric_EDJ(U_ANN, lat, lev)
 
     # Subtropical jet
@@ -788,7 +788,7 @@ if DRAW_FIGS:
     olr = -get_arrs_from_nc(data_files["rlnt"], "rlnt")
     # Change axes of olr to be [time, lat]
     olr = np.transpose(olr, (1, 0))
-    olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=range(12))
+    olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=list(range(12)))
     Phi_olr_sh_ANN, Phi_olr_nh_ANN = pyt.TropD_Metric_OLR(olr_ANN, lat)
 
     # P minus E
@@ -800,7 +800,7 @@ if DRAW_FIGS:
     PE = pr - er
     # Change axes of PE to be [time, lat]
     PE = np.transpose(PE, (1, 0))
-    PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=range(12))
+    PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=list(range(12)))
     Phi_pe_sh_ANN, Phi_pe_nh_ANN = pyt.TropD_Metric_PE(PE_ANN, lat)
 
     # Surface winds
@@ -808,7 +808,7 @@ if DRAW_FIGS:
     uas = get_arrs_from_nc(data_files["uas"], "uas")
     # Change axes of uas to be [time, lat]
     uas = np.transpose(uas, (1, 0))
-    uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=range(12))
+    uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=list(range(12)))
     Phi_uas_sh_ANN, Phi_uas_nh_ANN = pyt.TropD_Metric_UAS(uas_ANN, lat)
 
     plt.figure(11)
@@ -852,7 +852,7 @@ V, lat, lev = get_arrs_from_nc(data_files["va"], ["va", "lat", "lev"])
 # Change axes of V to be [time, lat]
 V = np.transpose(V, (2, 1, 0))
 # resample to annual
-V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=range(12))
+V_ANN = pyt.TropD_Calculate_Mon2Season(V, season=list(range(12)))
 
 # monthly PSI check
 Phi_psi_sh, Phi_psi_nh = pyt.TropD_Metric_PSI(V, lat, lev)
@@ -871,7 +871,7 @@ T = get_arrs_from_nc(data_files["ta"], "ta")
 # Change axes of T to be [time, lat, lev]
 T = np.transpose(T, (2, 1, 0))
 # resample to annual
-T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=range(12))
+T_ANN = pyt.TropD_Calculate_Mon2Season(T, season=list(range(12)))
 
 # monthly TPB check
 Phi_tpb_sh, Phi_tpb_nh = pyt.TropD_Metric_TPB(T, lat, lev)
@@ -913,7 +913,7 @@ U = get_arrs_from_nc(data_files["ua"], "ua")
 # Change axes of U to be [time, lat]
 U = np.transpose(U, (2, 1, 0))
 # resample to annual
-U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=range(12))
+U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
 
 # monthly EDJ check
 Phi_edj_sh, Phi_edj_nh = pyt.TropD_Metric_EDJ(U, lat, lev)
@@ -944,7 +944,7 @@ olr = -get_arrs_from_nc(data_files["rlnt"], "rlnt")
 # Change axes of olr to be [time, lat]
 olr = np.transpose(olr, (1, 0))
 # resample to annual
-olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=range(12))
+olr_ANN = pyt.TropD_Calculate_Mon2Season(olr, season=list(range(12)))
 
 # monthly OLR check
 Phi_olr_sh, Phi_olr_nh = pyt.TropD_Metric_OLR(olr, lat)
@@ -967,7 +967,7 @@ PE = pr - er
 # Change axes of PE to be [time, lat]
 PE = np.transpose(PE, (1, 0))
 # resample to annual
-PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=range(12))
+PE_ANN = pyt.TropD_Calculate_Mon2Season(PE, season=list(range(12)))
 
 # monthly P-E check
 Phi_pe_sh, Phi_pe_nh = pyt.TropD_Metric_PE(PE, lat)
@@ -986,7 +986,7 @@ uas = get_arrs_from_nc(data_files["uas"], "uas")
 # Change axes of uas to be [time, lat]
 uas = np.transpose(uas, (1, 0))
 # resample to annual
-uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=range(12))
+uas_ANN = pyt.TropD_Calculate_Mon2Season(uas, season=list(range(12)))
 
 # monthly UAS check
 Phi_uas_sh, Phi_uas_nh = pyt.TropD_Metric_UAS(uas, lat)

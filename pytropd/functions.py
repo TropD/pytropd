@@ -222,10 +222,7 @@ def TropD_Calculate_Mon2Season(
     whole_years = (Fm.shape[0] - first_jan_idx) // 12
     last_jan_idx = whole_years * 12 + first_jan_idx
     Fm = Fm[first_jan_idx:last_jan_idx, ...]
-    F = np.asarray(0.0)
-    for s in season:
-        F += Fm[s::12, ...]
-    F /= len(season)
+    F = (Fm.reshape(whole_years, 12, *Fm.shape[1:])[:, season]).mean(axis=1)
 
     return F
 
@@ -286,11 +283,7 @@ def TropD_Calculate_TropopauseHeight(
 
 
 def TropD_Calculate_TropopauseHeight(
-    T: np.ndarray,
-    P: np.ndarray,
-    Z: Optional[np.ndarray] = None,
-    use_local_idx: bool = False,
-    force_2km: bool = False,
+    T: np.ndarray, P: np.ndarray, Z: Optional[np.ndarray] = None
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Calculate the tropopause height in isobaric coordinates
@@ -308,11 +301,6 @@ def TropD_Calculate_TropopauseHeight(
     Z : numpy.ndarray (same shape as T), optional
         N-dimensional array to be interpolated at tropopause, such as
         geopotential height (m) to yield tropopause height
-    use_local_idx : bool, optional
-        patch to force_use of local column temperature instead of near-surface
-        temperature, by default False
-    force_2km : bool, optional
-        patch to require a full 2km layer for a valid tropopause, by default False
 
     Returns
     -------
@@ -372,23 +360,13 @@ def TropD_Calculate_TropopauseHeight(
             idx = trop_layer[icol].nonzero()[0]
             Pidx = PI[idx]
             # get pressure level of 2km above potential tropopause pts
-            if use_local_idx:
-                TIslicer = idx
-            else:  # probable bug, current version uses surface temp
-                TIslicer = slice(None, Pidx.size)
             Pidx_2km = Pidx - (
-                2000.0 * GRAV / SPEC_HEAT_PRES_DRY / TI[icol + (TIslicer,)] * Pidx
+                2000.0 * GRAV / SPEC_HEAT_PRES_DRY / TI[icol + (idx,)] * Pidx
             )
 
             for c in range(Pidx.size):
                 # get the idx of 2km above each point
-                # although find nearest returns the closest idx, which may
-                # be less than 2km (in some cases much less)
-                if force_2km:
-                    # ensure that the layers we search are actually 2km
-                    idx2km = find_nearest(PI, Pidx_2km[c])
-                else:
-                    idx2km = find_nearest(Pidx[c:], Pidx_2km[c]) + idx[c]
+                idx2km = find_nearest(PI, Pidx_2km[c])
 
                 # if the lapse rate from the first point to 2km above
                 # (inclusive) is less than 2, we've found our tropopause
@@ -432,8 +410,6 @@ def TropD_Calculate_ZeroCrossing(
         degrees of the first one.
     axis : int, optional
         axis corresponding to latitude, by default -1 (last)
-    patch_exact_zero : bool, optional
-        _description_, by default False
 
     Returns
     -------

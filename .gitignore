@@ -7,3 +7,5 @@ pytropd/__pycache__/*
 mypy.ini
 __pycache__
 .vscode
+.pytest_cache
+.mypy_cache

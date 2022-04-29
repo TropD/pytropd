@@ -1,7 +1,7 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 # rewrite for readability/vectorization - sjs 1.27.22
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 import warnings
 import numpy as np
 from numpy.polynomial import polynomial
@@ -727,7 +727,6 @@ def TropD_Metric_TPB(
     method: str = "max_gradient",
     Z: Optional[np.ndarray] = None,
     Cutoff: float = 1.5e4,
-    trop_kwargs: Dict = {},
     **maxlat_kwargs,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -760,8 +759,6 @@ def TropD_Metric_TPB(
     Cutoff : float, optional
         Geopotential height cutoff (m) that marks the location of the tropopause break,
         by default 1.5e4, required by ``method="cutoff"``
-    trop_kwargs : Dict, optional
-        keyword arguments to :py:func:`TropD_Calculate_TropopauseHeight`, by default {}
     **kwargs : optional
         additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
         for ``method="cutoff"``)
@@ -784,8 +781,6 @@ def TropD_Metric_TPB(
         )
     if method not in ["max_gradient", "max_potemp", "cutoff"]:
         raise ValueError("unrecognized method " + method)
-    # TropD_Calculate_TropopauseHeight accepts a Z parameter but we shouldn't use it
-    trop_kwargs.pop("Z", None)
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
         lat = lat[::-1]
@@ -802,18 +797,17 @@ def TropD_Metric_TPB(
         if method == "max_potemp":
             maxlat_kwargs["n"] = maxlat_kwargs.get("n", 30)
             PT = T / (lev / 1000.0) ** KAPPA
-            Pt, PTt = TropD_Calculate_TropopauseHeight(T, lev, Z=PT, **trop_kwargs)
+            Pt, PTt = TropD_Calculate_TropopauseHeight(T, lev, Z=PT)
             F = PTt - np.nanmin(PT, axis=-1)
         else:
-            Pt = TropD_Calculate_TropopauseHeight(T, lev, **trop_kwargs)
+            Pt = TropD_Calculate_TropopauseHeight(T, lev, Z=None)
             F = np.diff(Pt, axis=-1) / (lat[1] - lat[0])
             lat = (lat[1:] + lat[:-1]) / 2.0
             F *= np.sign(lat)
+            # redefine mask b/c we have new grid points
             NHmask = (lat > eq_boundary) & (lat < polar_boundary)
             SHmask = (lat < -eq_boundary) & (lat > -polar_boundary)
-
-        if trop_kwargs.get("force_2km", True):
-            F = np.where(np.isfinite(F), F, 0.0)
+        F = np.where(np.isfinite(F), F, 0.0)
 
         PhiNH = TropD_Calculate_MaxLat(F[..., NHmask], lat[NHmask], **maxlat_kwargs)
         PhiSH = TropD_Calculate_MaxLat(F[..., SHmask], lat[SHmask], **maxlat_kwargs)
@@ -821,7 +815,7 @@ def TropD_Metric_TPB(
     else:  # method == 'cutoff'
         if Z is None:
             raise ValueError('Z must be provided when method = "cutoff"')
-        Pt, Ht = TropD_Calculate_TropopauseHeight(T, lev, Z, **trop_kwargs)
+        Pt, Ht = TropD_Calculate_TropopauseHeight(T, lev, Z)
 
         PhiNH = TropD_Calculate_ZeroCrossing(Ht[..., NHmask] - Cutoff, lat[NHmask])
         PhiSH = TropD_Calculate_ZeroCrossing(
