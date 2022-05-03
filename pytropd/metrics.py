@@ -45,13 +45,13 @@ def TropD_Metric_EDJ(
     method : {"peak", "max", "fit"}, optional
         Method for determining latitude of maximum zonal wind, by default "peak":
 
-        * "peak" : Latitude of the maximum of the zonal wind at the level closest
-                   to 850hPa (smoothing parameter ``n=30``)
-        * "max" : Latitude of the maximum of the zonal wind at the level closest to
-                  850hPa (smoothing parameter ``n=6``)
-        * "fit" : Latitude of the maximum of the zonal wind at the level closest to
-                  850hPa using a quadratic polynomial fit of data from grid points
-                  surrounding the grid point of the maximum
+        * "peak": Latitude of the maximum of the zonal wind at the level closest
+                  to 850hPa (smoothing parameter ``n=30``)
+        * "max": Latitude of the maximum of the zonal wind at the level closest to
+                 850hPa (smoothing parameter ``n=6``)
+        * "fit": Latitude of the maximum of the zonal wind at the level closest to
+                 850hPa using a quadratic polynomial fit of data from grid points
+                 surrounding the grid point of the maximum
 
     n_fit : int, optional
         used when ``method="fit"``, determines the number of points around the max to use
@@ -178,8 +178,7 @@ def TropD_Metric_OLR(
         if ``method="cutoff"``, specifies the OLR cutoff value in :math:`W/m^2`
 
     **kwargs : optional
-        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
-        for ``method="fit"``)
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
 
         n : int, optional
             Rank of moment used to calculate the location of max, e.g.,
@@ -566,10 +565,10 @@ def TropD_Metric_PSL(
     method : {"peak", "max"}, optional
         Method for determining latitude of max PSL, by default "peak":
 
-        * "peak" : latitude of the maximum of subtropical sea-level pressure (smoothing
-                   parameter ``n=30``)
-        * "max" : latitude of the maximum of subtropical sea-level pressure (smoothing
-                  parameter ``n=6``)
+        * "peak": latitude of the maximum of subtropical sea-level pressure (smoothing
+                  parameter ``n=30``)
+        * "max": latitude of the maximum of subtropical sea-level pressure (smoothing
+                 parameter ``n=6``)
 
     **kwargs : optional
         additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
@@ -652,6 +651,15 @@ def TropD_Metric_STJ(
         * "core_max": Latitude of maximum (smoothing parameter ``n=6``) of the zonal wind
                       averaged between 100 and 400 hPa, poleward of 10 degrees and
                       equatorward of 70 degrees
+
+    **kwargs : optional
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
+
+        n : int, optional
+            Rank of moment used to calculate the location of max, e.g.,
+            ``n=1,2,4,6,8,...``, by default 6 if ``method="core_max"`` or
+            ``method="adjusted_max"``, 30 if ``method="core_peak"`` or
+            ``method="adjusted_peak"``
 
     Returns
     -------
@@ -758,7 +766,7 @@ def TropD_Metric_TPB(
         N-dimensional geopotential height array (m), required by ``method="cutoff"``
     Cutoff : float, optional
         Geopotential height cutoff (m) that marks the location of the tropopause break,
-        by default 1.5e4, required by ``method="cutoff"``
+        by default 1.5e4, used when ``method="cutoff"``
     **kwargs : optional
         additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
         for ``method="cutoff"``)

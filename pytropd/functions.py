@@ -179,7 +179,8 @@ def TropD_Calculate_Mon2Season(
     axis: int = 0,
 ) -> np.ndarray:
     """
-    Calculate unweighted seasonal means from monthly time series
+    Calculate unweighted seasonal means from monthly time series. Dec is averaged with
+    Jan and Feb of the **same** year, not the following year
 
     Parameters
     ----------
