@@ -2,10 +2,10 @@ pytropd.egg-info/*
 build/
 dist/
 pytropd/__pycache__/*
- 
- 
- 
- 
- 
- 
- 
+*.pyc
+.flake8
+mypy.ini
+__pycache__
+.vscode
+.pytest_cache
+.mypy_cache

@@ -1,485 +1,806 @@
+from typing import Dict, List, Sequence, Any
 import xarray as xr
+import pytropd as pyt
+import numpy as np
+import logging
+from inspect import signature
+
 
 @xr.register_dataset_accessor("pyt_metrics")
 class MetricAccessor:
-    import pytropd as pyt
-    import numpy as np
-
-    def __init__(self, xarray_obj):
+    def __init__(self, xarray_obj: xr.Dataset):
         self._obj = xarray_obj
-        self.params = {}
-        self.require_pres_axis = 0
-        self.metric_name = None 
-        self.xarray_dataset = None
-        self.latitudes = None
-        self.lat_name = None
-        self.pres_name = None
-        self.metric_property_name = dict(edj=['u', 'Zonal wind'],
-                                         olr=['olr','Outgoing longwave radiation'],
-                                         pe=['pe','Precipitation minus evaporation'],
-                                         psi=['v','Meridional wind'],
-                                         psl=['psl','Sea level pressure'],
-                                         stj=['u','Zonal wind'],
-                                         tpb=['T','Temperature'],
-                                         uas=['uas','Surface wind'],
-                                         )
+        self.params: Dict[str, Any] = {}
+        self.require_pres_axis = False
+        self.metric_name = ""
+        self.xarray_data = xr.DataArray()
+        self.latitudes = np.array([])
+        self.lat_name = ""
+        self.pres_name = ""
+        self.metric_property_name = dict(
+            edj=["u", "Zonal wind"],
+            olr=["olr", "Outgoing longwave radiation"],
+            pe=["pe", "Precipitation minus evaporation"],
+            psi=["v", "Meridional wind"],
+            psl=["psl", "Sea level pressure"],
+            stj=["u", "Zonal wind"],
+            tpb=["T", "Temperature"],
+            uas=["uas", "Surface wind"],
+        )
 
-    def metrics(self, data):
-      """Return the self.pytropD metrics this data."""
-      
-      # Compute the relevant metric
-      metric_function = getattr(self.pyt, 'TropD_Metric_' + self.metric_name.upper()) 
-      metric_lats = metric_function(data, lat=self.latitudes, **self.params)
-      return self.np.squeeze(self.np.array(metric_lats))
+    def compute_metrics(self) -> xr.DataArray:
+        """Return the requested pytropd metric for this data"""
 
+        self.validate_data()
 
-    def extract_property_name(self, property_name): 
-      
-      if property_name[0] == 'lat':
-        dataset_keys = list(self._obj.dims.keys())
-        property_name_list = ['lat','latitude','lats','x','phi','degreesnorth']
-        find_index = 1
+        # Compute the relevant metric
+        metric_function = getattr(pyt, "TropD_Metric_" + self.metric_name.upper())
 
-      elif property_name[0] == 'pres':  
-        dataset_keys = list(self._obj.dims.keys())
-        property_name_list = ['pres','pressure','p','lev','levels','level']
-        find_index = 1
-
-      else:
-        dataset_keys = list(self._obj.keys())
-
-        #if we are only given one data array in the dataset, assume it is the right one,
-        if len(dataset_keys) == 1:
-          index = [0]
-          find_index = 0
-
-        #otherwise look for a matching variable name 
+        # we need to ensure Z is aligned properly with T when doing TropD_Metric_TPB and
+        # method="cutoff"
+        if (self.metric_name == "tpb") and ("Z" in self.params):
+            metric_latSH, metric_latNH = xr.apply_ufunc(
+                lambda data, z: metric_function(
+                    data, lat=self.latitudes, Z=z, **self.params
+                ),
+                self.xarray_data,
+                self.params.pop("Z"),
+                # validate_data ensures self.pres_name is only defined if the metric should
+                # accept it as an arg or kwarg
+                input_core_dims=[
+                    [self.lat_name, self.pres_name],
+                    [self.lat_name, self.pres_name],
+                ],
+                output_core_dims=[[], []],
+                # we might want to warn users when using dask as some pytropd functions
+                # still iterate over arrays under the hood, which is very slow with dask
+                dask="allowed",
+            )
         else:
-          if property_name[0] == 'u':
-            property_name_list = ['zonalwind','uwind','u','xwind']
-          if property_name[0] == 'uas':
-            property_name_list = ['surfacewind','uas','us','surfu','usurf']
-          elif property_name[0] == 'v':
-            property_name_list = ['meridionalwind','vwind','v','ywind']
-          elif property_name[0] == 'T':
-            property_name_list = ['t','temp','temperature']
-          elif property_name[0] == 'psl':
-            property_name_list = ['sealevelpressure','slp','psl','ps','sp']
-          elif property_name[0] == 'olr':
-            property_name_list = ['olr','outgoinglongwaveradiation','toaolr','olrtoa']
-          elif property_name[0] == 'pe':
-            property_name_list = ['pe','precipitationminusevarporation','pminuse']
-          find_index = 1
+            metric_latSH, metric_latNH = xr.apply_ufunc(
+                lambda data: metric_function(data, lat=self.latitudes, **self.params),
+                self.xarray_data,
+                # validate_data ensures self.pres_name is only defined if the metric should
+                # accept it as an arg or kwarg
+                input_core_dims=[
+                    [self.lat_name, self.pres_name]
+                    if self.pres_name
+                    else [self.lat_name]
+                ],
+                output_core_dims=[[], []],
+                # we might want to warn users when using dask as some pytropd functions
+                # still iterate over arrays under the hood, which is very slow with dask
+                dask="allowed",
+            )
+        metric_lats = xr.concat([metric_latSH, metric_latNH], dim="hemsph")
+        # define coordinates, ensuring all added coords follow CF conventions
+        hemsph_attrs = {"long_name": "hemisphere", "units": ""}
 
-      if find_index:
-        #array names in dataset. Remove whitespace, underscores and make lowercase
-        array_names = [string.strip().lower().replace('_','').replace('-','') for string in dataset_keys]
-        #create dict of indices in dataset
-        indices_dict = dict((k,i) for i,k in enumerate(array_names)) 
-        #find variable
-        intersection = set(indices_dict).intersection(property_name_list)  
-        #extract relevant index
-        index = [indices_dict[x] for x in intersection]
-    
-      if len(index)==0:
-          print(self._obj)
-          raise KeyError('%s not found in Dataset. Valid variable names are %s'%(property_name[1],property_name_list))
+        # if method not provided, get default method of metric_function
+        method_used: str = self.params.get(
+            "method", signature(metric_function).parameters["method"].default
+        )
+        # now let's provide a brief description of the metric from the docs
+        # all methods are in bulleted lists, so split on the reST bullet
+        # and get rid of extra stuff at beginning and end
+        parsed_doc = str(metric_function.__doc__).split("* ")[1:]
+        parsed_doc[-1] = parsed_doc[-1].split("\n\n")[0]
+        # now we need to get the methods description by cleaning the method name
+        method_desc = {
+            m.split(": ")[0].strip('"'): m.split(": ")[1] for m in parsed_doc
+        }.get(method_used, "")
+        method_attrs = {
+            "long_name": "method used",
+            "units": "",
+            "description": method_desc,
+        }
+        method_coord = xr.DataArray([method_used], name="method", attrs=method_attrs)
 
-      if len(index)>1:
-          print(self._obj)
-          print('More than one possible key for %s found. Valid variable names are %s'%(property_name[1],property_name_list))
-          raise KeyError
+        # finally make the output variable CF compliant
+        metric_lats.attrs = {
+            "long_name": self.metric_name.upper() + " metric latitude",
+            "unit": self._obj[self.lat_name].attrs.get("unit", "degrees"),
+        }
+        return metric_lats.assign_coords(
+            hemsph=("hemsph", ["SH", "NH"], hemsph_attrs)
+        ).expand_dims(method=method_coord)
 
-      print('Using %s in the dataset as the %s'%(dataset_keys[index[0]],property_name[1]))
+    def extract_property_name(self, property_name: List[str]) -> str:
+        """
+        search the dataset for the name of the variable required by the metric
 
-      return dataset_keys[index[0]]
-    
-    def validate_data(self, property_name):   
-      ## metrics that take 1D variable as iself.nput
-      #if self.metric_name in ['olr','pe','psl']:
-      #  max_axes = 1
-      ##metrics that take 2D variable as iself.nput
-      #elif self.metric_name in ['edj', 'psi','stj','tpb','uas']:
-      #  max_axes = 2
-      
-      xarray_data = getattr(self._obj,self.extract_property_name(property_name=property_name))
-      xarray_data = xarray_data.rename(self.metric_name)
-      ndim = xarray_data.ndim
-      self.xarray_dataset = xarray_data.to_dataset()
-      ## check DataArray has axes (lat,) or (lat,pres)
-      #try: 
-      #  assert (ndim <= max_axes)
-      #except AssertionError:
-      #  print('Error: DataArray must only contains at most coordinates, Latitudes and Pressure')
+        Parameters
+        ----------
+        property_name : List[str]
+            pair of variable names, one a short key and other long description
 
-      self.lat_name = self.extract_property_name(property_name=['lat','Latitude'])
-      latitudes = getattr(self._obj, self.lat_name).values
-      self.latitudes = latitudes
-      #data_array = xarray_data.values
+        Returns
+        -------
+        str
+            the variable name matching the required variable for the metric
+        """
 
-      if ndim >= 2 and self.require_pres_axis:
-        #assume a pressure level is given and check for it.
-        self.pres_name = self.extract_property_name(property_name=['pres','Pressure'])
-        pressure = getattr(self._obj, self.pres_name).values
-        self.params['lev'] = pressure
+        def join_strlist(mylist: Sequence[str], joiner: str = "and") -> str:
+            """
+            helper func for nicely formatted lists
 
-      #  #do we need to transpose values so that dimensions are (lat,pres)?
-      #  if self.np.shape(data_array)[1] != len(pressure):
-      #    data_array = data_array.transpose()
-      #    assert self.np.shape(data_array)[1] == len(pressure)
-      #self.data_values = data_array
+            Parameters
+            ----------
+            mylist : Sequence[str]
+                sequence of strings to join
+            joiner : str, optional
+                word for joining last item, by default "and"
 
+            Returns
+            -------
+            str
+                joined list as single string
+            """
 
-    def xr_edj(self,**params):
-    
-      '''TropD Eddy Driven Jet (EDJ) metric
-           
-         Latitude of maximum of the zonal wind at the level closest to the 850 hPa level
-         Var should contain axis :class:`pyg.Lat`. If :class:`pyg.Pres` is given, level closest to 850hPa is chosen 
-         
-         Parameters
-            method (str, optional): 'peak' (default) |  'max' | 'fit'
-           
-            peak (Default): Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=30)#
-                                                                                                                                          #
-            max: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=6)            #
-            fit: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level using a quadratic polynomial fit of d#ata from gridpoints surrounding the gridpoint of the maximum
-            
-           n (int, optional): If n is not set (0), n=6 (default) is used in TropD_Calculate_MaxLat. Rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
-         
-         Returns:
-           EDJ_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
+            if len(mylist) < 2:
+                try:
+                    return mylist[0]
+                except IndexError:
+                    return ""
+            else:
+                return f"{', '.join(mylist[:-1])} {joiner} {mylist[-1]}"
 
-      Examples
-      --------
-      '''
-      #Validate data and extract data
-      self.metric_name = 'edj'
-      self.params = params
-      self.require_pres_axis = 1
-      self.validate_data(property_name=self.metric_property_name['edj'])
-      edj_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,self.pres_name]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
+        lookup_property_names = {
+            "lat": ["lat", "latitude", "lats", "x", "phi", "degreesnorth"],
+            "pres": ["pres", "pressure", "p", "lev", "levels", "level"],
+            "u": ["zonalwind", "uwind", "u", "xwind"],
+            "uas": ["surfacewind", "uas", "us", "surfu", "usurf"],
+            "v": ["meridionalwind", "vwind", "v", "ywind"],
+            "T": ["t", "temp", "temperature"],
+            "psl": ["sealevelpressure", "slp", "psl", "ps", "sp"],
+            "olr": ["olr", "outgoinglongwaveradiation", "toaolr", "olrtoa"],
+            "pe": ["pe", "precipitationminusevarporation", "pminuse"],
+            "z": ["z", "h", "height", "geopotentialheight"],
+        }
+        short_property_name, long_property_name = property_name
 
-      return edj_lats.assign_coords(metrics=("metrics", self.np.array([0,1])))
+        if short_property_name in ["lat", "pres"]:
+            dataset_keys = [str(d) for d in self._obj.dims]
+        else:
+            dataset_keys = [str(d) for d in self._obj.data_vars]
 
-    def xr_olr(self, **params):
-  
-      """TropD Outgoing Longwave Radiation (OLR) metric
-         
-         Var should contain one axis :class:`pyg.Lat`.  
-         Parameters:
-         
-           olr(lat,): zonal mean TOA olr (positive)
-           
-           lat: equally spaced latitude column vector
-            
-           method (str, optional):
-  
-             '250W'(Default): the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses 250W/m^2
-             
-      self.validate_data(property_name='uas')
-             '20W': the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses the tropical OLR max minus 20W/m^2
-             
-             'cutoff': the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR crosses a specified cutoff value
-             
-             '10Perc': the first latitude poleward of the tropical OLR maximum in each hemisphere where OLR is 10# smaller than the tropical OLR maximum
-             
-             'max': the latitude of maximum of tropical olr in each hemisphere with the smoothing paramerer n=6 in TropD_Calculate_MaxLat
-             
-             'peak': the latitude of maximum of tropical olr in each hemisphere with the smoothing parameter n=30 in TropD_Calculate_MaxLat
-           
-           
-           Cutoff (float, optional): Scalar. For the method 'cutoff', Cutoff specifies the OLR cutoff value. 
-           
-           n (int, optional): For the 'max' method, n is the smoothing parameter in TropD_Calculate_MaxLat
-         
-         Returns:
-           OLR_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-      Examples
-      --------
-      """
-  
-      #Validate data and extract data
-      self.metric_name = 'olr'
-      self.params = params
-      self.validate_data(property_name=self.metric_property_name['olr'])
-      
-      olr_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
-      metric_attrs = {'Description':'SH and NH latitudes'}
-      return olr_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-  
-    def xr_pe(self, **params):
-    
-      ''' TropD Precipitation minus Evaporation (PE) metric
-         Var should contain one axis :class:`pyg.Lat`.  
-    
-    import xarray as xr
-         Parameters:
-            pe(lat,): zonal-mean precipitation minus evaporation
-       
-            lat: equally spaced latitude column vector
-    
-            method (str): 
-           
-              'zero_crossing': the first latitude poleward of the subtropical minimum where P-E changes from negative to positive values. Only one method so far.
-      
-            lat_uncertainty (float, optional): The minimal distance allowed between the first and second zero crossings along lat
-         
-         Returns:
-           PE_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-      Examples
-      --------
-      '''     
-      #Validate data and extract data
-      self.metric_name = 'pe'
-      self.params = params
-      self.validate_data(property_name=self.metric_property_name['pe'])
-      
-      pe_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
-      metric_attrs = {'Description':'SH and NH latitudes'}
+        # if we are only given one data array in the dataset, assume it is the right one,
+        if len(dataset_keys) == 1:
+            logging.debug(
+                f"Using {dataset_keys[0]} in the dataset as the " + long_property_name
+            )
+            return dataset_keys[0]
 
-      return pe_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-    
-    
-    def xr_psi(self,**params):
-    
-      ''' TropD Mass streamfunction (PSI) metric
+        # otherwise look for a matching variable name
+        # Remove whitespace, underscores and make lowercase
+        stripped_keys = [
+            key.strip().lower().replace("_", "").replace("-", "")
+            for key in dataset_keys
+        ]
+        # find variable
+        all_property_names = lookup_property_names[short_property_name]
+        matched_keys = set(stripped_keys) & set(all_property_names)
+        if len(matched_keys) > 1:
+            raise KeyError(
+                f"More than one possible key for {long_property_name} found. Detected "
+                f"variables are {join_strlist(dataset_keys)}. Expected variable names"
+                f" are {join_strlist(all_property_names, joiner='or')}."
+            )
 
-      Latitude of the meridional mass streamfunction subtropical zero crossing
-     
-      Parameters:
-  
-        V(lat,lev): zonal-mean meridional wind
-      
-        lat: latitude vector
+        # extract relevant index
+        indexes = [stripped_keys.index(key) for key in matched_keys]
 
-        lev: vertical level vector in hPa units
-  
-        method (str, optional):
-  
-          'Psi_500'(default): Zero crossing of the stream function (Psi) at the 500hPa level
+        try:
+            property_key = dataset_keys[indexes[0]]
+        except IndexError:
+            raise KeyError(
+                f"{long_property_name} not found in Dataset. Detected variables are "
+                f"{join_strlist(dataset_keys)}. Expected variable names are "
+                f"{join_strlist(all_property_names, joiner='or')}."
+            )
 
-          'Psi_500_10Perc': Crossing of 10# of the extremum value of Psi in each hemisphre at the 500hPa level
+        logging.debug(
+            f"Using {property_key} in the dataset as the {long_property_name}"
+        )
 
-          'Psi_300_700': Zero crossing of Psi vertically averaged between the 300hPa and 700 hPa levels
+        return property_key
 
-          'Psi_500_Int': Zero crossing of the vertically-integrated Psi at the 500 hPa level
+    def validate_data(self):
 
-          'Psi_Int'    : Zero crossing of the column-averaged Psi
-    
-        lat_uncertainty (float, optional): The minimal distance allowed between the first and second zero crossings. For example, for lat_uncertainty = 10, the function will return a NaN value if a second zero crossings is found within 10 degrees of the most equatorward zero crossing.   
+        property_name = self.metric_property_name[self.metric_name]
 
-         Returns:
-           PSI_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-    
-      Examples
-      --------
-        '''
-    
-      #Validate data and extract data
-      self.metric_name = 'psi'
-      self.params = params
-      self.require_pres_axis = 1
-      self.validate_data(property_name=self.metric_property_name['psi'])
-      psi_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,self.pres_name]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
+        xarray_data: xr.DataArray = self._obj[
+            self.extract_property_name(property_name=property_name)
+        ]
+        xarray_data = xarray_data.rename(self.metric_name)
+        self.xarray_data = xarray_data
 
-      metric_attrs = {'Description':'SH and NH latitudes'}
-      return psi_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-      #Validate data and extract data
-    
-    
-    def xr_psl(self,**params):
-    
-      ''' TropD Sea-level pressure (PSL) metric
-          Latitude of maximum of the subtropical sea-level pressure
-          Var should contain one axis :class:`pyg.Lat`.
-         
-         Parameters
-            ps(lat,): sea-level pressure
-          
-            lat: equally spaced latitude column vector
-    
-            method (str, optional): 'peak' (default) | 'max'
-         
-         Returns:
-           PSL_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-    
-      Examples
-      --------
-      '''
-      #Validate data and extract data
-      self.metric_name = 'psl'
-      self.params = params
-      self.validate_data(property_name=self.metric_property_name['psl'])
-      
-      psl_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
+        self.lat_name = self.extract_property_name(property_name=["lat", "Latitude"])
+        latitudes: np.ndarray = xarray_data[self.lat_name].values
+        self.latitudes = latitudes
 
-      metric_attrs = {'Description':'SH and NH latitudes'}
-      return psl_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-    
-    
-    def xr_stj(self,**params):
-    
-      '''TropD Eddy Driven Jet (STJ) metric
-           
-         Latitude of maximum of the zonal wind at the level closest to the 850 hPa level
-         Var should contain axis :class:`pyg.Lat`. If :class:`pyg.Pres` is given, level closest to 850hPa is chosen 
-         
-         Parameters
-            method (str, optional): 'peak' (default) |  'max' | 'fit'
-           
-            peak (Default): Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=30)
-            
-            max: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level (smoothing parameter n=6)
-            fit: Latitude of the maximum of the zonal wind at the level closest to the 850 hPa level using a quadratic polynomial fit of data from gridpoints surrounding the gridpoint of the maximum
-            
-           n (int, optional): If n is not set (0), n=6 (default) is used in TropD_Calculate_MaxLat. Rank of moment used to calculate the position of max value. n = 1,2,4,6,8,...  
-         
-         Returns:
-           STJ_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-    
-      Examples
-      --------
-      '''
-      #Validate data and extract data
-      self.metric_name = 'stj'
-      self.params = params
-      self.require_pres_axis = 1
-      self.validate_data(property_name=self.metric_property_name['stj'])
-      stj_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,self.pres_name]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
+        try:
+            self.pres_name = self.extract_property_name(
+                property_name=["pres", "Pressure"]
+            )
+        except KeyError as e:
+            if self.require_pres_axis:
+                raise e
 
-      metric_attrs = {'Description':'SH and NH latitudes'}
-      return stj_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-    
-    
-    def xr_tpb(self,**params):
-    
-      ''' TropD Tropopause break (TPB) metric
-         Var should contain axes :class:`pyg.Lat`and :class:`pyg.Pres` 
-         
-         Parameters
-            T(lat,lev): temperature (K)
-    
-            lat: latitude vector
-    
-            lev: pressure levels column vector in hPa
-    
-            method (str, optional): 
-      
-              'max_gradient' (default): The latitude of maximal poleward gradient of the tropopause height
-      
-              'cutoff': The most equatorward latitude where the tropopause crosses a prescribed cutoff value
-      
-              'max_potemp': The latitude of maximal difference between the potential temperature at the tropopause and at the surface
-      
-            Z(lat,lev) (optional): geopotential height (m)
-    
-            Cutoff (float, optional): geopotential height (m) cutoff that marks the location of the tropopause break
-         
-         Returns:
-           TPB_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-    
-      '''
-      #Validate data and extract data
-      self.metric_name = 'tpb'
-      self.params = params
-      self.require_pres_axis = 1
-      self.validate_data(property_name=self.metric_property_name['tpb'])
-      tbp_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,self.pres_name]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
-      metric_attrs = {'Description':'SH and NH latitudes'}
+        # check for pressure if required or present for optional ones
+        if self.require_pres_axis or (
+            self.metric_name in ["edj", "uas"] and self.pres_name
+        ):
+            pressure: np.ndarray = xarray_data[self.pres_name].values
+            self.params["lev"] = pressure
+        # otherwise don't use it if it is present
+        else:
+            self.pres_name = ""
 
-      return tbp_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-    
-    
-    def xr_uas(self,**params):
-    
-      ''' TropD near-surface zonal wind (UAS) metric
-         Var should contain axis :class:`pyg.Lat. If :class:`pyg.Pres` is included, the nearest level to the surface is used.
-         
-         Parameters
-    
-            U(lat,lev) or U (lat,)-- Zonal mean zonal wind. Also takes surface wind 
-            
-            lat: latitude vector
-            
-            lev: vertical level vector in hPa units. lev=self.np.array([1]) for single-level iself.nput zonal wind U(lat,)
-    
-            method (str): 
-              'zero_crossing': the first subtropical latitude where near-surface zonal wind changes from negative to positive
-    
-            lat_uncertainty (float, optional): the minimal distance allowed between the first and second zero crossings
-         
-         Returns:
-           UAS_metrics: :class:'xarray.Dataset` with dimensions :property:`xarray.Dataset.Coords` metric_dim (SH latitudes, NH latitudes)
-    
-      Examples
-      --------
-      '''
-      #Validate data and extract data
-      self.metric_name = 'uas'
-      self.params = params
-      self.validate_data(property_name=self.metric_property_name['uas'])
-      
-      uas_lats = xr.apply_ufunc(self.metrics, 
-                                self.xarray_dataset,  
-                                input_core_dims=[[self.lat_name,]], 
-                                output_core_dims=[["metrics"]], 
-                                dask = 'allowed',
-                                vectorize=True
-                                ) 
-      # define coordinates
+        if self.metric_name == "tpb":
+            if self.params.get("method", "") == "cutoff":
+                z_name = self.extract_property_name(
+                    property_name=["z", "Geopotential height"]
+                )
+                self.params["Z"] = self._obj[z_name]
+            else:
+                self.params.pop("Z", None)
 
-      metric_attrs = {'Description':'SH and NH latitudes'}
-      return uas_lats.assign_coords(metrics=("metrics", self.np.array([0,1]), metric_attrs))
-    
-    
-    
+        return
+
+    def xr_edj(self, **params) -> xr.DataArray:
+
+        """
+        TropD Eddy Driven Jet (EDJ) Metric
+
+        Finds the latitude of the maximum of zonal wind at the level closest to 850 hPa
+
+        The :py:class:`Dataset` should contain one variable corresponding to zonal wind.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to zonal wind based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension. If a
+        pressure-like dimension is included, level closest to 850hPa is chosen
+
+        Parameters
+        ----------
+        method : {"peak", "max", "fit"}, optional
+            Method for determining latitude of maximum zonal wind, by default "peak":
+
+            * "peak": Latitude of the maximum of the zonal wind at the level closest
+                      to 850hPa (smoothing parameter ``n=30``)
+            * "max": Latitude of the maximum of the zonal wind at the level closest to
+                     850hPa (smoothing parameter ``n=6``)
+            * "fit": Latitude of the maximum of the zonal wind at the level closest to
+                     850hPa using a quadratic polynomial fit of data from grid points
+                     surrounding the grid point of the maximum
+
+        n_fit : int, optional
+            used when ``method="fit"``, determines the number of points around the max to
+            use while fitting, by default 1
+
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+            for ``method="fit"``)
+
+            n : int, optional
+                Rank of moment used to calculate the location of max, e.g.,
+                ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, by default 30 if
+                ``method="peak"``
+
+        Returns
+        -------
+        EDJ_metrics: xarray.Dataset
+            :py:class:`Dataset` of EDJ metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like dimension cannot be identified in the :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            zonal wind cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = xr.open_dataset("pytropd/ValidationData/ua.nc")
+        >>> EDJ_metrics = ds.pyt_metrics.xr_edj(method="max")
+        >>> EDJ_metrics.sel(hemsph="NH").plot()
+        >>> plt.show()
+        """
+
+        self.metric_name = "edj"
+        self.params = params
+        return self.compute_metrics()
+
+    def xr_olr(self, **params) -> xr.DataArray:
+
+        """
+        TropD Outgoing Longwave Radiation (OLR) Metric
+
+        Finds the latitude of maximum OLR or first latitude poleward of maximum where OLR
+        reaches crosses a predefined cutoff.
+
+        The :py:class:`Dataset` should contain one variable corresponding to outgoing
+        longwave radiation at TOA (positive upward) in :math:`W/m^2`. If multiple
+        non-coordinate variables are in the dataset, this method attempts to guess which
+        field corresponds to OLR based on field's name. The :py:class:`Dataset` should
+        also contain a latitude-like dimension. If a pressure-like dimension is included,
+        the level closest to 850hPa is chosen
+
+        Parameters
+        ----------
+        method : {"250W", "20W", "cutoff", "10Perc", "max", "peak"}, optional
+            Method for determining the OLR maximum/threshold, by default "250W":
+
+            * "250W": the 1st latitude poleward of the tropical OLR max in each hemisphere
+                      where OLR crosses :math:`250W/m^2`
+            * "20W": the 1st latitude poleward of the tropical OLR max in each hemisphere
+                     where OLR crosses [the tropical OLR max minus :math:`20W/m^2`]
+            * "cutoff": the 1st latitude poleward of the tropical OLR max in each
+                        hemisphere where OLR crosses a specified cutoff value
+            * "10Perc": the 1st latitude poleward of the tropical OLR max in each
+                        hemisphere where OLR is 10% smaller than the tropical OLR max
+            * "max": the latitude of the tropical olr max in each hemisphere with
+                     smoothing parameter ``n=6``
+            * "peak": the latitude of maximum of tropical olr in each hemisphere with
+                      smoothing parameter ``n=30``
+
+        Cutoff : float, optional
+            if ``method="cutoff"``, specifies the OLR cutoff value in :math:`W/m^2`
+
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
+
+            n : int, optional
+                Rank of moment used to calculate the location of max, e.g.,
+                ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, 30 if
+                ``method="peak"``
+
+        Returns
+        -------
+        OLR_metrics: xarray.Dataset
+            :py:class:`Dataset` of OLR metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like dimension cannot be identified in the :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            outgoing longwave radiation cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = -xr.open_dataset("pytropd/ValidationData/rlnt.nc")
+        >>> OLR_metrics = ds.pyt_metrics.xr_olr(method="cutoff", Cutoff=220.0)
+        >>> OLR_metrics.sel(hemsph="NH").plot()
+        >>> plt.show()
+        """
+
+        self.metric_name = "olr"
+        self.params = params
+        return self.compute_metrics()
+
+    def xr_pe(self, **params) -> xr.DataArray:
+
+        """
+        TropD Precipitation Minus Evaporation (PE) Metric
+
+        Finds the first zero crossing of zonal-mean precipitation minus evaporation
+        poleward of the subtropical minimum
+
+        The :py:class:`Dataset` should contain one variable corresponding to P-E.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to P-E based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension. If a
+        pressure-like dimension is included, level closest to 850hPa is chosen
+
+        Parameters
+        ----------
+        method : {"zero_crossing"}, optional
+            Method to compute the zero crossing for precipitation minus evaporation, by
+            default "zero_crossing":
+            * "zero_crossing": the first latitude poleward of the subtropical P-E min
+                               where P-E changes from negative to positive.
+
+        lat_uncertainty : float, optional
+            The minimal distance allowed between adjacent zero crossings in degrees,
+            by default 0.0
+
+        Returns
+        -------
+        PE_metrics: xarray.Dataset
+            :py:class:`Dataset` of PE metric latitudes with new dimensions
+            :py:class:`xarray.DataArray` ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like dimension cannot be identified in the :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            precipitation minus evaporation cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> prds = xr.open_dataset("pytropd/ValidationData/pr.nc")
+        >>> eds = -xr.open_dataset("pytropd/ValidationData/hfls.nc") / 2510400.0
+        >>> ds = (prds.pr - eds.hfls).to_dataset(name="pe")
+        >>> ds.pyt_metrics.xr_pe().sel(hemsph="NH").plot()
+        >>> plt.show()
+        """
+
+        self.metric_name = "pe"
+        self.params = params
+        return self.compute_metrics()
+
+    def xr_psi(self, **params) -> xr.DataArray:
+
+        """
+        TropD Mass Streamfunction (PSI) Metric
+
+        Finds the latitude of the subtropical zero crossing of the meridional mass
+        streamfunction
+
+        The :py:class:`Dataset` should contain one variable corresponding to meridional
+        wind. If multiple non-coordinate variables are in the dataset, this method
+        attempts to guess which field corresponds to meridional wind based on field's
+        name. The :py:class:`Dataset` should also contain a latitude-like dimension and a
+        pressure-like dimension
+
+        Parameters
+        ----------
+        method : {"Psi_500", "Psi_500_10Perc", "Psi_300_700", "Psi_500_Int", "Psi_Int"},
+        optional
+            Method of determining which Psi zero crossing to return, by default "Psi_500":
+
+            * "Psi_500": Zero crossing of the streamfunction (Psi) at 500hPa
+            * "Psi_500_10Perc": Crossing of 10% of the extremum value of Psi in each
+                                hemisphere at the 500hPa level
+            * "Psi_300_700": Zero crossing of Psi vertically averaged between the 300hPa
+                             and 700 hPa levels
+            * "Psi_500_Int": Zero crossing of the vertically-integrated Psi at 500 hPa
+            * "Psi_Int" : Zero crossing of the column-averaged Psi
+
+        lat_uncertainty : float, optional
+            The minimal distance allowed between the adjacent zero crossings, same units
+            as lat, by default 0.0. e.g., for ``lat_uncertainty=10``, this function will
+            return NaN if another zero crossing is within 10 degrees of the most
+            equatorward zero crossing.
+
+        Returns
+        -------
+        PSI_metrics: xarray.Dataset
+            :py:class:`Dataset` of PSI metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If latitude-like and pressure-like dimensions cannot be identified in the
+            :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the :py:class:`Dataset` and a variable
+            corresponding to meridional wind cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = xr.open_dataset("pytropd/ValidationData/va.nc")
+        >>> PSI_metrics = ds.pyt_metrics.xr_psi(method="Psi_500_10Perc")
+        >>> PSI_metrics.squeeze().plot.line(x="time", add_legend=False)
+        >>> plt.show()
+        """
+
+        self.metric_name = "psi"
+        self.params = params
+        self.require_pres_axis = True
+        return self.compute_metrics()
+
+    def xr_psl(self, **params) -> xr.DataArray:
+
+        """
+        TropD Sea-level Pressure (PSL) Metric
+
+        Finds the latitude of maximum of the subtropical sea-level pressure
+
+        The :py:class:`Dataset` should contain one variable corresponding to sea-level
+        pressure. If multiple non-coordinate variables are in the dataset, this method
+        attempts to guess which field corresponds to sea-level pressure based on field's
+        name. The :py:class:`Dataset` should also contain a latitude-like dimension
+
+        Parameters
+        ----------
+        method : {"peak", "max"}, optional
+            Method for determining latitude of max PSL, by default "peak":
+
+            * "peak": latitude of the maximum of subtropical sea-level pressure (smoothing
+                    parameter ``n=30``)
+            * "max": latitude of the maximum of subtropical sea-level pressure (smoothing
+                    parameter ``n=6``)
+
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+            for ``method="fit"``)
+
+            n : int, optional
+                Rank of moment used to calculate the location of max, e.g.,
+                ``n=1,2,4,6,8,...``, by default 6 if ``method="max"``, 30 if
+                ``method="peak"``
+        Returns
+        -------
+        PSL_metrics: xarray.Dataset
+            :py:class:`Dataset` of PSL metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like dimension cannot be identified in the :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            sea-level pressure cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> from pandas import date_range
+        >>> pslds = xr.open_dataset("pytropd/ValidationData/psl.nc")
+        >>> time_index = date_range(
+        ...     start="1979-01-01", periods=pslds.time.size, freq="MS"
+        ... )
+        >>> pslds = pslds.assign_coords(time = time_index)
+        >>> ds = pslds.resample(time="QS-DEC").mean()
+        >>> PSL_metrics = ds.pyt_metrics.xr_psl(method="max").sel(hemsph="NH").squeeze()
+        >>> PSL_seasonal_metrics_list = [
+        ...     PSL_metrics.isel(time=group).expand_dims(season=[ssn])
+        ...     for ssn, group in PSL_metrics.groupby('time.season').groups.items()
+        ... ]
+        >>> PSL_seasonal_metrics = xr.concat(
+        ...     [
+        ...         da.assign_coords(time=da.time.dt.year).rename(time="year")
+        ...         for da in PSL_seasonal_metrics_list
+        ...     ],
+        ...     dim='season',
+        ... )
+        >>> PSL_seasonal_metrics.plot.line(x="year")
+        >>> plt.show()
+        """
+
+        self.metric_name = "psl"
+        self.params = params
+        return self.compute_metrics()
+
+    def xr_stj(self, **params) -> xr.DataArray:
+
+        """
+        TropD Subtropical Jet (STJ) Metric
+
+        Finds the latitude of the (adjusted) maximum upper-level zonal-mean zonal wind
+
+        The :py:class:`Dataset` should contain one variable corresponding to zonal wind.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to zonal wind based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension and a
+        pressure-like dimension.
+
+        Parameters
+        ----------
+        method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max"}, optional
+            Method for determing the latitude of the STJ maximum, by default "adjusted_peak":
+
+            * "adjusted_peak": Latitude of maximum (smoothing parameter``n=30``) of [the
+                               zonal wind averaged between 100 and 400 hPa] minus [the
+                               zonal mean zonal wind at the level closest to 850hPa],
+                               poleward of 10 degrees and equatorward of the Eddy Driven
+                               Jet latitude
+            * "adjusted_max": Latitude of maximum (smoothing parameter ``n=6``) of [the
+                              zonal wind averaged between 100 and 400 hPa] minus [the
+                              zonal mean zonal wind at the level closest to 850hPa],
+                              poleward of 10 degrees and equatorward of the Eddy Driven
+                              Jet latitude
+            * "core_peak": Latitude of maximum (smoothing parameter ``n=30``) of the zonal
+                           wind averaged between 100 and 400 hPa, poleward of 10 degrees
+                           and equatorward of 70 degrees
+            * "core_max": Latitude of maximum (smoothing parameter ``n=6``) of the zonal
+                          wind averaged between 100 and 400 hPa, poleward of 10 degrees
+                          and equatorward of 70 degrees
+
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
+
+            n : int, optional
+                Rank of moment used to calculate the location of max, e.g.,
+                ``n=1,2,4,6,8,...``, by default 6 if ``method="core_max"`` or
+                ``method="adjusted_max"``, 30 if ``method="core_peak"`` or
+                ``method="adjusted_peak"``
+
+        Returns
+        -------
+        STJ_metrics: xarray.Dataset
+            :py:class:`Dataset` of STJ metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like or pressure-like dimension cannot be identified in the
+            :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            zonal wind cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = xr.open_dataset("pytropd/ValidationData/ua.nc")
+        >>> time_index = date_range(
+        ...     start="1979-01-01", periods=pslds.time.size, freq="MS"
+        ... )
+        >>> ds = ds.assign_coords(time=time_index).resample(time='AS').mean()
+        >>> STJ_core = ds.pyt_metrics.xr_stj(method="core_max")
+        >>> STJ_adjusted = ds.pyt_metrics.xr_stj(method="adjusted_max")
+        >>> STJ_metrics = xr.concat([STJ_core,STJ_adjusted], dim='method')
+        >>> STJ_metrics.sel(hemsph="NH").plot.line(x='time')
+        >>> plt.show()
+        """
+
+        self.metric_name = "stj"
+        self.params = params
+        self.require_pres_axis = True
+        return self.compute_metrics()
+
+    def xr_tpb(self, **params) -> xr.DataArray:
+        """
+        TropD Tropopause Break (TPB) Metric
+
+        Finds the latitude of the tropopause break
+
+        The :py:class:`Dataset` should contain one variable corresponding to temperature.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to temperature based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension and a
+        pressure-like dimension. If using ``method="cutoff"``, there should be an
+        additional variable in the :py:class:`Dataset` corresponding to geopotential height in meters
+
+        Parameters
+        ----------
+        method : {"max_gradient", "cutoff", "max_potemp"}, optional
+            Method to identify tropopause break, by default "max_gradient":
+
+            * "max_gradient": The latitude of maximal poleward gradient of the tropopause
+                              height
+
+            * "cutoff": The most equatorward latitude where the tropopause crosses a
+                        prescribed cutoff value
+
+            * "max_potemp": The latitude of maximal difference between the potential
+                            temperature at the tropopause and at the surface
+
+        Cutoff : float, optional
+            Geopotential height cutoff (m) that marks the location of the tropopause
+            break, by default 1.5e4, used when ``method="cutoff"``
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+            for ``method="cutoff"``)
+
+        Returns
+        -------
+        TPB_metrics: xarray.Dataset
+            :py:class:`Dataset` of TPB metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like or a pressure-like dimension cannot be identified in the
+            :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            temperature cannot be detected
+
+        :py:class:`KeyError`:
+            If ``method="cutoff"`` and a variable corresponding to geopotential height
+            cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> tds = xr.open_dataset("pytropd/ValidationData/ta.nc").rename(ta="T")
+        >>> zds = xr.open_dataset("pytropd/ValidationData/zg.nc").rename(zg="Z")
+        >>> ds = xr.merge([tds, zds])
+        >>> TPB_metrics = ds.pyt_metrics.xr_tpb(method="cutoff")
+        >>> TPB_metrics.sel(hemsph="NH").plot()
+        >>> plt.show()
+        """
+
+        self.metric_name = "tpb"
+        self.params = params
+        self.require_pres_axis = True
+        return self.compute_metrics()
+
+    def xr_uas(self, **params) -> xr.DataArray:
+        """
+        TropD Near-Surface Zonal Wind (UAS) Metric
+
+        The :py:class:`Dataset` should contain one variable corresponding to zonal wind.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to zonal wind based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension. If a
+        pressure-like dimension is included, level closest to 850hPa is chosen
+
+        Parameters
+        ----------
+        method : {"zero_crossing"}, optional
+            Method for identifying the surface wind zero crossing, by default
+            "zero_crossing":
+
+            * "zero_crossing": the first subtropical latitude where near-surface zonal
+                               wind changes from negative to positive
+
+        lat_uncertainty : float, optional
+            the minimal distance allowed between adjacent zero crossings in degrees, by
+            default 0.0
+
+        Returns
+        -------
+        UAS_metrics: xarray.Dataset
+            :py:class:`Dataset` of UAS metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like dimension cannot be identified in the :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            zonal wind cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = xr.open_dataset("pytropd/ValidationData/ua.nc")
+        >>> ds.pyt_metrics.xr_uas().sel(hemsph="NH").plot()
+        >>> plt.show()
+        """
+
+        self.metric_name = "uas"
+        self.params = params
+        return self.compute_metrics()
