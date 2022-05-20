@@ -35,6 +35,10 @@ class MetricAccessor:
 
         # Compute the relevant metric
         metric_function = getattr(pyt, "TropD_Metric_" + self.metric_name.upper())
+        # if method not provided, get default method of metric_function
+        method_used: str = self.params.get(
+            "method", signature(metric_function).parameters["method"].default
+        )
 
         # we need to ensure Z is aligned properly with T when doing TropD_Metric_TPB and
         # method="cutoff"
@@ -45,8 +49,8 @@ class MetricAccessor:
                 ),
                 self.xarray_data,
                 self.params.pop("Z"),
-                # validate_data ensures self.pres_name is only defined if the metric should
-                # accept it as an arg or kwarg
+                # validate_data ensures self.pres_name is only defined if the metric
+                # should accept it as an arg or kwarg
                 input_core_dims=[
                     [self.lat_name, self.pres_name],
                     [self.lat_name, self.pres_name],
@@ -56,12 +60,28 @@ class MetricAccessor:
                 # still iterate over arrays under the hood, which is very slow with dask
                 dask="allowed",
             )
+        elif method_used == "fit":
+            metric_latSH, metric_latNH, metric_maxSH, metric_maxNH = xr.apply_ufunc(
+                lambda data: metric_function(data, lat=self.latitudes, **self.params),
+                self.xarray_data,
+                # validate_data ensures self.pres_name is only defined if the metric
+                # should accept it as an arg or kwarg
+                input_core_dims=[
+                    [self.lat_name, self.pres_name]
+                    if self.pres_name
+                    else [self.lat_name]
+                ],
+                output_core_dims=[[], [], [], []],
+                # we might want to warn users when using dask as some pytropd functions
+                # still iterate over arrays under the hood, which is very slow with dask
+                dask="allowed",
+            )
         else:
             metric_latSH, metric_latNH = xr.apply_ufunc(
                 lambda data: metric_function(data, lat=self.latitudes, **self.params),
                 self.xarray_data,
-                # validate_data ensures self.pres_name is only defined if the metric should
-                # accept it as an arg or kwarg
+                # validate_data ensures self.pres_name is only defined if the metric
+                # should accept it as an arg or kwarg
                 input_core_dims=[
                     [self.lat_name, self.pres_name]
                     if self.pres_name
@@ -76,10 +96,6 @@ class MetricAccessor:
         # define coordinates, ensuring all added coords follow CF conventions
         hemsph_attrs = {"long_name": "hemisphere", "units": ""}
 
-        # if method not provided, get default method of metric_function
-        method_used: str = self.params.get(
-            "method", signature(metric_function).parameters["method"].default
-        )
         # now let's provide a brief description of the metric from the docs
         # all methods are in bulleted lists, so split on the reST bullet
         # and get rid of extra stuff at beginning and end
@@ -101,9 +117,25 @@ class MetricAccessor:
             "long_name": self.metric_name.upper() + " metric latitude",
             "unit": self._obj[self.lat_name].attrs.get("unit", "degrees"),
         }
-        return metric_lats.assign_coords(
+        metric_lats = metric_lats.assign_coords(
             hemsph=("hemsph", ["SH", "NH"], hemsph_attrs)
         ).expand_dims(method=method_coord)
+
+        if method_used == "fit":
+            metric_maxs = xr.concat(  # type: ignore
+                [metric_maxSH, metric_maxNH], dim="hemsph"
+            )
+            metric_maxs.attrs = {
+                "long_name": self.metric_name.upper() + " metric max",
+                "unit": self._obj.attrs.get("unit", "m.s-1"),
+            }
+            metric_maxs = metric_maxs.assign_coords(
+                hemsph=("hemsph", ["SH", "NH"], hemsph_attrs)
+            ).expand_dims(method=method_coord)
+
+            return metric_lats, metric_maxs  # type: ignore
+        else:
+            return metric_lats
 
     def extract_property_name(self, property_name: List[str]) -> str:
         """
@@ -289,9 +321,12 @@ class MetricAccessor:
 
         Returns
         -------
-        EDJ_metrics: xarray.Dataset
-            :py:class:`Dataset` of EDJ metric latitudes with new dimensions
+        EDJ_metrics: xarray.DataArray
+            :py:class:`DataArray` of EDJ metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
+        EDJ_max : xarray.DataArray, conditional
+            :py:class:`DataArray` of EDJ metric maxima with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes), returned if ``method="fit"``
 
         Raises
         ------
@@ -364,8 +399,8 @@ class MetricAccessor:
 
         Returns
         -------
-        OLR_metrics: xarray.Dataset
-            :py:class:`Dataset` of OLR metric latitudes with new dimensions
+        OLR_metrics: xarray.DataArray
+            :py:class:`DataArray` of OLR metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises
@@ -421,9 +456,9 @@ class MetricAccessor:
 
         Returns
         -------
-        PE_metrics: xarray.Dataset
-            :py:class:`Dataset` of PE metric latitudes with new dimensions
-            :py:class:`xarray.DataArray` ``hemsph`` (SH latitudes, NH latitudes)
+        PE_metrics: xarray.DataArray
+            :py:class:`DataArray` of PE metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises
         ------
@@ -487,8 +522,8 @@ class MetricAccessor:
 
         Returns
         -------
-        PSI_metrics: xarray.Dataset
-            :py:class:`Dataset` of PSI metric latitudes with new dimensions
+        PSI_metrics: xarray.DataArray
+            :py:class:`DataArray` of PSI metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises
@@ -550,8 +585,8 @@ class MetricAccessor:
                 ``method="peak"``
         Returns
         -------
-        PSL_metrics: xarray.Dataset
-            :py:class:`Dataset` of PSL metric latitudes with new dimensions
+        PSL_metrics: xarray.DataArray
+            :py:class:`DataArray` of PSL metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises
@@ -612,7 +647,8 @@ class MetricAccessor:
         Parameters
         ----------
         method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max"}, optional
-            Method for determing the latitude of the STJ maximum, by default "adjusted_peak":
+            Method for determing the latitude of the STJ maximum, by default
+            "adjusted_peak":
 
             * "adjusted_peak": Latitude of maximum (smoothing parameter``n=30``) of [the
                                zonal wind averaged between 100 and 400 hPa] minus [the
@@ -630,6 +666,10 @@ class MetricAccessor:
             * "core_max": Latitude of maximum (smoothing parameter ``n=6``) of the zonal
                           wind averaged between 100 and 400 hPa, poleward of 10 degrees
                           and equatorward of 70 degrees
+            * "fit": Latitude of the maximum of [the zonal wind averaged between 100 and
+                     400 hPa] minus [the zonal mean zonal wind at the level closest to
+                     850hPa] using a quadratic polynomial fit of data from grid points
+                     surrounding the grid point of the maximum
 
         **kwargs : optional
             additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
@@ -642,9 +682,12 @@ class MetricAccessor:
 
         Returns
         -------
-        STJ_metrics: xarray.Dataset
-            :py:class:`Dataset` of STJ metric latitudes with new dimensions
+        STJ_metrics: xarray.DataArray
+            :py:class:`DataArray` of STJ metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
+        STJ_max : xarray.DataArray, conditional
+            :py:class:`DataArray` of STJ metric maxima with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes), returned if ``method="fit"``
 
         Raises
         ------
@@ -690,7 +733,8 @@ class MetricAccessor:
         guess which field corresponds to temperature based on field's name. The
         :py:class:`Dataset` should also contain a latitude-like dimension and a
         pressure-like dimension. If using ``method="cutoff"``, there should be an
-        additional variable in the :py:class:`Dataset` corresponding to geopotential height in meters
+        additional variable in the :py:class:`Dataset` corresponding to geopotential
+        height in meters
 
         Parameters
         ----------
@@ -715,8 +759,8 @@ class MetricAccessor:
 
         Returns
         -------
-        TPB_metrics: xarray.Dataset
-            :py:class:`Dataset` of TPB metric latitudes with new dimensions
+        TPB_metrics: xarray.DataArray
+            :py:class:`DataArray` of TPB metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises
@@ -777,8 +821,8 @@ class MetricAccessor:
 
         Returns
         -------
-        UAS_metrics: xarray.Dataset
-            :py:class:`Dataset` of UAS metric latitudes with new dimensions
+        UAS_metrics: xarray.DataArray
+            :py:class:`DataArray` of UAS metric latitudes with new dimensions
             ``hemsph`` (SH latitudes, NH latitudes)
 
         Raises

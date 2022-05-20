@@ -25,10 +25,8 @@ from .metrics import (
     TropD_Metric_STJ,
     TropD_Metric_TPB,
     TropD_Metric_UAS,
-    Shah_et_al_2020_GWL_3D,
-    Shah_et_al_2020_GWL_zonalmean,
-    Shah_et_al_2020_one_sigma_3D,
-    Shah_et_al_2020_one_sigma_zonalmean,
+    Shah_2020_GWL,
+    Shah_2020_1sigma,
 )
 from .functions import (
     TropD_Calculate_MaxLat,

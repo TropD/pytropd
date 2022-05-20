@@ -7,6 +7,7 @@ import numpy as np
 from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
+from scipy.signal import fftconvolve
 from .functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
@@ -70,6 +71,10 @@ def TropD_Metric_EDJ(
         N-2(N-1) dimensional SH latitudes of the EDJ
     PHiNH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
         N-2(N-1) dimensional NH latitudes of the EDJ
+    UmaxSH : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional SH STJ strength, returned if ``method="fit"``
+    UmaxNH : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional NH STJ strength, returned if ``method="fit"``
     """
 
     U = np.asarray(U)
@@ -108,13 +113,17 @@ def TropD_Metric_EDJ(
         PhiNH = TropD_Calculate_MaxLat(u850[..., NHmask], lat[NHmask], **maxlat_kwargs)
         PhiSH = TropD_Calculate_MaxLat(u850[..., SHmask], lat[SHmask], **maxlat_kwargs)
 
+        return PhiSH, PhiNH
+
     else:  # method == 'fit':
         u_flat = u850.reshape(-1, lat.size)
 
         Phi_list = []
-        for hem_mask in [NHmask, SHmask]:
+        Umax_list = []
+        for hem_mask in [SHmask, NHmask]:
             lath = lat[hem_mask]
             Phi = np.zeros(u850.shape[:-1])
+            Umax = np.zeros(u850.shape[:-1])
             for i, Uh in enumerate(u_flat[:, hem_mask]):
                 Im = np.nanargmax(Uh)
                 phi_ind = np.unravel_index(i, u850.shape[:-1])
@@ -131,12 +140,17 @@ def TropD_Metric_EDJ(
                     lath[Im - N : Im + N + 1], Uh[Im - N : Im + N + 1], deg=2
                 )
                 # vertex of quadratic ax**2+bx+c is at -b/2a
-                Phi[phi_ind] = -p[1] / (2 * p[2])
+                # p[0] + p[1]*x + p[2]*x**2
+                Phi[phi_ind] = -p[1] / (2.0 * p[2])
+                # value at vertex is (4ac-b**2)/(4a)
+                Umax[phi_ind] = (4.0 * p[2] * p[0] - p[1] * p[1]) / 4.0 / p[2]
             Phi_list.append(Phi)
+            Umax_list.append(Umax)
 
-        PhiNH, PhiSH = Phi_list
+        PhiSH, PhiNH = Phi_list
+        UmaxSH, UmaxNH = Umax_list
 
-    return PhiSH, PhiNH
+        return PhiSH, PhiNH, UmaxSH, UmaxNH  # type: ignore
 
 
 def TropD_Metric_OLR(
@@ -619,6 +633,7 @@ def TropD_Metric_STJ(
     lat: np.ndarray,
     lev: np.ndarray,
     method: str = "adjusted_peak",
+    n_fit: int = 1,
     **maxlat_kwargs,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -634,7 +649,7 @@ def TropD_Metric_STJ(
         latitude array
     lev : numpy.ndarray (lev,)
         vertical level array in hPa
-    method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max"}, optional
+    method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max", "fit"}, optional
         Method for determing the latitude of the STJ maximum, by default "adjusted_peak":
 
         * "adjusted_peak": Latitude of maximum (smoothing parameter``n=30``) of [the
@@ -647,13 +662,22 @@ def TropD_Metric_STJ(
                           degrees and equatorward of the Eddy Driven Jet latitude
         * "core_peak": Latitude of maximum (smoothing parameter ``n=30``) of the zonal
                        wind averaged between 100 and 400 hPa, poleward of 10 degrees and
-                       equatorward of 70 degrees
+                       equatorward of 60 degrees
         * "core_max": Latitude of maximum (smoothing parameter ``n=6``) of the zonal wind
                       averaged between 100 and 400 hPa, poleward of 10 degrees and
-                      equatorward of 70 degrees
+                      equatorward of 60 degrees
+         * "fit": Latitude of the maximum of [the zonal wind averaged between 100 and 400
+                  hPa] minus [the zonal mean zonal wind at the level closest to 850hPa]
+                  using a quadratic polynomial fit of data from grid points surrounding
+                  the grid point of the maximum
+
+    n_fit : int, optional
+        used when ``method="fit"``, determines the number of points around the max to use
+        while fitting, by default 1
 
     **kwargs : optional
-        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
+        additional keyword arguments for :py:func:`TropD_Calculate_MaxLat` (not used
+        for ``method="fit"``)
 
         n : int, optional
             Rank of moment used to calculate the location of max, e.g.,
@@ -665,8 +689,12 @@ def TropD_Metric_STJ(
     -------
     PhiSH : numpy.ndarray (dim1, ..., dimN-2)
         N-2 dimensional SH latitudes of the STJ
-    PHiNH : numpy.ndarray (dim1, ..., dimN-2)
+    PhiNH : numpy.ndarray (dim1, ..., dimN-2)
         N-2 dimensional NH latitudes of the STJ
+    UmaxSH : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional SH STJ strength, returned if ``method="fit"``
+    UmaxNH : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional NH STJ strength, returned if ``method="fit"``
     """
 
     U = np.asarray(U)
@@ -680,7 +708,7 @@ def TropD_Metric_STJ(
             f" not aligned with grid shape {lat.size, lev.size}"
         )
 
-    if method not in ["adjusted_peak", "core_peak", "adjusted_max", "core_max"]:
+    if method not in ["adjusted_peak", "core_peak", "adjusted_max", "core_max", "fit"]:
         raise ValueError("unrecognized method " + method)
 
     layer_400_to_100 = (lev >= 100) & (lev <= 400)
@@ -691,41 +719,77 @@ def TropD_Metric_STJ(
         u_int = np.trapz(U[..., layer_400_to_100], lev_int, axis=-1) / (
             lev_int[-1] - lev_int[0]
         )
+    else:
+        u_int = U[..., layer_400_to_100]
 
-    else:  # why take mean of 1 level?
-        u_int = np.mean(U[..., layer_400_to_100], axis=-1)
-
-    if "adjusted" in method:  # adjusted_peak, adjusted_max methods
+    if ("adjusted" in method) or method == "fit":  # adjusted_peak, adjusted_max methods
         idx_850 = find_nearest(lev, 850)
         u = u_int - U[..., idx_850]
-
     else:  # core_peak, core_max methods
         u = u_int
-
-    if "peak" in method:  # adjusted_peak or core_peak have different default
-        maxlat_kwargs["n"] = maxlat_kwargs.get("n", 30)
-    else:  # adjusted_max or core_max methods
-        maxlat_kwargs["n"] = maxlat_kwargs.get("n", 6)
-    # lat should already be last axis
-    maxlat_kwargs.pop("axis", None)
 
     eq_boundary = 10
     polar_boundary = 60
     NHmask = (lat > eq_boundary) & (lat < polar_boundary)
     SHmask = (lat > -polar_boundary) & (lat < -eq_boundary)
-    uNH = u[..., NHmask]
-    uSH = u[..., SHmask]
-    if "adjusted" in method:  # adjusted_max or adjusted_peak
-        PhiSH_EDJ, PhiNH_EDJ = TropD_Metric_EDJ(U, lat, lev)
-        NH_before_EDJ = lat[NHmask] < PhiNH_EDJ[..., None]
-        SH_before_EDJ = lat[SHmask] > PhiSH_EDJ[..., None]
-        uNH = np.where(NH_before_EDJ, uNH, np.nan)
-        uSH = np.where(SH_before_EDJ, uSH, np.nan)
 
-    PhiNH = TropD_Calculate_MaxLat(uNH, lat[NHmask], **maxlat_kwargs)
-    PhiSH = TropD_Calculate_MaxLat(uSH, lat[SHmask], **maxlat_kwargs)
+    if method != "fit":
+        if "peak" in method:  # adjusted_peak or core_peak have different default
+            maxlat_kwargs["n"] = maxlat_kwargs.get("n", 30)
+        else:  # adjusted_max or core_max methods
+            maxlat_kwargs["n"] = maxlat_kwargs.get("n", 6)
+        # lat should already be last axis
+        maxlat_kwargs.pop("axis", None)
+        uNH = u[..., NHmask]
+        uSH = u[..., SHmask]
+        if "adjusted" in method:  # adjusted_max or adjusted_peak
+            PhiSH_EDJ, PhiNH_EDJ = TropD_Metric_EDJ(U, lat, lev)
+            NH_before_EDJ = lat[NHmask] < PhiNH_EDJ[..., None]
+            SH_before_EDJ = lat[SHmask] > PhiSH_EDJ[..., None]
+            uNH = np.where(NH_before_EDJ, uNH, np.nan)
+            uSH = np.where(SH_before_EDJ, uSH, np.nan)
 
-    return PhiSH, PhiNH
+        PhiNH = TropD_Calculate_MaxLat(uNH, lat[NHmask], **maxlat_kwargs)
+        PhiSH = TropD_Calculate_MaxLat(uSH, lat[SHmask], **maxlat_kwargs)
+
+        return PhiSH, PhiNH
+
+    else:  # method == 'fit':
+        u_flat = u.reshape(-1, lat.size)
+
+        Phi_list = []
+        Umax_list = []
+        for hem_mask in [SHmask, NHmask]:
+            lath = lat[hem_mask]
+            Phi = np.zeros(u.shape[:-1])
+            Umax = np.zeros(u.shape[:-1])
+            for i, Uh in enumerate(u_flat[:, hem_mask]):
+                Im = np.nanargmax(Uh)
+                phi_ind = np.unravel_index(i, u.shape[:-1])
+
+                if Im == 0 or Im == Uh.size - 1:
+                    Phi[phi_ind] = lath[Im]
+                    continue
+
+                if n_fit > Im or n_fit > Uh.size - Im + 1:
+                    N = np.min(Im, Uh.size - Im + 1)
+                else:
+                    N = n_fit
+                p = polynomial.polyfit(
+                    lath[Im - N : Im + N + 1], Uh[Im - N : Im + N + 1], deg=2
+                )
+                # vertex of quadratic ax**2+bx+c is at -b/2a
+                # p[0] + p[1]*x + p[2]*x**2
+                Phi[phi_ind] = -p[1] / (2.0 * p[2])
+                # value at vertex is (4ac-b**2)/(4a)
+                Umax[phi_ind] = (4.0 * p[2] * p[0] - p[1] * p[1]) / 4.0 / p[2]
+            Phi_list.append(Phi)
+            Umax_list.append(Umax)
+
+        PhiSH, PhiNH = Phi_list
+        UmaxSH, UmaxNH = Umax_list
+
+        return PhiSH, PhiNH, UmaxSH, UmaxNH  # type: ignore
 
 
 def TropD_Metric_TPB(
@@ -845,11 +909,11 @@ def TropD_Metric_UAS(
 
     Parameters
     ----------
-    U : np.ndarray (dim1, ..., lat[, lev])
+    U : numpy.ndarray (dim1, ..., lat[, lev])
         N-dimensional zonal mean zonal wind array. Also accepts surface wind
-    lat : np.ndarray (lat,)
+    lat : numpy.ndarray (lat,)
         latitude array
-    lev : np.ndarray, optional (lev,)
+    lev : numpy.ndarray, optional (lev,)
         vertical level array in hPa, required if U has final dimension lev
     method : {"zero_crossing"}, optional
         Method for identifying the surface wind zero crossing, by default "zero_crossing":
@@ -929,414 +993,183 @@ def TropD_Metric_UAS(
 
 # ========================================
 # Stratospheric metrics
-#
-
-# Written by Kasturi Shah
-# Last updated: August 3 2020
+# Written by Kasturi Shah - August 3 2020
 # converted to python by Alison Ming 8 April 2021
+# vectorized and refactored by Sam Smith 19 May 22
 
 
-def Shah_et_al_2020_GWL_3D(
-    tracer_3d_strat=None,
-    lon=None,
-    lat=None,
-    pressure_strat=None,
-    timepoints=None,
-    *args,
-    **kwargs,
-):
-    """Computes the gradient-weighted latitude (GWL) from 3-D tracer data
+def Shah_2020_GWL(
+    tracer: np.ndarray, lat: np.ndarray, zonal_mean_tracer=False
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Computes the gradient-weighted latitude (GWL) from tracer data
     Reference: Shah et al., JGR-A, 2020
+    https://doi.org/10.1029/2020JD033081
 
     Parameters
     ==========
-    tracer_3d_strat: numpy array (dimensions: lon x lat x pressure x time)
-    longitude: numpy array in degrees (1-D)
-    latitude: numpy array in degrees (1-D)
-    pressure: numpy array (1-D)
-    time: numpy array (1-D)
+    tracer : numpy.ndarray (..., lat [, lon])
+        N-dimensional array of tracer data for computing gradient. If
+        ``zonal_mean_tracer=False``, the last dimension should correspond to the
+        longitude axis, otherwise it should be the latitude axis
+    latitude : numpy.ndarray (lat,)
+        latitude array in degrees
+    zonal_mean_tracer : bool, optional
+        whether the input tracer data is zonally symmetric (True) or zonally-varying
+        (False) (i.e., has a longitude dimension), by default False
 
     Returns
     =======
-    output: tuple
-    * GWL width NH (dimensions: pressure x time)
-    * GWL width SH (dimensions: pressure x time)
-
-    Notes
-    =====
-    Note that this script assumes that the latitude array:
-    (1) is IN DEGREES, and
-    (2) starts with the SH & becomes increasingly positive, i.e. -90 to 90.
+    tracer_steep_shem: numpy.ndarray
+        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of GWL widths in the SH
+    tracer_steep_nhem: numpy.ndarray
+        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of GWL widths in the NH
     """
 
-    # dimensions of lon, lat, pressure, time
-    nlon = len(lon)
-    nlat = len(lat)
-    npressure = len(pressure_strat)
-    ntimepoints = len(timepoints)
+    tracer = np.asarray(tracer)
+    lat = np.asarray(lat).flatten()
+    if not zonal_mean_tracer:
+        tracer = tracer.swapaxes(-2, -1)
+    if lat.size != tracer.shape[-1]:
+        raise ValueError(
+            "input array 'lat' should be aligned with "
+            f"{'' if zonal_mean_tracer else 'second to '}last axis of tracer"
+        )
+    if lat[0] > lat[1]:
+        lat = lat[::-1]
+        tracer = tracer[..., ::-1]
 
-    nlat = np.where(lat > 0)[0]
-    slat = np.where(lat < 0)[0]
-    tracer_3d_strat_nhem = tracer_3d_strat[:, nlat, :, :]
-    tracer_3d_strat_shem = tracer_3d_strat[:, slat, :, :]
+    nlat = lat > 0
+    slat = lat < 0
+    tracer_nhem = tracer[..., nlat]
+    tracer_shem = tracer[..., slat]
+    phi_nhem = np.radians(lat[nlat])
+    phi_shem = np.radians(lat[slat])
+    phi_mid_nhem = 0.5 * (phi_nhem[1:] + phi_nhem[:-1])
+    phi_mid_shem = 0.5 * (phi_shem[1:] + phi_shem[:-1])
 
-    lat90n = np.where(abs(lat[nlat] - 90) == np.min(abs(lat[nlat] - 90)))[0][0]
-    lat90s = np.where(abs(lat[slat] + 90) == np.min(abs(lat[slat] + 90)))[0][0]
+    # calculating gradients
+    grad_weight_nhem = (
+        np.diff(tracer_nhem, axis=-1) / np.diff(phi_nhem) * np.cos(phi_mid_nhem)
+    )
+    grad_weight_shem = (
+        np.diff(tracer_shem, axis=-1) / np.diff(phi_shem) * np.cos(phi_mid_shem)
+    )
 
-    # arrays for storing area-equivalent GWL widths
-    tracer_steep_nhem_equiv = np.empty((npressure, ntimepoints))
-    tracer_steep_nhem_equiv[:] = np.nan
-    tracer_steep_shem_equiv = np.empty((npressure, ntimepoints))
-    tracer_steep_shem_equiv[:] = np.nan
+    # array of gradient weighted latitudes (...[,nlon])
+    GWL_nhem = (phi_mid_nhem * grad_weight_nhem).sum(axis=-1) / grad_weight_nhem.sum(
+        axis=-1
+    )
+    GWL_shem = (phi_mid_shem * grad_weight_shem).sum(axis=-1) / grad_weight_shem.sum(
+        axis=-1
+    )
+    # area equivalent GWL width (in degrees)
+    if zonal_mean_tracer:
+        tracer_steep_nhem = np.degrees(GWL_nhem)
+        tracer_steep_shem = np.degrees(GWL_shem)
+    else:
+        tracer_steep_nhem = np.degrees(np.arcsin(np.nanmean(np.sin(GWL_nhem), axis=-1)))
+        tracer_steep_shem = np.degrees(np.arcsin(np.nanmean(np.sin(GWL_shem), axis=-1)))
 
-    lat_in_rad = np.deg2rad(lat)
-
-    for dt in np.arange(ntimepoints):
-        for p in np.arange(npressure):
-
-            # arrays for storing the GWL widths
-            gradient_weighted_lat_nhem = np.empty((nlon,))
-            gradient_weighted_lat_nhem[:] = np.nan
-            gradient_weighted_lat_shem = np.empty((nlon,))
-            gradient_weighted_lat_shem[:] = np.nan
-
-            for k in np.arange(nlon):
-
-                # calculating gradients
-                gradient_nhem = np.diff(
-                    tracer_3d_strat_nhem[k, : lat90n + 1, p, dt].T
-                ) / np.diff(lat_in_rad[nlat[: lat90n + 1]])
-                gradient_shem = np.diff(
-                    tracer_3d_strat_shem[k, lat90s:, p, dt].T
-                ) / np.diff(lat_in_rad[slat[lat90s:]])
-                gradient_weighted_lat_nhem[k] = np.sum(
-                    lat_in_rad[nlat[:lat90n]]
-                    * gradient_nhem
-                    * np.cos(lat_in_rad[nlat[:lat90n]])
-                ) / np.sum(gradient_nhem * np.cos(lat_in_rad[nlat[:lat90n]]))
-                gradient_weighted_lat_shem[k] = np.sum(
-                    lat_in_rad[slat[lat90s:-1]]
-                    * gradient_shem
-                    * np.cos(lat_in_rad[slat[lat90s:-1]])
-                ) / np.sum(gradient_shem * np.cos(lat_in_rad[slat[lat90s:-1]]))
-            # area equivalent latitude at this pressure and longitude
-            # (in degrees)
-            tracer_steep_nhem_equiv[p, dt] = np.rad2deg(
-                np.arcsin(np.nansum(np.sin(gradient_weighted_lat_nhem)) / nlon)
-            )
-            tracer_steep_shem_equiv[p, dt] = np.rad2deg(
-                np.arcsin(np.nansum(np.sin(gradient_weighted_lat_shem)) / nlon)
-            )
-
-    return tracer_steep_nhem_equiv, tracer_steep_shem_equiv
+    return tracer_steep_shem, tracer_steep_nhem
 
 
-def Shah_et_al_2020_GWL_zonalmean(
-    tracer_2d_strat=None,
-    lat=None,
-    pressure_strat=None,
-    timepoints=None,
-    *args,
-    **kwargs,
-):
-    """Computes the gradient-weighted latitude (GWL) from zonal mean tracer data
+def Shah_2020_1sigma(
+    tracer: np.ndarray,
+    lat: np.ndarray,
+    zonal_mean_tracer=False,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Computes the one-sigma width from 3-D tracer data
     Reference: Shah et al., JGR-A, 2020
+    https://doi.org/10.1029/2020JD033081
 
     Parameters
     ==========
-    tracer_2d_strat: numpy array (dimensions: lat x pressure x time)
-    latitude: numpy array in degrees (1-D)
-    pressure: numpy array (1-D)
-    time: numpy array (1-D)
+    tracer: numpy.ndarray (...,lat[, lon])
+        N-dimensional array of tracer data for computing 1:math:`\sigma`-width. If
+        ``zonal_mean_tracer=False``, the last dimension should correspond to the
+        longitude axis, otherwise it should be the latitude axis
+    latitude: numpy.ndarray (lat,)
+        array of latitudes in degrees (1-D). If not increasing, it will be sorted
+    zonal_mean_tracer : bool, optional
+        whether the input tracer data is zonally symmetric (True) or zonally-varying
+        (False) (i.e., has a longitude dimension), by default False
 
     Returns
     =======
-    output: tuple
-    * GWL width NH (dimensions: pressure x time)
-    * GWL width SH (dimensions: pressure x time)
-
-    Notes
-    =====
-    Note that this script assumes that the latitude array:
-    (1) is IN DEGREES, and
-    (2) starts with the SH & becomes increasingly positive, i.e. -90 to 90.
+    tracer_sigma_shem: numpy.ndarray
+        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of
+        1:math:`\sigma`-widths in the SH
+    tracer_sigma_nhem: numpy.ndarray
+        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of
+        1:math:`\sigma`-widths in the NH
     """
 
-    # dimensions of lat, pressure, time
-    nlat = len(lat)
-    npressure = len(pressure_strat)
-    ntimepoints = len(timepoints)
+    tracer = np.atleast_2d(tracer)
+    lat = np.asarray(lat).flatten()
+    if not zonal_mean_tracer:
+        tracer = tracer.swapaxes(-2, -1)
+    if lat.size != tracer.shape[-1]:
+        raise ValueError(
+            "input array 'lat' should be aligned with second to last axis of tracer"
+        )
+    if lat[0] > lat[1]:
+        lat = lat[::-1]
+        tracer = tracer[..., ::-1]
 
-    nlat = np.where(lat > 0)[0]
-    slat = np.where(lat < 0)[0]
-    tracer_2d_strat_nhem = tracer_2d_strat[nlat, :, :]
-    tracer_2d_strat_shem = tracer_2d_strat[slat, :, :]
+    nlat = lat > 0
+    slat = lat < 0
+    tracer_nhem = tracer[..., nlat]
+    tracer_shem = tracer[..., slat]
+    phi_nhem = np.broadcast_to(np.radians(lat[nlat]), tracer_nhem.shape)
+    phi_shem = np.broadcast_to(np.radians(lat[slat]), tracer_shem.shape)
 
-    lat90n = np.where(abs(lat[nlat] - 90) == np.min(abs(lat[nlat] - 90)))[0][0]
-    lat90s = np.where(abs(lat[slat] + 90) == np.min(abs(lat[slat] + 90)))[0][0]
+    # finding ranges of 70 degs latitude with largest tracer values
+    nlats_70deg = round(70.0 / (lat[1] - lat[0])) + 1
+    tracer_70deg_totals = fftconvolve(
+        np.where(np.isfinite(tracer), tracer, 0.0),
+        np.ones((tracer.ndim - 1) * (1,) + (nlats_70deg,)),
+        "valid",
+        axes=-1,
+    )
+    max_70deg_starts = np.argmax(tracer_70deg_totals, axis=-1)[..., None]
+    bands_70deg = (np.arange(lat.size) >= max_70deg_starts) & (
+        np.arange(lat.size) < max_70deg_starts + nlats_70deg
+    )
+    tracer_banded = np.ma.masked_where(~bands_70deg, tracer)
+    # mean and std of 70deg bands
+    mean_70deg = tracer_banded.mean(axis=-1).filled(0.0)
+    std_70deg = tracer_banded.std(axis=-1, ddof=1).filled(0.0)
+    threshold = (mean_70deg - std_70deg)[..., None]
+    sigma_width_nhem = (
+        np.ma.masked_where(
+            ~((tracer_nhem < threshold) & (phi_nhem > phi_nhem[..., :1])),
+            phi_nhem,
+            copy=False,
+        )
+        .min(axis=-1)
+        .filled(np.nan)
+    )
+    sigma_width_shem = (
+        np.ma.masked_where(
+            ~((tracer_shem < threshold) & (phi_shem < phi_shem[..., -1:])),
+            phi_shem,
+            copy=False,
+        )
+        .max(axis=-1)
+        .filled(np.nan)
+    )
+    # area equivalent latitude (in degrees)
+    if zonal_mean_tracer:
+        tracer_sigma_nhem = np.degrees(sigma_width_nhem)
+        tracer_sigma_shem = np.degrees(sigma_width_shem)
+    else:
+        tracer_sigma_nhem = np.degrees(
+            np.arcsin(np.nanmean(np.sin(sigma_width_nhem), axis=-1))
+        )
+        tracer_sigma_shem = np.degrees(
+            np.arcsin(np.nanmean(np.sin(sigma_width_shem), axis=-1))
+        )
 
-    # arrays for storing area-equivalent GWL widths
-    tracer_steep_nhem_equiv = np.empty((npressure, ntimepoints))
-    tracer_steep_nhem_equiv[:] = np.nan
-    tracer_steep_shem_equiv = np.empty((npressure, ntimepoints))
-    tracer_steep_shem_equiv[:] = np.nan
-
-    lat_in_rad = np.deg2rad(lat)
-
-    for dt in np.arange(ntimepoints):
-        for p in np.arange(npressure):
-            # calculating gradients
-            gradient_nhem = np.diff(
-                tracer_2d_strat_nhem[: lat90n + 1, p, dt]
-            ) / np.diff(lat_in_rad[nlat[: lat90n + 1]])
-            gradient_shem = np.diff(tracer_2d_strat_shem[lat90s:, p, dt]) / np.diff(
-                lat_in_rad[slat[lat90s:]]
-            )
-
-            tracer_steep_nhem_equiv[p, dt] = np.rad2deg(
-                np.sum(
-                    lat_in_rad[nlat[:lat90n]]
-                    * gradient_nhem
-                    * np.cos(lat_in_rad[nlat[:lat90n]])
-                )
-                / np.sum(gradient_nhem * np.cos(lat_in_rad[nlat[:lat90n]]))
-            )
-
-            tracer_steep_shem_equiv[p, dt] = np.rad2deg(
-                np.sum(
-                    lat_in_rad[slat[lat90s:-1]]
-                    * gradient_shem
-                    * np.cos(lat_in_rad[slat[lat90s:-1]])
-                )
-                / np.sum(gradient_shem * np.cos(lat_in_rad[slat[lat90s:-1]]))
-            )
-
-    return tracer_steep_nhem_equiv, tracer_steep_shem_equiv
-
-
-def Shah_et_al_2020_one_sigma_3D(
-    tracer_3d_strat=None,
-    lon=None,
-    lat=None,
-    pressure_strat=None,
-    timepoints=None,
-    *args,
-    **kwargs,
-):
-    """Computes the one-sigma width from 3-D tracer data
-    Reference: Shah et al., JGR-A, 2020
-
-    Parameters
-    ==========
-    tracer_3d_strat: numpy array (dimensions: lon x lat x pressure x time)
-    longitude: numpy array in degrees (1-D)
-    latitude: numpy array in degrees (1-D)
-    pressure: numpy array (1-D)
-    time: numpy array (1-D)
-
-    Returns
-    =======
-    output: tuple
-    * GWL width NH (dimensions: pressure x time)
-    * GWL width SH (dimensions: pressure x time)
-
-    Notes
-    =====
-    Note that this script assumes that the latitude array:
-    (1) is IN DEGREES, and
-    (2) starts with the SH & becomes increasingly positive, i.e. -90 to 90.
-    """
-
-    # dimensions of lon, lat, pressure, time
-    nlon = len(lon)
-    nlat = len(lat)
-    npressure = len(pressure_strat)
-    ntimepoints = len(timepoints)
-
-    nlat = np.where(lat > 0)[0]
-    slat = np.where(lat < 0)[0]
-    tracer_3d_strat_nhem = tracer_3d_strat[:, nlat, :, :]
-    tracer_3d_strat_shem = tracer_3d_strat[:, slat, :, :]
-
-    # arrays for widths at each longitude
-    tracer_sigma_nhem = np.empty((nlon, npressure, ntimepoints))
-    tracer_sigma_nhem[:] = np.nan
-    tracer_sigma_shem = np.empty((nlon, npressure, ntimepoints))
-    tracer_sigma_shem[:] = np.nan
-
-    tracer_sigma_nhem_equiv = np.empty((npressure, ntimepoints))
-    tracer_sigma_nhem_equiv[:] = np.nan
-    tracer_sigma_shem_equiv = np.empty((npressure, ntimepoints))
-    tracer_sigma_shem_equiv[:] = np.nan
-
-    lat_in_rad = np.deg2rad(lat)
-
-    for dt in np.arange(ntimepoints):
-        for pressure in np.arange(npressure):
-            for k in np.arange(nlon):
-
-                lat_delta = np.nanmean(np.diff(lat))
-                gap_ind = int(round(70 / lat_delta))
-
-                # finding range of 70degs with biggest max values
-                maxval = np.empty(
-                    (len(lat) - gap_ind),
-                )
-                maxval[:] = np.nan
-
-                for ind in np.arange(len(lat) - gap_ind):
-                    maxval[ind] = np.nansum(
-                        tracer_3d_strat[k, ind : ind + gap_ind + 1, pressure, dt]
-                    )
-
-                a = np.nanmax(maxval)
-                maxind = np.where(maxval == a)[0][0]
-
-                # mean and std 35N-35S
-                mean70deg = np.nanmean(
-                    tracer_3d_strat[k, maxind : (maxind + gap_ind + 1), pressure, dt]
-                )
-                std70deg = np.nanstd(
-                    tracer_3d_strat[k, maxind : (maxind + gap_ind + 1), pressure, dt],
-                    ddof=1,
-                )
-
-                threshold = mean70deg - std70deg
-
-                # finding latitudes less than this threshold
-                nlatless = np.where(
-                    tracer_3d_strat_nhem[k, :, pressure, dt] < threshold
-                )[0]
-                slatless = np.where(
-                    tracer_3d_strat_shem[k, :, pressure, dt] < threshold
-                )[0]
-
-                if np.size(nlatless) != 0:
-                    if nlatless[0] != 0:
-                        tracer_sigma_nhem[k, pressure, dt] = lat_in_rad[
-                            nlat[nlatless[0]]
-                        ]
-                    else:  # if lowest value is the equator, pick second one
-                        if len(nlatless) > 1:
-                            tracer_sigma_nhem[k, pressure, dt] = lat_in_rad[
-                                nlat[nlatless[1]]
-                            ]
-                if np.size(slatless) != 0:
-                    if slatless[-1] != slat[-1]:
-                        tracer_sigma_shem[k, pressure, dt] = lat_in_rad[
-                            slat[slatless[-1]]
-                        ]
-                    else:
-                        if len(slatless) > 1:
-                            tracer_sigma_shem[k, pressure, dt] = lat_in_rad[
-                                slat[slatless[-2]]
-                            ]
-
-            # area equivalent latitude at this pressure and time (in degrees)
-            tracer_sigma_nhem_equiv[pressure, dt] = np.rad2deg(
-                np.arcsin(np.nansum(np.sin(tracer_sigma_nhem[:, pressure, dt])) / nlon)
-            )
-            tracer_sigma_shem_equiv[pressure, dt] = np.rad2deg(
-                np.arcsin(np.nansum(np.sin(tracer_sigma_shem[:, pressure, dt])) / nlon)
-            )
-
-    return tracer_sigma_nhem_equiv, tracer_sigma_shem_equiv
-
-
-def Shah_et_al_2020_one_sigma_zonalmean(
-    tracer_2d_strat=None,
-    lat=None,
-    pressure_strat=None,
-    timepoints=None,
-    *args,
-    **kwargs,
-):
-    """Computes the one-sigma width from zonal mean tracer data
-    Reference: Shah et al., JGR-A, 2020
-
-    Parameters
-    ==========
-    tracer_2d_strat: numpy array (dimensions: lat x pressure x time)
-    latitude: numpy array in degrees (1-D)
-    pressure: numpy array (1-D)
-    time: numpy array (1-D)
-
-    Returns
-    =======
-    output: tuple
-    * GWL width NH (dimensions: pressure x time)
-    * GWL width SH (dimensions: pressure x time)
-
-    Notes
-    =====
-    Note that this script assumes that the latitude array:
-    (1) is IN DEGREES, and
-    (2) starts with the SH & becomes increasingly positive, i.e. -90 to 90.
-    """
-
-    # dimensions of lat, pressure, time
-    npressure = len(pressure_strat)
-    ntimepoints = len(timepoints)
-
-    nlat = np.where(lat > 0)[0]
-    slat = np.where(lat < 0)[0]
-    tracer_2d_strat_nhem = tracer_2d_strat[nlat, :, :]
-    tracer_2d_strat_shem = tracer_2d_strat[
-        slat,
-        :,
-        :,
-    ]
-
-    # arrays for area-equivalent one sigma widths
-
-    tracer_sigma_nhem_equiv = np.empty((npressure, ntimepoints))
-    tracer_sigma_nhem_equiv[:] = np.nan
-    tracer_sigma_shem_equiv = np.empty((npressure, ntimepoints))
-    tracer_sigma_shem_equiv[:] = np.nan
-
-    for dt in np.arange(timepoints):
-        for pressure in np.arange(npressure):
-
-            lat_delta = np.nanmean(np.diff(lat))
-            gap_ind = int(round(70 / lat_delta))
-
-            # finding range of 70degs with biggest max values
-            maxval = np.empty(
-                (len(lat) - gap_ind),
-            )
-            maxval[:] = np.nan
-            for ind in np.arange(len(lat) - gap_ind):
-                maxval[ind] = np.nansum(
-                    tracer_2d_strat[ind : ind + gap_ind + 1, pressure, dt]
-                )
-
-            a = np.nanmax(maxval)
-            maxind = np.where(maxval == a)[0][0]
-
-            # mean and std 35N-35S
-            mean70deg = np.nanmean(
-                tracer_2d_strat[maxind : (maxind + gap_ind + 1), pressure, dt]
-            )
-            std70deg = np.nanstd(
-                tracer_2d_strat[maxind : (maxind + gap_ind + 1), pressure, dt], ddof=1
-            )
-
-            threshold = mean70deg - std70deg
-
-            # finding latitudes less than this threshold
-            nlatless = np.where(tracer_2d_strat_nhem[:, pressure, dt] < threshold)[0]
-            slatless = np.where(tracer_2d_strat_shem[:, pressure, dt] < threshold)[0]
-            if np.size(nlatless) != 0:
-                if nlatless[0] != 0:
-                    tracer_sigma_nhem_equiv[pressure, dt] = lat[nlat[nlatless[0]]]
-                else:  # if lowest value is the equator, pick second one
-                    if len(nlatless) > 1:
-                        tracer_sigma_nhem_equiv[pressure, dt] = lat[nlat[nlatless[1]]]
-            if np.size(slatless) != 0:
-                if slatless[-1] != slat[-1]:
-                    tracer_sigma_shem_equiv[pressure, dt] = lat[slat[slatless[-1]]]
-                else:
-                    if len(slatless) > 1:
-                        tracer_sigma_shem_equiv[pressure, dt] = lat[slat[slatless[-2]]]
-
-    return tracer_sigma_nhem_equiv, tracer_sigma_shem_equiv
+    return tracer_sigma_shem, tracer_sigma_nhem
