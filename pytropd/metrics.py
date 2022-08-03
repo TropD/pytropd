@@ -1,8 +1,10 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 # rewrite for readability/vectorization - sjs 1.27.22
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 import warnings
+from functools import wraps
+from inspect import signature
 import numpy as np
 from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
@@ -20,6 +22,126 @@ from .functions import (
 KAPPA = 287.04 / 1005.7
 
 
+def hemisphere_handler(metric_func: Callable) -> Callable:
+    """
+    Wrapper for metrics to allow one or two hemispheres of data to be passed
+
+    Parameters
+    ----------
+    metric_func : Callable
+        the pytropd metric function to wrap
+
+    Returns
+    -------
+    Callable
+        wrapped function with same name, docstring, and call signature as the original
+        function, but which operates over each hemisphere independently
+    """
+
+    @wraps(metric_func)
+    def wrapped_metric_func(
+        arr: np.ndarray, lat: np.ndarray, *args, **kwargs
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        wrapper for pytropd metric functions which allows one or two hemispheres of data
+        to be passed
+
+        Parameters
+        ----------
+        arr : np.ndarray
+            first argument to a pytropd metric function is always the field used for the
+            metric (zonal wind, OLR, meridional wind, etc.)
+        lat : np.ndarray
+            second argument to a metric function is always the latitude array
+        *args
+            Other arguments passed to the metric function, typically will only be the
+            pressure level array if any
+        **kwargs
+            Keyword arguments passed to the metric function, all have a `method` keyword,
+            some have others
+
+        Returns
+        -------
+        PhiSH : np.ndarray, optional
+            metric latitude in SH (if SH latitudes are provided)
+        PhiNH : np.ndarray, optional
+            metric latitude in NH (if NH latitudes are provided)
+        UmaxSH : np.ndarray, optional
+            maximum of SH zonal wind (if using `TropD_Metric_EDJ` or `TropD_Metric_STJ`
+            and `method="fit"`)
+        UmaxNH : np.ndarray, optional
+            maximum of NH zonal wind (if using `TropD_Metric_EDJ` or `TropD_Metric_STJ`
+            and `method="fit"`)
+        """
+
+        # get the metric identifier from the function name
+        metric_code = metric_func.__name__.split("_")[-1]
+        # we need to know which dimension is the latitude dimension to split it
+        # appropriately. In functions which accept vertically-resolved input data,
+        # the vertical level is last and latitude is second to last. Otherwise, latitude
+        # is last
+        has_lev_dim = False
+        # these all require vertically-resolved data
+        if metric_code in ["STJ", "TPB", "PSI"]:
+            has_lev_dim = True
+        # these take it optionally, so we need to figure out if it was provided, either as
+        # an arg (it will be third positional and probably the only arg in args) or kwarg
+        elif metric_code in ["UAS", "EDJ"]:
+            has_lev_dim = (len(args) > 0) or (kwargs.get("lev", None) is not None)
+        # now the TropD_Metric_TPB accepts a Z array kwarg that also needs to be split
+        # based on latitude, so we need to get that if it is there
+        Z = None
+        if metric_code == "TPB":
+            Z = kwargs.pop("Z", None)
+        # now we just split by hemisphere and apply as if the data was for the NH
+        Phi_list = []
+        if (lat < -20.0).any():
+            # let's make sure we include the equator point just in case
+            SHmask = lat < 0.5
+            SHarr_mask = [Ellipsis, SHmask]
+            if has_lev_dim:
+                SHarr_mask.append(slice(None))
+            if Z is not None:
+                kwargs["Z"] = Z[tuple(SHarr_mask)]
+            Phi_list.append(
+                metric_func(
+                    # for the TropD_Metric_PSI, it takes meridional wind. In order to
+                    # make meridional wind in the SH like the NH, we have to flip the sign
+                    arr[tuple(SHarr_mask)] * (-1.0 if metric_code == "PSI" else 1.0),
+                    -lat[SHmask],
+                    *args,
+                    **kwargs,
+                )
+            )
+            Phi_list[0] *= -1.0
+        if (lat > 20.0).any():
+            NHmask = lat > -0.5
+            NHarr_mask = [Ellipsis, NHmask]
+            if has_lev_dim:
+                NHarr_mask.append(slice(None))
+            if Z is not None:
+                kwargs["Z"] = Z[tuple(NHarr_mask)]
+            Phi_list.append(
+                metric_func(arr[tuple(NHarr_mask)], lat[NHmask], *args, **kwargs)
+            )
+        # one final snag before we return. TropD_Metric_EDJ and TropD_Metric_STJ
+        # potentially return extra arrays if using `method="fit"`, so we need to
+        # flatten our return list and potentially swap some variables if global data was
+        # provided so that metric latitudes are always returned first
+        if metric_code in ["EDJ", "STJ"]:
+            method_used = kwargs.get(
+                "method", signature(metric_func).parameters["method"].default
+            )
+            if method_used == "fit":
+                Phi_list = [item for pair in Phi_list for item in pair]
+                if len(Phi_list) == 4:
+                    Phi_list[1], Phi_list[2] = Phi_list[2], Phi_list[1]
+        return tuple(Phi_list)  # type: ignore
+
+    return wrapped_metric_func
+
+
+@hemisphere_handler
 def TropD_Metric_EDJ(
     U: np.ndarray,
     lat: np.ndarray,
@@ -27,7 +149,7 @@ def TropD_Metric_EDJ(
     method: str = "peak",
     n_fit: int = 1,
     **maxlat_kwargs,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
     TropD Eddy Driven Jet (EDJ) Metric
 
@@ -67,14 +189,10 @@ def TropD_Metric_EDJ(
 
     Returns
     -------
-    PhiSH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
-        N-2(N-1) dimensional SH latitudes of the EDJ
-    PHiNH : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
-        N-2(N-1) dimensional NH latitudes of the EDJ
-    UmaxSH : numpy.ndarray (dim1, ..., dimN-2), conditional
-        N-2 dimensional SH STJ strength, returned if ``method="fit"``
-    UmaxNH : numpy.ndarray (dim1, ..., dimN-2), conditional
-        N-2 dimensional NH STJ strength, returned if ``method="fit"``
+    Phi : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
+        N-2(N-1) dimensional latitudes of the EDJ
+    Umax : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional STJ strength, returned if ``method="fit"``
     """
 
     U = np.asarray(U)
@@ -93,8 +211,7 @@ def TropD_Metric_EDJ(
 
     eq_boundary = 15.0
     polar_boundary = 70.0
-    NHmask = (lat > eq_boundary) & (lat < polar_boundary)
-    SHmask = (lat > -polar_boundary) & (lat < -eq_boundary)
+    hem_mask = (lat > eq_boundary) & (lat < polar_boundary)
 
     if get_lev:
         u850 = U[..., find_nearest(lev, 850.0)]  # type: ignore
@@ -110,56 +227,50 @@ def TropD_Metric_EDJ(
         # lat should already be last axis
         maxlat_kwargs.pop("axis", None)
 
-        PhiNH = TropD_Calculate_MaxLat(u850[..., NHmask], lat[NHmask], **maxlat_kwargs)
-        PhiSH = TropD_Calculate_MaxLat(u850[..., SHmask], lat[SHmask], **maxlat_kwargs)
+        Phi = TropD_Calculate_MaxLat(
+            u850[..., hem_mask], lat[hem_mask], **maxlat_kwargs
+        )
 
-        return PhiSH, PhiNH
+        return Phi
 
     else:  # method == 'fit':
         u_flat = u850.reshape(-1, lat.size)
 
-        Phi_list = []
-        Umax_list = []
-        for hem_mask in [SHmask, NHmask]:
-            lath = lat[hem_mask]
-            Phi = np.zeros(u850.shape[:-1])
-            Umax = np.zeros(u850.shape[:-1])
-            for i, Uh in enumerate(u_flat[:, hem_mask]):
-                Im = np.nanargmax(Uh)
-                phi_ind = np.unravel_index(i, u850.shape[:-1])
+        lat = lat[hem_mask]
+        Phi = np.zeros(u850.shape[:-1])
+        Umax = np.zeros(u850.shape[:-1])
+        for i, Uh in enumerate(u_flat[:, hem_mask]):
+            Im = np.nanargmax(Uh)
+            phi_ind = np.unravel_index(i, u850.shape[:-1])
 
-                if Im == 0 or Im == Uh.size - 1:
-                    Phi[phi_ind] = lath[Im]
-                    continue
+            if Im == 0 or Im == Uh.size - 1:
+                Phi[phi_ind] = lat[Im]
+                continue
 
-                if n_fit > Im or n_fit > Uh.size - Im + 1:
-                    N = np.min(Im, Uh.size - Im + 1)
-                else:
-                    N = n_fit
-                p = polynomial.polyfit(
-                    lath[Im - N : Im + N + 1], Uh[Im - N : Im + N + 1], deg=2
-                )
-                # vertex of quadratic ax**2+bx+c is at -b/2a
-                # p[0] + p[1]*x + p[2]*x**2
-                Phi[phi_ind] = -p[1] / (2.0 * p[2])
-                # value at vertex is (4ac-b**2)/(4a)
-                Umax[phi_ind] = (4.0 * p[2] * p[0] - p[1] * p[1]) / 4.0 / p[2]
-            Phi_list.append(Phi)
-            Umax_list.append(Umax)
+            if n_fit > Im or n_fit > Uh.size - Im + 1:
+                N = np.min(Im, Uh.size - Im + 1)
+            else:
+                N = n_fit
+            p = polynomial.polyfit(
+                lat[Im - N : Im + N + 1], Uh[Im - N : Im + N + 1], deg=2
+            )
+            # vertex of quadratic ax**2+bx+c is at -b/2a
+            # p[0] + p[1]*x + p[2]*x**2
+            Phi[phi_ind] = -p[1] / (2.0 * p[2])
+            # value at vertex is (4ac-b**2)/(4a)
+            Umax[phi_ind] = (4.0 * p[2] * p[0] - p[1] * p[1]) / 4.0 / p[2]
 
-        PhiSH, PhiNH = Phi_list
-        UmaxSH, UmaxNH = Umax_list
-
-        return PhiSH, PhiNH, UmaxSH, UmaxNH  # type: ignore
+        return Phi, Umax  # type: ignore
 
 
+@hemisphere_handler
 def TropD_Metric_OLR(
     olr: np.ndarray,
     lat: np.ndarray,
     method: str = "250W",
     Cutoff: Optional[float] = None,
     **maxlat_kwargs,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
     TropD Outgoing Longwave Radiation (OLR) Metric
 
@@ -200,10 +311,8 @@ def TropD_Metric_OLR(
 
     Returns
     -------
-    PhiSH : numpy.ndarray (dim1, ..., dimN-1)
-        N-1 dimensional SH latitudes of the near-equator OLR max/threshold crossing
-    PhiNH : numpy.ndarray (dim1, ..., dimN-1)
-        N-1 dimensional NH latitudes of the near-equator OLR max/threshold crossing
+    Phi : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional latitudes of the near-equator OLR max/threshold crossing
     """
 
     olr = np.asarray(olr)
@@ -228,8 +337,7 @@ def TropD_Metric_OLR(
     subpolar_boundary = 40.0
     polar_boundary = 60.0
 
-    NH_subpolar_mask = (lat > eq_boundary) & (lat < subpolar_boundary)
-    SH_subpolar_mask = (lat > -subpolar_boundary) & (lat < -eq_boundary)
+    subpolar_mask = (lat > eq_boundary) & (lat < subpolar_boundary)
 
     if method == "peak":
         maxlat_kwargs["n"] = 30
@@ -238,58 +346,43 @@ def TropD_Metric_OLR(
     # lat should already be last axis
     maxlat_kwargs.pop("axis", None)
 
-    olr_max_lat_NH = TropD_Calculate_MaxLat(
-        olr[..., NH_subpolar_mask], lat[NH_subpolar_mask], **maxlat_kwargs
-    )
-    olr_max_lat_SH = TropD_Calculate_MaxLat(
-        olr[..., SH_subpolar_mask], lat[SH_subpolar_mask], **maxlat_kwargs
+    olr_max_lat = TropD_Calculate_MaxLat(
+        olr[..., subpolar_mask], lat[subpolar_mask], **maxlat_kwargs
     )
 
     if method in ["cutoff", "250W", "20W", "10Perc"]:
         # get tropical OLR max for methods 20W and 10Perc
-        olr_max_NH = olr[..., NH_subpolar_mask].max(axis=-1)[..., None]
-        olr_max_SH = olr[..., SH_subpolar_mask].max(axis=-1)[..., None]
+        olr_max = olr[..., subpolar_mask].max(axis=-1)[..., None]
 
         # set cutoff dependent on method
         if method == "250W":
-            NHCutoff = 250.0
-            SHCutoff = 250.0
+            Cutoff = 250.0
         elif method == "20W":
-            NHCutoff = olr_max_NH - 20.0
-            SHCutoff = olr_max_SH - 20.0
+            Cutoff = olr_max - 20.0
         elif method == "10Perc":
-            NHCutoff = 0.9 * olr_max_NH
-            SHCutoff = 0.9 * olr_max_SH
-        else:  # method == cutoff
-            NHCutoff = Cutoff  # type: ignore
-            SHCutoff = Cutoff  # type: ignore
+            Cutoff = 0.9 * olr_max
 
         # identify regions poleward of the OLR max in both hemispheres
-        NHmask = (lat > eq_boundary) & (lat < polar_boundary)
-        SHmask = (lat > -polar_boundary) & (lat < -eq_boundary)
-        NH_max_mask = lat[NHmask] > olr_max_lat_NH[..., None]
-        SH_max_mask = lat[SHmask] < olr_max_lat_SH[..., None]
+        hem_mask = (lat > eq_boundary) & (lat < polar_boundary)
+        max_mask = lat[hem_mask] > olr_max_lat[..., None]
 
         # OLR in each hemisphere, only valid poleward of max
-        olr_NH = np.where(NH_max_mask, olr[..., NHmask], np.nan)
-        olr_SH = np.where(SH_max_mask, olr[..., SHmask], np.nan)
+        olr_hem = np.where(max_mask, olr[..., hem_mask], np.nan)
 
         # get latitude where OLR falls below cutoff poleward of tropical max
-        PhiNH = TropD_Calculate_ZeroCrossing(olr_NH - NHCutoff, lat[NHmask])
-        PhiSH = TropD_Calculate_ZeroCrossing(
-            olr_SH[..., ::-1] - SHCutoff, lat[SHmask][::-1]
-        )
+        Phi = TropD_Calculate_ZeroCrossing(olr_hem - Cutoff, lat[hem_mask])
+
     # these methods don't need to find a threshold after
     # the OLR max, just need the max
     elif method in ["max", "peak"]:
-        PhiNH = olr_max_lat_NH
-        PhiSH = olr_max_lat_SH
+        Phi = olr_max_lat
     else:
         raise ValueError("unrecognized method " + method)
 
-    return PhiSH, PhiNH
+    return Phi
 
 
+@hemisphere_handler
 def TropD_Metric_PE(
     pe: np.ndarray,
     lat: np.ndarray,
@@ -320,10 +413,8 @@ def TropD_Metric_PE(
 
     Returns
     -------
-    PhiSH : numpy.ndarray (dim1, ..., dimN-1)
-        N-1 dimensional SH latitudes of the 1st subtropical P-E zero crossing
-    PhiNH : numpy.ndarray (dim1, ..., dimN-1)
-        N-1 dimensional NH latitudes of the 1st subtropical P-E zero crossing
+    Phi : numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional latitudes of the 1st subtropical P-E zero crossing
     """
 
     pe = np.atleast_2d(pe)
@@ -361,34 +452,21 @@ def TropD_Metric_PE(
     polar_boundary = 60.0
 
     # split into hemispheres
-    NHmask = (lat > eq_boundary) & (lat < polar_boundary)
-    SHmask = (lat < -eq_boundary) & (lat > -polar_boundary)
-    latNH = lat[NHmask]
-    latSH = lat[SHmask]
+    hem_mask = (lat > eq_boundary) & (lat < polar_boundary)
+    lat_hem = lat[hem_mask]
 
     # find E-P maximum (P-E min) latitude in subtropics
     # first define the subpolar region to search, excluding poles due to low P-E
-    NH_subpolar_mask = (lat > eq_boundary) & (lat < subpolar_boundary)
-    SH_subpolar_mask = (lat < -eq_boundary) & (lat > -subpolar_boundary)
-    Emax_latNH = TropD_Calculate_MaxLat(
-        -pe[..., NH_subpolar_mask], lat[NH_subpolar_mask], n=30
-    )
-    Emax_latSH = TropD_Calculate_MaxLat(
-        -pe[..., SH_subpolar_mask], lat[SH_subpolar_mask], n=30
-    )
+    subpolar_mask = (lat > eq_boundary) & (lat < subpolar_boundary)
+    Emax_lat = TropD_Calculate_MaxLat(-pe[..., subpolar_mask], lat[subpolar_mask], n=30)
 
     # find zero crossings poleward of E-P max
     # flipping SH arrays to get the most equatorward zero crossing
     # first define regions poleward of E-P max in each hemisphere
-    NH_after_Emax = latNH > Emax_latNH[..., None]
-    SH_after_Emax = latSH < Emax_latSH[..., None]
-    peNH_after_Emax = np.where(NH_after_Emax, pe[..., NHmask], np.nan)
-    peSH_after_Emax = np.where(SH_after_Emax, pe[..., SHmask], np.nan)
-    ZC1_latNH = TropD_Calculate_ZeroCrossing(
-        peNH_after_Emax, latNH, lat_uncertainty=lat_uncertainty
-    )
-    ZC1_latSH = TropD_Calculate_ZeroCrossing(
-        peSH_after_Emax[..., ::-1], latSH[::-1], lat_uncertainty=lat_uncertainty
+    after_Emax = lat_hem > Emax_lat[..., None]
+    pe_after_Emax = np.where(after_Emax, pe[..., hem_mask], np.nan)
+    ZC1_lat = TropD_Calculate_ZeroCrossing(
+        pe_after_Emax, lat_hem, lat_uncertainty=lat_uncertainty
     )
 
     # we've got the zero crossing poleward of E-P max, but it might not be the
@@ -398,42 +476,35 @@ def TropD_Metric_PE(
 
     # first check if the (northward) gradient value at the
     # zero crossing is increasing poleward
-    peNH_increases_at_ZC = np.zeros_like(ZC1_latNH)
-    peSH_increases_at_ZC = np.zeros_like(ZC1_latSH)
+    pe_increases_at_ZC = np.zeros_like(ZC1_lat)
     pe_grad_flat = pe_grad.reshape(-1, lat.size)
     for i, ipe_grad in enumerate(pe_grad_flat):
         i_unrav = np.unravel_index(i, pe_grad.shape[:-1])
         interp_pe_grad = interp1d(lat, ipe_grad, axis=-1)
-        peNH_increases_at_ZC[i_unrav] = interp_pe_grad(ZC1_latNH.flatten()[i]) > 0
-        peSH_increases_at_ZC[i_unrav] = interp_pe_grad(ZC1_latSH.flatten()[i]) < 0
+        pe_increases_at_ZC[i_unrav] = interp_pe_grad(ZC1_lat.flatten()[i]) > 0
 
     # then get the next zero crossing for when we need it
     # first define regions poleward of zero crossing
-    NH_after_ZC = latNH > ZC1_latNH[..., None]
-    SH_after_ZC = latSH < ZC1_latSH[..., None]
-    peNH_after_ZC = np.where(NH_after_ZC, pe[..., NHmask], np.nan)
-    peSH_after_ZC = np.where(SH_after_ZC, pe[..., SHmask], np.nan)
-    ZC2_latNH = TropD_Calculate_ZeroCrossing(
-        peNH_after_ZC, latNH, lat_uncertainty=lat_uncertainty
-    )
-    ZC2_latSH = TropD_Calculate_ZeroCrossing(
-        peSH_after_ZC, latSH, lat_uncertainty=lat_uncertainty
+    after_ZC = lat_hem > ZC1_lat[..., None]
+    pe_after_ZC = np.where(after_ZC, pe[..., hem_mask], np.nan)
+    ZC2_lat = TropD_Calculate_ZeroCrossing(
+        pe_after_ZC, lat_hem, lat_uncertainty=lat_uncertainty
     )
 
     # if the gradient is increasing poleward, use it, otherwise, use the next
-    PhiNH = np.where(peNH_increases_at_ZC, ZC1_latNH, ZC2_latNH)
-    PhiSH = np.where(peSH_increases_at_ZC, ZC1_latSH, ZC2_latSH)
+    Phi = np.where(pe_increases_at_ZC, ZC1_lat, ZC2_lat)
 
-    return PhiSH, PhiNH
+    return Phi
 
 
+@hemisphere_handler
 def TropD_Metric_PSI(
     V: np.ndarray,
     lat: np.ndarray,
     lev: np.ndarray,
     method: str = "Psi_500",
     lat_uncertainty: float = 0.0,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
     TropD Mass Streamfunction (PSI) Metric
 
@@ -467,10 +538,8 @@ def TropD_Metric_PSI(
 
     Returns
     -------
-    PhiSH : numpy.ndarray (dim1, ..., dimN-2)
-        N-2 dimensional SH latitudes of the Psi zero crossing
-    PhiNH : numpy.ndarray (dim1, ..., dimN-2)
-        N-2 dimensional NH latitudes of the Psi zero crossing
+    Phi : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional latitudes of the Psi zero crossing
     """
 
     # type casting/input checking
@@ -513,53 +582,33 @@ def TropD_Metric_PSI(
     # define regions of interest
     subpolar_boundary = 30.0
     polar_boundary = 60.0
-    NHmask = (lat > 0) & (lat < polar_boundary)
-    SHmask = (lat < 0) & (lat > -polar_boundary)
-    NH_subpolar_mask = (lat > 0) & (lat < subpolar_boundary)
-    SH_subpolar_mask = (lat < 0) & (lat > -subpolar_boundary)
-    # split into hemispheres
-    latNH = lat[NHmask]
-    latSH = lat[SHmask]
+    hem_mask = (lat > 0) & (lat < polar_boundary)
+    subpolar_mask = (lat > 0) & (lat < subpolar_boundary)
+    lat_hem = lat[hem_mask]
 
     # 1. Find latitude of maximal (minimal) tropical Psi in the NH (SH)
-    Pmax_latNH = TropD_Calculate_MaxLat(P[..., NH_subpolar_mask], lat[NH_subpolar_mask])
-    Pmax_latSH = TropD_Calculate_MaxLat(
-        -P[..., SH_subpolar_mask], lat[SH_subpolar_mask]
-    )
+    Pmax_lat = TropD_Calculate_MaxLat(P[..., subpolar_mask], lat[subpolar_mask])
 
     # 2. Find latitude of minimal (maximal) subtropical Psi in the NH (SH)
     # poleward of tropical max (min)
     # define region poleward and Psi in region
-    NH_after_Pmax = latNH >= Pmax_latNH[..., None]
-    SH_after_Pmax = latSH <= Pmax_latSH[..., None]
-    PNH_after_Pmax = np.where(NH_after_Pmax, P[..., NHmask], np.nan)
-    PSH_after_Pmax = np.where(SH_after_Pmax, P[..., SHmask], np.nan)
-
-    Pmin_latNH = TropD_Calculate_MaxLat(-PNH_after_Pmax, latNH)
-    Pmin_latSH = TropD_Calculate_MaxLat(PSH_after_Pmax, latSH)
+    after_Pmax = lat_hem >= Pmax_lat[..., None]
+    P_after_Pmax = np.where(after_Pmax, P[..., hem_mask], np.nan)
+    Pmin_lat = TropD_Calculate_MaxLat(-P_after_Pmax, lat_hem)
 
     # 3. Find the zero crossing between the above latitudes
-    NH_in_between = (latNH <= Pmin_latNH[..., None]) & NH_after_Pmax
-    SH_in_between = (latSH >= Pmin_latSH[..., None]) & SH_after_Pmax
-    PNH_in_between = np.where(NH_in_between, P[..., NHmask], np.nan)
-    PSH_in_between = np.where(SH_in_between, P[..., SHmask], np.nan)
+    in_between = (lat_hem <= Pmin_lat[..., None]) & after_Pmax
+    P_in_between = np.where(in_between, P[..., hem_mask], np.nan)
 
     if method == "Psi_500_10Perc":
-        PmaxNH = P[..., NH_subpolar_mask].max(axis=-1)[..., None]
-        PminSH = P[..., SH_subpolar_mask].min(axis=-1)[..., None]
-        PhiNH = TropD_Calculate_ZeroCrossing(PNH_in_between - 0.1 * PmaxNH, latNH)
-        PhiSH = TropD_Calculate_ZeroCrossing(
-            PSH_in_between[..., ::-1] - 0.1 * PminSH, latSH[::-1]
-        )
+        Pmax = P[..., subpolar_mask].max(axis=-1)[..., None]
+        Phi = TropD_Calculate_ZeroCrossing(P_in_between - 0.1 * Pmax, lat_hem)
     else:
-        PhiNH = TropD_Calculate_ZeroCrossing(
-            PNH_in_between, latNH, lat_uncertainty=lat_uncertainty
-        )
-        PhiSH = TropD_Calculate_ZeroCrossing(
-            PSH_in_between[..., ::-1], latSH[::-1], lat_uncertainty=lat_uncertainty
+        Phi = TropD_Calculate_ZeroCrossing(
+            P_in_between, lat_hem, lat_uncertainty=lat_uncertainty
         )
 
-    return PhiSH, PhiNH
+    return Phi
 
 
 def TropD_Metric_PSL(

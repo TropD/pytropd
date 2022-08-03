@@ -4,6 +4,11 @@
 from pathlib import Path
 import logging
 from argparse import ArgumentParser
+import numpy as np
+from scipy.io import netcdf
+import pytropd as pyt
+import matplotlib.pyplot as plt
+import matplotlib
 
 parser = ArgumentParser(description="Demonstrates and validates all pytropd metrics.")
 parser.add_argument(
@@ -19,12 +24,6 @@ parser.add_argument(
     help="figures should be saved to ValidationMetrics/figs instead of displayed",
 )
 args = parser.parse_args()
-
-import numpy as np
-from scipy.io import netcdf
-import pytropd as pyt
-import matplotlib.pyplot as plt
-import matplotlib
 
 # Latent heat of vaporization
 L_VAP = 2510400.0
@@ -916,7 +915,8 @@ U = np.transpose(U, (2, 1, 0))
 U_ANN = pyt.TropD_Calculate_Mon2Season(U, season=list(range(12)))
 
 # monthly EDJ check
-Phi_edj_sh, Phi_edj_nh = pyt.TropD_Metric_EDJ(U, lat, lev)
+Phi_edj_nh = pyt.TropD_Metric_EDJ(U[..., lat >= 0.0, :], lat[lat >= 0.0], lev)
+Phi_edj_sh = pyt.TropD_Metric_EDJ(U[..., lat <= 0.0, :], lat[lat <= 0.0], lev)
 checks_passed += validate_against_metric(Phi_edj_nh, "EDJ", "NH")
 checks_passed += validate_against_metric(Phi_edj_sh, "EDJ", "SH")
 
