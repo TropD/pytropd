@@ -10,7 +10,7 @@ from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
-from functions import (
+from .functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
     TropD_Calculate_StreamFunction,
@@ -698,7 +698,7 @@ def TropD_Metric_STJ(
     method: str = "adjusted_peak",
     n_fit: int = 1,
     **maxlat_kwargs,
-) -> Tuple[np.ndarray, ...]:
+) -> np.ndarray:
     """
     TropD Subtropical Jet (STJ) Metric
 
@@ -848,7 +848,7 @@ def TropD_Metric_TPB(
     Z: Optional[np.ndarray] = None,
     Cutoff: float = 1.5e4,
     **maxlat_kwargs,
-) -> Tuple[np.ndarray, ...]:
+) -> np.ndarray:
     """
     TropD Tropopause Break (TPB) Metric
 
