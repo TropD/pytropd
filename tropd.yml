@@ -16,6 +16,7 @@ dependencies:
         - pygeode
         - mypy
         - flake8
+        - flake8-docstrings
         - jupyterlab
         - pooch
         - dask
