@@ -10,7 +10,7 @@ from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
-from functions import (
+from .functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
     TropD_Calculate_StreamFunction,

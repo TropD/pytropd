@@ -1,10 +1,9 @@
-from pygeode.var import Var
-from pygeode.dataset import Dataset
 import numpy as np
-#import pytropd as pyt
-import metrics as pyt
+import pytropd as pyt
 
 import pygeode as pyg
+from pygeode.var import Var
+from pygeode.dataset import Dataset, asdataset
 from pygeode.axis import NamedAxis
 from pygeode.tools import loopover, whichaxis 
 from pygeode.view import View
@@ -39,18 +38,15 @@ def metrics_dataset(dataset, metric, **params):
     # If none found, raise error.
     var = extract_property_name(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
 
-    print('nh')
     #nh hemisphere
     nh_data = chop_by_hemisphere(var,hem='nh')
-    nh_Var = metric_var(nh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
+    nh_var = metric_var(nh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
     
-    
-    print('sh')
     #sh hemisphere
     sh_data = chop_by_hemisphere(var, hem='sh')
-    sh_Var = metric_var(sh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
+    sh_var = metric_var(sh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
    
-    return pyg.Dataset([sh_Var, nh_Var])
+    return pyg.Dataset(sh_var + nh_var)
 
 
 def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=None, **params):
@@ -85,11 +81,9 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
 
     else:
       if p_axis_status==1:
-        print(X)
         raise KeyError('<Pres> axis not found in', X)
   
   else: 
-    print(X)
     raise KeyError('<Lat> axis not found in', X)
 
   
@@ -107,7 +101,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
 
   
   oaxes = [a for i, a in enumerate(X.axes) if i not in riaxes]
-  print(oaxes) 
   if not oaxes:
     new_const_axis = NamedAxis(values=np.arange(1),name='value')
     X = X.extend(0, new_const_axis)
@@ -152,7 +145,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
     if method_used =='fit':
       metric_lat[outsl], metric_value[outsl] = metric_function(xdata, lat_values, **params)
     else:
-      metric_lat[outsl] = metric_function(xdata, lat_values, **params)
+      metric_lat[outsl] = np.squeeze(np.array(metric_function(xdata, lat_values, **params)))
 
   var_list_out = []
 
@@ -162,9 +155,8 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
     metric_lat = Var(oaxes, values=metric_lat, name=hem + '_metric_lat', atts=lat_attrs)
     var_list_out.append(metric_lat)
 
-  ds = asdataset(var_list_out)
   pbar.update(100)
-  return ds
+  return var_list_out
 
 
 
