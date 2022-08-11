@@ -59,7 +59,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   method_used: str = params.get(
        "method", signature(metric_function).parameters["method"].default)
   
-  p_axis_status=0
   ovars = ['lat','values']
   output = [o for o in output.split(',') if o in ovars]
   if len(output) < 1: raise ValueError('No valid outputs are requested from metric calculation. Possible outputs are %s.' % str(ovars))

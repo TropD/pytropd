@@ -6,6 +6,7 @@ Home-page: https://tropd.github.io/pytropd/index.html
 Author: Alison Ming, Paul William Staten
 Author-email: admg26@gmail.com
 License: GPL-3
+Description-Content-Type: UNKNOWN
 Description: [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
         
         PyTropD is a software package designed to calculate various metrics of tropical width and is the python equivalent of the Matlab package,TropD.
