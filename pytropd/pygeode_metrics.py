@@ -120,7 +120,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
 
   if pbar is None:
     from pygeode.progress import PBar
-    pbar = PBar()
+    pbar = PBar(message='Computing ' + hem.upper())
 
   outview = View(oaxes)
 
