@@ -88,6 +88,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   
   #transpose axes in the order (Lat, Pres)
   X = X.transpose(*out_order)
+  inaxes = list(X.axes)
   lataxis = X.whichaxis('Lat')
   lat_values = X.axes[lataxis][:]
 
