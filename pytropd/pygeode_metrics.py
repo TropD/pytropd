@@ -30,13 +30,18 @@ def metrics_dataset(dataset, metric, **params):
     if isinstance(dataset, pyg.Var): 
       dataset = pyg.asdataset(dataset)
 
-    dataset = extract_property_name(dataset, property_name=['lat','Latitude'], p_axis_status=p_axis_status)
-    dataset = extract_property_name(dataset, property_name=['pres','Pressure'], p_axis_status=p_axis_status)
+    dataset, _ = extract_property_name(dataset, property_name=['lat','Latitude'], p_axis_status=p_axis_status)
+    dataset, found_pres = extract_property_name(dataset, property_name=['pres','Pressure'], p_axis_status=p_axis_status)
+
+    if found_pres and metric=='edj' or 'uas':
+      p_axis_status = 1
+
+
     #if dataset only contains one pyg.Var, assume
     #this is the correct variable for the metric and return it
     #otherwise, find check the name of the variable for the closest match
     # If none found, raise error.
-    var = extract_property_name(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
+    var, _ = extract_property_name(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
 
     #nh hemisphere
     nh_data = chop_by_hemisphere(var,hem='nh')
@@ -51,7 +56,6 @@ def metrics_dataset(dataset, metric, **params):
 
 def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=None, **params):
   ''''''
-  
   # Get the relevant metric function
   metric_function = getattr(pyt, 'TropD_Metric_' + metric.upper()) 
 
@@ -66,22 +70,28 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   xn = X.name if X.name != '' else 'X' # Note: could write:  xn = X.name or 'X'
 
   inaxes = list(X.axes)
-  out_order = [type(i) for i in inaxes]
   if X.hasaxis('Lat'):
     has_pres_axis = 0
-    
-    #move lat axis to the end
-    out_order.append(out_order.pop(X.whichaxis('Lat')))
+    lat_axis_index = X.whichaxis('Lat')
 
     if X.hasaxis('Pres') and (p_axis_status==1):
-      #move pres axis to the end
-      out_order.append(out_order.pop(X.whichaxis('Pres')))
       has_pres_axis = 1
+
+      pres_axis_index = X.whichaxis('Pres')
+      #out_order has lat, pres at the end
+      out_order = [i for i in range(len(inaxes)) if i not in [pres_axis_index, lat_axis_index]]
+      out_order.append(lat_axis_index)
+      out_order.append(pres_axis_index)
 
     else:
       if p_axis_status==1:
         raise KeyError('<Pres> axis not found in', X)
-  
+      else:
+        #out_order has lat at the end
+        out_order = [i for i in range(len(inaxes)) if i not in [lat_axis_index,]]
+        out_order.append(lat_axis_index)
+        out_order.append(X.Lat)
+
   else: 
     raise KeyError('<Lat> axis not found in', X)
 
@@ -91,7 +101,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   inaxes = list(X.axes)
   lataxis = X.whichaxis('Lat')
   lat_values = X.axes[lataxis][:]
-
+  
   riaxes = [lataxis]
   if p_axis_status==1:
     presaxis = X.whichaxis('Pres')
@@ -107,7 +117,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
     oaxes.append(new_const_axis)
     inaxes = list(X.axes)
 
-  raxes = [a for i, a in enumerate(X.axes) if i in riaxes]
+  #raxes = [a for i, a in enumerate(X.axes) if i in riaxes]
 
   # Construct new variable
   if hem == 'nh':
@@ -116,7 +126,7 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
     name = metric.upper() + '_sh_latitude'
 
   oview = View(oaxes) 
-  iview = View(raxes) 
+  #iview = View(raxes) 
 
   if pbar is None:
     from pygeode.progress import PBar
@@ -127,8 +137,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   # Construct work arrays
   metric_lat= np.full(oview.shape, np.nan, 'd')
   metric_value = np.full(oview.shape, np.nan, 'd')
-
-
 
   ## Vectorize the metric function depending on inputs needed
   #if has_pres_axis:
@@ -181,7 +189,7 @@ def extract_property_name(dataset, property_name, p_axis_status):
     #check if pyg.Lat axis is present, else look for a match
     if dataset.hasaxis(pyg.Lat):
       print('Found Latitude axis in the dataset')
-      return dataset
+      return dataset, 1
 
     else:
       dataset_keys = list(dataset.axisdict.keys())
@@ -192,7 +200,7 @@ def extract_property_name(dataset, property_name, p_axis_status):
     #check if pyg.Pres axis is present, else look for a match
     if dataset.hasaxis(pyg.Pres):
       print('Found Pressure axis in the dataset')
-      return dataset
+      return dataset, 1
 
     else:
       #try to see if there is a pressure axis as a pyg.NamedAxis
@@ -246,10 +254,10 @@ def extract_property_name(dataset, property_name, p_axis_status):
       print('Using %s in the dataset as the %s'%(dataset_keys[index[0]],property_name[1]))
       pres_axis = getattr(dataset, dataset_keys[index[0]])
       print('Replacing pyg.NamedAxis %s with a pyg.Pres axis in the dataset'%(dataset_keys[index[0]]))
-      return dataset.replace_axes({dataset_keys[index[0]]: pyg.Pres(pres_axis[:])})
+      return dataset.replace_axes({dataset_keys[index[0]]: pyg.Pres(pres_axis[:])}), 1
 
     else:
-      return dataset
+      return dataset, 0
 
   if len(index)==0: 
     print(dataset)
@@ -265,12 +273,12 @@ def extract_property_name(dataset, property_name, p_axis_status):
     print('Using %s in the dataset as the %s'%(dataset_keys[index[0]],property_name[1]))
     lat_axis = getattr(dataset, dataset_keys[index[0]])
     print('Replacing pyg.NamedAxis %s with a pyg.Lat axis in the dataset'%(dataset_keys[index[0]]))
-    return dataset.replace_axes({dataset_keys[index[0]]: pyg.Lat(lat_axis[:])})
+    return dataset.replace_axes({dataset_keys[index[0]]: pyg.Lat(lat_axis[:])}), 1
 
 
   else:
     print('Using %s in the dataset as the %s'%(dataset_keys[index[0]],property_name[1]))
-    return getattr(dataset, dataset_keys[index[0]])
+    return getattr(dataset, dataset_keys[index[0]]),1
   
   
 def chop_by_hemisphere(dataset, hem='nh'):
