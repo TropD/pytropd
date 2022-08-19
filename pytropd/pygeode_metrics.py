@@ -33,7 +33,7 @@ def metrics_dataset(dataset, metric, **params):
     dataset, _ = extract_property_name(dataset, property_name=['lat','Latitude'], p_axis_status=p_axis_status)
     dataset, found_pres = extract_property_name(dataset, property_name=['pres','Pressure'], p_axis_status=p_axis_status)
 
-    if found_pres and metric=='edj' or 'uas':
+    if found_pres and metric in ('edj','uas'):
       p_axis_status = 1
 
 
@@ -90,7 +90,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
         #out_order has lat at the end
         out_order = [i for i in range(len(inaxes)) if i not in [lat_axis_index,]]
         out_order.append(lat_axis_index)
-        out_order.append(X.Lat)
 
   else: 
     raise KeyError('<Lat> axis not found in', X)
