@@ -12,46 +12,51 @@ from inspect import signature
 import logging
 
 def metrics_dataset(dataset, metric, **params):
-    metric_property_name = dict(edj=['u', 'Zonal wind'],
-                                olr=['olr','Outgoing longwave radiation'],
-                                pe=['pe','Precipitation minus evaporation'],
-                                psi=['v','Meridional wind'],
-                                psl=['psl','Sea level pressure'],
-                                stj=['u','Zonal wind'],
-                                tpb=['T','Temperature'],
-                                uas=['uas','Surface wind'],
-                                gwl=['tracer','Tracer'],
-                                )
+  metric_property_name = dict(edj=['u', 'Zonal wind'],
+                              olr=['olr','Outgoing longwave radiation'],
+                              pe=['pe','Precipitation minus evaporation'],
+                              psi=['v','Meridional wind'],
+                              psl=['psl','Sea level pressure'],
+                              stj=['u','Zonal wind'],
+                              tpb=['T','Temperature'],
+                              uas=['uas','Surface wind'],
+                              gwl=['tracer','Tracer'],
+                              )
 
 
-    p_axis_status = pressure_axis_status(metric)
-    
-    # make sure data is a dataset not a var
-    if isinstance(dataset, pyg.Var): 
-      dataset = pyg.asdataset(dataset)
+  p_axis_status = pressure_axis_status(metric)
+  
+  # make sure data is a dataset not a var
+  if isinstance(dataset, pyg.Var): 
+    dataset = pyg.asdataset(dataset)
 
-    dataset, _ = extract_property_name(dataset, property_name=['lat','Latitude'], p_axis_status=p_axis_status)
-    dataset, found_pres = extract_property_name(dataset, property_name=['pres','Pressure'], p_axis_status=p_axis_status)
+  dataset, _ = extract_property_name(dataset, property_name=['lat','Latitude'], p_axis_status=p_axis_status)
+  dataset, found_pres = extract_property_name(dataset, property_name=['pres','Pressure'], p_axis_status=p_axis_status)
 
-    if found_pres and metric in ('edj','uas'):
-      p_axis_status = 1
+  if found_pres and metric in ('edj','uas'):
+    p_axis_status = 1
 
 
-    #if dataset only contains one pyg.Var, assume
-    #this is the correct variable for the metric and return it
-    #otherwise, find check the name of the variable for the closest match
-    # If none found, raise error.
-    var, _ = extract_property_name(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
+  #if dataset only contains one pyg.Var, assume
+  #this is the correct variable for the metric and return it
+  #otherwise, find check the name of the variable for the closest match
+  # If none found, raise error.
+  var, _ = extract_property_name(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
 
-    #nh hemisphere
-    nh_data = chop_by_hemisphere(var,hem='nh')
-    nh_var = metric_var(nh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
-    
-    #sh hemisphere
-    sh_data = chop_by_hemisphere(var, hem='sh')
-    sh_var = metric_var(sh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
-   
-    return pyg.Dataset(sh_var + nh_var)
+  #nh hemisphere
+  nh_data = chop_by_hemisphere(var,hem='nh')
+  nh_var = metric_var(nh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
+  
+  #sh hemisphere
+  sh_data = chop_by_hemisphere(var, hem='sh')
+  sh_var = metric_var(sh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
+ 
+  global_attrs = {
+          "long_name": metric.upper() + " metric latitude",
+          "units": "degrees",
+          }
+
+  return pyg.Dataset(sh_var + nh_var, atts=global_attrs)
 
 
 def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=None, **params):
@@ -125,7 +130,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
     name = metric.upper() + '_sh_latitude'
 
   oview = View(oaxes) 
-  #iview = View(raxes) 
 
   if pbar is None:
     from pygeode.progress import PBar
@@ -137,13 +141,6 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
   metric_lat= np.full(oview.shape, np.nan, 'd')
   metric_value = np.full(oview.shape, np.nan, 'd')
 
-  ## Vectorize the metric function depending on inputs needed
-  #if has_pres_axis:
-  #  signature = '(i,j)->(k)'
-  #else:
-  #  signature = '(i)->(k)'
-  ##metric_function_v = np.vectorize(metric_function, signature=signature)
-  
   
   # Accumulate data
   for outsl, (xdata,) in loopover([X], oview, inaxes, pbar=pbar):
@@ -158,7 +155,9 @@ def metric_var(X, output='lat', p_axis_status=None, metric=None, hem='nh', pbar=
 
   if 'lat' in output:
     lat_attrs = {"long_name": metric.upper() + " metric latitude",
-                 "unit": "degrees"},
+                 "unit": "degrees",
+                 "method_used:": method_used,
+                 }
     metric_lat = Var(oaxes, values=metric_lat, name=hem + '_metric_lat', atts=lat_attrs)
     var_list_out.append(metric_lat)
 
@@ -316,9 +315,10 @@ def pyg_edj(dataset,**params):
 
   Examples
   --------
+  >>> import pytropd as pyt 
   >>> import pygeode as pyg
   >>> from pygeode.tutorial import t2 
-  >>> U = t2.U(i_time=0).mean(pyg.Lon)
+  >>> U = t2.U(i_time=0).mean(pyg.Lon).squeeze()
   >>> print(U)
   <Var 'U'>:
     Shape:  (pres,lat)  (20,31)
@@ -328,16 +328,23 @@ def pyg_edj(dataset,**params):
   Attributes:
     {}
   Type:  SqueezedVar (dtype="float64")
-  >>> print(pyg_edj(U))
-  <Var 'EDJ_metrics'>:
-    Shape:  (Metrics)  (2)
+  >>> edj_metric_dataset = pyt.pyg_edj(U)  #Calculate EDJ metric     
+  edj_metric_dataset = pyt.pyg_edj(U)
+  Found Latitude axis in the dataset
+  Found Pressure axis in the dataset
+  Using U in the dataset as the Zonal wind
+  >>> print(edj_metric_dataset)
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
   Axes:
-    Metrics <NamedAxis 'Metrics'>:  0  to 1  (2 values)
-  Attributes:
-    {}
-  Type:  Replace_axes (dtype="float64")
-  >>> print(edj(U)[:])
-  [-45.  45.]
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : EDJ metric latitude
+    units          : degrees
+  >>> print(edj_metric_dataset.nh_metric_lat[:])
+  [45.]
   '''
 
   EDJ_Dataset = metrics_dataset(dataset, metric='edj', **params)
@@ -390,17 +397,21 @@ def pyg_olr(dataset, **params):
     Attributes:
       {}
     Type:  Add_Var (dtype="float64")
-  >>> print(olr(olr_data)) #Calculate OLR metrics                                           
-  <Var 'OLR_metrics'>:
-    Shape:  (Metrics)  (2)
-    Axes:
-      Metrics <NamedAxis 'Metrics'>:  0  to 1  (2 values)
-    Attributes:
-      {}
-    Type:  Replace_axes (dtype="float64")
-  
-  >>> print(olr(olr_data)[:])                                                              
-  [-24.0874096  24.0874096]
+  >>> olr_metric_dataset = pyt.pyg_olr(olr_data) #Calculate OLR metric     
+  Found Latitude axis in the dataset
+  Using ((cosd(lat)*150)+150) in the dataset as the Outgoing longwave radiation
+  >>> print(olr_metric_dataset)                                                                                    
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : OLR metric latitude
+    units          : degrees
+  >>> print(olr_metric_dataset.nh_metric_lat[:])                                                                   
+  [24.0874096]
   """
 
   OLR_Dataset = metrics_dataset(dataset, metric='olr', **params)
@@ -438,8 +449,22 @@ def pyg_pe(dataset, **params):
     Attributes:
       {}
     Type:  Replace_axes (dtype="float64")
-  >>> print(pyg_pe(pe_data)[:])                                                                                                
-  [-45.  45.]
+  >>> pe_metric_dataset = pyt.pyg_pe(pe_data) #Calculate PE metric                                           
+  Found Latitude axis in the dataset
+  Using -cosd(lat) in the dataset as the Precipitation minus evaporation
+  >>>print(pe_metric_dataset)                                                                                    
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : PE metric latitude
+    units          : degrees
+
+  >>> print(pe_metric_dataset.nh_metric_lat[:])                                                                   
+  [45.]
   '''     
 
   PE_Dataset = metrics_dataset(dataset, metric='pe', **params)
@@ -491,17 +516,22 @@ def pyg_psi(dataset,**params):
     Attributes:
       {}
     Type:  Mul_Var (dtype="float64")
-  >>> print(pyg_psi(V_data)
-  <Var '(-sind(lat)*cos(pres))'>:
-    Shape:  (lat,pres)  (31,20)
-    Axes:
-      lat <Lat>      :  90 S to 90 N (31 values)
-      pres <Pres>    :  1000 hPa to 50 hPa (20 values)
-    Attributes:
-      {}
-    Type:  Mul_Var (dtype="float64")
-   >>> print(pyg_psi(V_data)[:])                                                                                                
-   [-30.  30.]
+  >>> psi_metric_dataset = pyt.pyg_psi(V_data)   #Calculate PSI metric        
+  Found Latitude axis in the dataset
+  Found Pressure axis in the dataset
+  Using (-sind(lat)*cos(pres)) in the dataset as the Meridional wind
+  >>> print(psi_metric_dataset)                                                                                   
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : PSI metric latitude
+    units          : degrees
+  >>> print(psi_metric_dataset.nh_metric_lat[:])         
+   [-30.]
   '''
 
   PSI_Dataset = metrics_dataset(dataset, metric='psi', **params)
@@ -537,16 +567,21 @@ def pyg_psl(dataset,**params):
     Attributes:
       {}
     Type:  Add_Var (dtype="float64")
-  >>> print(pyg_psl(psl_data))                                                                                                
-  <Var 'PSL_metrics'>:
-    Shape:  (Metrics)  (2)
-    Axes:
-      Metrics <NamedAxis 'Metrics'>:  0  to 1  (2 values)
-    Attributes:
-      {}
-    Type:  Replace_axes (dtype="float64")
-  >>>  print(pyg_psl(psl_data)[:])                                                                                             
-  [-53.99926851  53.99926851]
+  >>> psl_metric_dataset = pyt.pyg_psl(psl_data)  #Calculate PSL metric                                           
+  Found Latitude axis in the dataset
+  Using (cosd(lat)+1) in the dataset as the Sea level pressure
+  >>> print(psl_metric_dataset)                                                                                   
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : PSL metric latitude
+    units          : degrees
+  >>> print(psl_metric_dataset.nh_metric_lat[:])                                                                  
+  [53.99926851]
   '''
 
   PSL_Dataset = metrics_dataset(dataset, metric='psl', **params)
@@ -587,16 +622,22 @@ def pyg_stj(dataset,**params):
   Attributes:
     {}
   Type:  SqueezedVar (dtype="float64")
-  >>> print(pyg_stj(U))
-  <Var 'STJ_metrics'>:
-  Shape:  (Metrics)  (2)
+  >>> stj_metric_dataset = pyt.pyg_stj(U) #Calculate STJ metric
+  Found Latitude axis in the dataset
+  Found Pressure axis in the dataset
+  Using U in the dataset as the Zonal wind
+  >>> print(stj_metric_dataset)                                                                                   
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
   Axes:
-    Metrics <NamedAxis 'Metrics'>:  0  to 1  (2 values)
-  Attributes:
-    {}
-  Type:  Replace_axes (dtype="float64")
-  >>> print(pyg_stj(U)[:])                                                                                                    
-  [-41.56747902  41.56747902]
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : STJ metric latitude
+    units          : degrees
+  >>> print(stj_metric_dataset.nh_metric_lat[:])                                                                  
+  [41.56747902]
   '''
 
   STJ_Dataset = metrics_dataset(dataset, metric='stj', **params)
@@ -630,6 +671,25 @@ def pyg_tpb(dataset,**params):
      Returns:
        TPB_metrics: :class:Var` with axis :class:`ǸamedAxis` Metric (SH latitudes, NH latitudes)
 
+  Examples
+  --------
+  >>> import pygeode as pyg
+  >>> from pygeode.tutorial import t2 
+  >>> T = t2.Temp(i_time=0).mean(pyg.Lon).squeeze() 
+  >>> tpb_metric_dataset = pyt.pyg_tpb(T)  #Calculate TBP metric
+  Found Latitude axis in the dataset
+  Found Pressure axis in the dataset
+  Using Temp in the dataset as the Temperature
+  >>> print(tpb_metric_dataset)                                                                                   
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : TPB metric latitude
+    units          : degrees
   '''
 
   TPB_Dataset = metrics_dataset(dataset, metric='tpb', **params)
@@ -671,37 +731,25 @@ def pyg_uas(dataset,**params):
     Attributes:
       {}
     Type:  Mul_Var (dtype="float64")
-  >>> print(pyg_uas(U_data))                                                                                                  
-  <Var 'UAS_metrics'>:
-    Shape:  (Metrics)  (2)
-    Axes:
-      Metrics <NamedAxis 'Metrics'>:  0  to 1  (2 values)
-    Attributes:
-      {}
-    Type:  Replace_axes (dtype="float64")
-  >>> print(pyg_uas(U_data)[:])                                                                                               
-  [-45.  45.]
+  >>> uas_metric_dataset = pyt.pyg_uas(U_data) #Calculate UAS metric
+  Found Latitude axis in the dataset
+  Found Pressure axis in the dataset
+  Using (-cosd(lat)*cos(pres)) in the dataset as the Surface wind
+  >>> print(uas_metric_dataset)                                                                                   
+  <Dataset>:
+  Vars:
+    sh_metric_lat (value)  (1)
+    nh_metric_lat (value)  (1)
+  Axes:
+    value <NamedAxis 'value'>:  0 
+  Global Attributes:
+    long_name      : UAS metric latitude
+    units          : degrees
+  >>> print(uas_metric_dataset.nh_metric_lat[:])                                                                  
+  [45.]
   '''
 
   UAS_Dataset = metrics_dataset(dataset, metric='uas', **params)
 
   return UAS_Dataset
-
-def pyg_gwl(dataset, **params):
-
-  '''     
-  '''     
-
-  GWL_Dataset = metrics_dataset(dataset, metric='gwl', **params)
-
-  return GWL_Dataset
-
-def pyg_onesigma(dataset, **params):
-
-  '''     
-  '''     
-
-  OneSigma_Dataset = metrics_dataset(dataset, metric='onesigma', **params)
-
-  return OneSigma_Dataset
 
