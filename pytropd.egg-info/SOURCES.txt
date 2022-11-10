@@ -1,3 +1,4 @@
+LICENSE
 MANIFEST.in
 README.md
 setup.cfg
@@ -40,7 +41,6 @@ pytropd/metrics_new.py
 pytropd/pygeode_metrics.py
 pytropd/pygtest.py
 pytropd/test.py
-pytropd/test_stats.py
 pytropd/tutorial.py
 pytropd/xarray_metrics.py
 pytropd/xrtest.py

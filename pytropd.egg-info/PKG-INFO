@@ -1,9 +1,9 @@
 Metadata-Version: 1.2
 Name: pytropd
-Version: 2.0
+Version: 2.0a0
 Summary: Calculation of metrics of tropical width
 Home-page: https://tropd.github.io/pytropd/index.html
-Author: Alison Ming, Paul William Staten
+Author: Alison Ming, Paul William Staten, Samuel Smith
 Author-email: admg26@gmail.com
 License: GPL-3
 Description: [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -19,4 +19,4 @@ Classifier: Programming Language :: Python :: 3
 Requires: numpy
 Requires: matplotlib
 Requires: scipy
-Requires-Python: >=3.6
+Requires-Python: >=3.8
