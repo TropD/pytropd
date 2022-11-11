@@ -5,3 +5,5 @@ PyTropD is a software package designed to calculate various metrics of tropical 
 https://tropd.github.io/pytropd/reference.html
 
 The python 3 version requires numpy vn1.19.0 or later
+
+pytropd xarray tutorial: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sjsmith757/pytropd/wrappers?labpath=pytropd%2Fxr_tutorial.ipynb)
