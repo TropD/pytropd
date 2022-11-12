@@ -20,5 +20,8 @@ dependencies:
         - jupyterlab
         - pooch
         - dask
+        - pip
+        - pip:
+            - -e .
 
 # do conda env create -f tropd.yml or conda env update -f tropd.yml""
