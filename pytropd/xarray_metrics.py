@@ -1,4 +1,4 @@
-from typing import Dict, List, Sequence, Any
+from typing import Dict, List, Sequence, Any, Tuple, Union
 import xarray as xr
 import pytropd as pyt
 import numpy as np
@@ -39,60 +39,61 @@ class MetricAccessor:
         method_used: str = self.params.get(
             "method", signature(metric_function).parameters["method"].default
         )
+        func_returns_vals = (self.metric_name in ["edj", "stj"]) and (
+            method_used == "fit"
+        )
+        input_core_dims = [[self.lat_name]]
+        # validate_data ensures self.pres_name is only defined if the metric
+        # should accept it as an arg or kwarg
+        if self.pres_name:
+            input_core_dims[0].append(self.pres_name)
+        has_nhem = (self.latitudes > 20.0).any()
+        has_shem = (self.latitudes < -20.0).any()
+        nhems = int(has_nhem) + int(has_shem)
+        if nhems == 0:
+            raise ValueError("not enough latitudes were provided")
+        nreturns = 2 * nhems if func_returns_vals else nhems
 
         # we need to ensure Z is aligned properly with T when doing TropD_Metric_TPB and
         # method="cutoff"
+        metric_output: Union[xr.DataArray, Tuple[xr.DataArray, ...]]
         if (self.metric_name == "tpb") and ("Z" in self.params):
-            metric_latSH, metric_latNH = xr.apply_ufunc(
-                lambda data, z: metric_function(
-                    data, lat=self.latitudes, Z=z, **self.params
-                ),
-                self.xarray_data,
-                self.params.pop("Z"),
-                # validate_data ensures self.pres_name is only defined if the metric
-                # should accept it as an arg or kwarg
-                input_core_dims=[
-                    [self.lat_name, self.pres_name],
-                    [self.lat_name, self.pres_name],
-                ],
-                output_core_dims=[[], []],
-                # we might want to warn users when using dask as some pytropd functions
-                # still iterate over arrays under the hood, which is very slow with dask
-                dask="allowed",
-            )
-        elif method_used == "fit":
-            metric_latSH, metric_latNH, metric_maxSH, metric_maxNH = xr.apply_ufunc(
-                lambda data: metric_function(data, lat=self.latitudes, **self.params),
-                self.xarray_data,
-                # validate_data ensures self.pres_name is only defined if the metric
-                # should accept it as an arg or kwarg
-                input_core_dims=[
-                    [self.lat_name, self.pres_name]
-                    if self.pres_name
-                    else [self.lat_name]
-                ],
-                output_core_dims=[[], [], [], []],
-                # we might want to warn users when using dask as some pytropd functions
-                # still iterate over arrays under the hood, which is very slow with dask
-                dask="allowed",
-            )
+            Z = self.params.pop("Z")
+            try:
+                metric_output = xr.apply_ufunc(
+                    lambda data, Z, **kwargs: metric_function(data, Z=Z, **kwargs)[
+                        slice(None) if nreturns > 1 else 0
+                    ],
+                    self.xarray_data,
+                    Z,
+                    kwargs=self.params,
+                    input_core_dims=2 * input_core_dims,
+                    output_core_dims=nreturns * [[]],
+                    # we might want to warn users when using dask as some pytropd functions
+                    # still iterate over arrays under the hood, which is very slow with dask
+                    dask="allowed",
+                )
+            except Exception as e:
+                print(e)
+                breakpoint()
         else:
-            metric_latSH, metric_latNH = xr.apply_ufunc(
-                lambda data: metric_function(data, lat=self.latitudes, **self.params),
+            metric_output = xr.apply_ufunc(
+                metric_function
+                if nreturns != 1
+                else lambda data, **kwargs: metric_function(data, **kwargs)[0],
                 self.xarray_data,
-                # validate_data ensures self.pres_name is only defined if the metric
-                # should accept it as an arg or kwarg
-                input_core_dims=[
-                    [self.lat_name, self.pres_name]
-                    if self.pres_name
-                    else [self.lat_name]
-                ],
-                output_core_dims=[[], []],
+                kwargs=self.params,
+                input_core_dims=input_core_dims,
+                output_core_dims=nreturns * [[]],
                 # we might want to warn users when using dask as some pytropd functions
                 # still iterate over arrays under the hood, which is very slow with dask
                 dask="allowed",
             )
-        metric_lats = xr.concat([metric_latSH, metric_latNH], dim="hemsph")
+
+        if isinstance(metric_output, tuple):
+            metric_lats = xr.concat(metric_output[:nhems], dim="hemsph")
+        else:
+            metric_lats = metric_output.expand_dims("hemsph")
         # define coordinates, ensuring all added coords follow CF conventions
         hemsph_attrs = {"long_name": "hemisphere", "units": ""}
 
@@ -110,28 +111,32 @@ class MetricAccessor:
             "units": "",
             "description": method_desc,
         }
-        method_coord = xr.DataArray([method_used], name="method", attrs=method_attrs)
 
         # finally make the output variable CF compliant
         metric_lats.attrs = {
             "long_name": self.metric_name.upper() + " metric latitude",
             "unit": self._obj[self.lat_name].attrs.get("unit", "degrees"),
         }
-        metric_lats = metric_lats.assign_coords(
-            hemsph=("hemsph", ["SH", "NH"], hemsph_attrs)
-        ).expand_dims(method=method_coord)
+        hemsph = []
+        if has_shem:
+            hemsph.append("SH")
+        if has_nhem:
+            hemsph.append("NH")
+        metric_lats = metric_lats.expand_dims("method").assign_coords(
+            hemsph=("hemsph", hemsph, hemsph_attrs),
+            method=("method", [method_used], method_attrs),
+        )
 
         if method_used == "fit":
-            metric_maxs = xr.concat(  # type: ignore
-                [metric_maxSH, metric_maxNH], dim="hemsph"
-            )
+            metric_maxs = xr.concat(metric_output[nhems:], dim="hemsph")  # type: ignore
             metric_maxs.attrs = {
                 "long_name": self.metric_name.upper() + " metric max",
                 "unit": self._obj.attrs.get("unit", "m.s-1"),
             }
-            metric_maxs = metric_maxs.assign_coords(
-                hemsph=("hemsph", ["SH", "NH"], hemsph_attrs)
-            ).expand_dims(method=method_coord)
+            metric_maxs = metric_maxs.expand_dims("method").assign_coords(
+                hemsph=("hemsph", hemsph, hemsph_attrs),
+                method=("method", [method_used], method_attrs),
+            )
 
             return metric_lats, metric_maxs  # type: ignore
         else:
@@ -250,6 +255,7 @@ class MetricAccessor:
         self.lat_name = self.extract_property_name(property_name=["lat", "Latitude"])
         latitudes: np.ndarray = xarray_data[self.lat_name].values
         self.latitudes = latitudes
+        self.params["lat"] = latitudes
 
         try:
             self.pres_name = self.extract_property_name(
@@ -261,7 +267,8 @@ class MetricAccessor:
 
         # check for pressure if required or present for optional ones
         if self.require_pres_axis or (
-            self.metric_name in ["edj", "uas"] and self.pres_name
+            self.metric_name in ["edj", "uas"]
+            and (self.pres_name in self.xarray_data.dims)
         ):
             pressure: np.ndarray = xarray_data[self.pres_name].values
             self.params["lev"] = pressure
@@ -426,6 +433,7 @@ class MetricAccessor:
 
         self.metric_name = "olr"
         self.params = params
+        self.require_pres_axis = False
         return self.compute_metrics()
 
     def xr_pe(self, **params) -> xr.DataArray:
@@ -484,6 +492,7 @@ class MetricAccessor:
 
         self.metric_name = "pe"
         self.params = params
+        self.require_pres_axis = False
         return self.compute_metrics()
 
     def xr_psi(self, **params) -> xr.DataArray:
@@ -629,6 +638,7 @@ class MetricAccessor:
 
         self.metric_name = "psl"
         self.params = params
+        self.require_pres_axis = False
         return self.compute_metrics()
 
     def xr_stj(self, **params) -> xr.DataArray:

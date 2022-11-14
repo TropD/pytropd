@@ -76,7 +76,9 @@ T_data["time"] = date_range(start="1979-01-01", periods=T_data.sizes["time"], fr
 # yearly mean of data
 T_annual = T_data.resample(time="AS").mean()
 
-tpb_metrics = T_annual.pyt_metrics.xr_tpb()
+tpb_metrics_nh = T_annual.sortby("lat").sel(lat=slice(0, None)).pyt_metrics.xr_tpb()
+tpb_metrics_sh = T_annual.sortby("lat").sel(lat=slice(None, 0)).pyt_metrics.xr_tpb()
+tpb_metrics = xr.concat([tpb_metrics_nh, tpb_metrics_sh], "hemsph")
 
 validated_tpb_metrics = get_validated_metric("TPB_ANN")
 if np.allclose(*xr.align(tpb_metrics, validated_tpb_metrics, join="outer")):
@@ -102,7 +104,16 @@ for ssn in ["DJF", "MAM", "JJA", "SON"]:
     if np.allclose(*xr.align(psl_metrics, validated_psl_metrics, join="outer")):
         print(f"OK. {ssn} Validation and calculated PSL metrics are the same!")
     else:
-        print(f"Warning: {ssn} Validation and calculated PSL metrics are NOT equal!")
+        if ssn != "DJF":
+            print(
+                f"Warning: {ssn} Validation and calculated PSL metrics are NOT equal!"
+            )
+        else:
+            print(
+                f"Warning: {ssn} Validation and calculated PSL metrics are NOT equal!"
+                "\nHowever, this is expected because xarray computes seasonal averages "
+                "for DJF differently than TropD_Calculate_Mon2Season"
+            )
 
 
 # Eddy driven jet

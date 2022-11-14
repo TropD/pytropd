@@ -1,7 +1,7 @@
 # Written by Ori Adam Mar.21.2017
 # Edited by Alison Ming Jul.4.2017
 # rewrite for readability/vectorization - sjs 1.27.22
-from typing import Optional, Tuple, Callable
+from typing import Optional, Tuple, Callable, Union
 import warnings
 from functools import wraps
 from inspect import signature
@@ -22,7 +22,9 @@ from .functions import (
 KAPPA = 287.04 / 1005.7
 
 
-def hemisphere_handler(metric_func: Callable) -> Callable:
+def hemisphere_handler(
+    metric_func: Callable[..., Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]]
+) -> Callable:
     """
     Wrapper for metrics to allow one or two hemispheres of data to be passed
 
@@ -121,7 +123,10 @@ def hemisphere_handler(metric_func: Callable) -> Callable:
                     **kwargs,
                 )
             )
-            Phi_list[0] *= -1.0
+            if isinstance(Phi_list[0], tuple):
+                Phi_list[0][0] *= -1.0
+            else:
+                Phi_list[0] *= -1.0
         if (lat > 20.0).any():
             NHmask = lat > -0.5
             NHarr_mask = [Ellipsis, NHmask]
