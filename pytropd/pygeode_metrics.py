@@ -577,7 +577,7 @@ def pyg_psi(dataset: pyg.Dataset,**params) -> pyg.Dataset:
 
   return PSI_Dataset
 
-def pyg_psl(dataseut: pyg.Dataset,**params) -> pyg.Dataset:
+def pyg_psl(dataset: pyg.Dataset,**params) -> pyg.Dataset:
 
   ''' TropD Sea-level pressure (PSL) metric
 	  Latitude of maximum of the subtropical sea-level pressure
