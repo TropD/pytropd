@@ -1,6 +1,6 @@
 Metadata-Version: 1.2
 Name: pytropd
-Version: 2.0a0
+Version: 2.1
 Summary: Calculation of metrics of tropical width
 Home-page: https://tropd.github.io/pytropd/index.html
 Author: Alison Ming, Paul William Staten, Samuel Smith
@@ -13,6 +13,8 @@ Description: [![Code style: black](https://img.shields.io/badge/code%20style-bla
         https://tropd.github.io/pytropd/reference.html
         
         The python 3 version requires numpy vn1.19.0 or later
+        
+        pytropd xarray tutorial: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tropd/pytropd?labpath=pytropd%2Fxr_tutorial.ipynb)
         
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3

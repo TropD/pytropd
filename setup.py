@@ -10,7 +10,7 @@ with open(path.join(this_directory, "README.md")) as f:
 
 setup(
     name="pytropd",
-    version="2.0a",
+    version="2.02",
     description="Calculation of metrics of tropical width",
     long_description=long_description,
     license="GPL-3",
@@ -19,7 +19,7 @@ setup(
     url="https://tropd.github.io/pytropd/index.html",
     requires=["numpy", "matplotlib", "scipy"],
     install_requires=["numpy>=1.19", "scipy>=1.5"],
-    python_requires=">=3.8",
+    python_requires=">=3.6",
     packages=find_packages(),
     include_package_data=True,
     classifiers=["Programming Language :: Python :: 3"],
