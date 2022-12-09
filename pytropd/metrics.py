@@ -205,7 +205,7 @@ def TropD_Metric_EDJ(
     Phi : numpy.ndarray (dim1, ..., dimN-2[, dimN-1])
         N-2(N-1) dimensional latitudes of the EDJ
     Umax : numpy.ndarray (dim1, ..., dimN-2), conditional
-        N-2 dimensional STJ strength, returned if ``method="fit"``
+        N-2 dimensional EDJ strength, returned if ``method="fit"``
 
     """
 
