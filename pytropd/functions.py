@@ -461,13 +461,17 @@ def TropD_Calculate_ZeroCrossing(
                 continue
 
         # first sign change
-        a1 = a[0]
-        # if there is an exact zero, use its latitude...
-        if np.abs(Di[a1]) == 1:
-            ZC[iband] = lat[a1 + 1]
-        else:  # np.abs(D[a1]) == 2 (directly from + to - or - to +)
-            ZC[iband] = (
-                -Fi[a1] * (lat[a1 + 1] - lat[a1]) / (Fi[a1 + 1] - Fi[a1]) + lat[a1]
-            )
+        if np.size(a) !=0:
+            a1 = a[0]
+
+            # if there is an exact zero, use its latitude...
+            if np.abs(Di[a1]) == 1:
+                ZC[iband] = lat[a1 + 1]
+            else:  # np.abs(D[a1]) == 2 (directly from + to - or - to +)
+                ZC[iband] = (
+                    -Fi[a1] * (lat[a1 + 1] - lat[a1]) / (Fi[a1 + 1] - Fi[a1]) + lat[a1]
+                )
+        else:
+            ZC[iband]=np.NaN
 
     return ZC

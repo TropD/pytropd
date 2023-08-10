@@ -142,8 +142,10 @@ def metric_var(
   # Construct new variable
   if hem == 'nh':
     name = metric.upper() + '_nh_latitude'
+    name_value = metric.upper() + '_nh_value'
   else: 
     name = metric.upper() + '_sh_latitude'
+    name_value = metric.upper() + '_sh_value'
 
   oview = View(oaxes) 
 
@@ -176,6 +178,15 @@ def metric_var(
 	         }
     metric_lat = Var(oaxes, values=metric_lat, name=hem + '_metric_lat', atts=lat_attrs)
     var_list_out.append(metric_lat)
+  
+  if method_used == 'fit':
+    value_attrs = {"long_name": metric.upper() + " metric value",
+          	 "unit": "m/s",
+	  	 "method_used:": method_used,
+	         }
+    metric_value = Var(oaxes, values=metric_value, name=hem + '_metric_value', atts=value_attrs)
+    var_list_out.append(metric_value)
+
 
   pbar.update(100)
   return var_list_out

@@ -124,7 +124,10 @@ def hemisphere_handler(
                 )
             )
             if isinstance(Phi_list[0], tuple):
-                Phi_list[0][0] *= -1.0
+                Phi_list_temp = list(Phi_list[0])
+                #Phi_list[0][0] *= -1.0
+                Phi_list_temp[0] *= -1.0
+                Phi_list[0] = tuple(Phi_list_temp)
             else:
                 Phi_list[0] *= -1.0
         if (lat > 20.0).any():
@@ -697,6 +700,7 @@ def TropD_Metric_STJ(
     n_fit: int = 1,
     **maxlat_kwargs,
 ) -> np.ndarray:
+    #TODO: Amend fit to adjusted_fit for consistency. Deprecate and add warning
     """
     TropD Subtropical Jet (STJ) Metric
 

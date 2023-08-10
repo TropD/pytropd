@@ -32,15 +32,12 @@ ValidationMetrics/TPB.nc
 ValidationMetrics/TPB_ANN.nc
 ValidationMetrics/UAS.nc
 ValidationMetrics/UAS_ANN.nc
-pytropd/TropD_Calculate_EqPeaks.py
 pytropd/TropD_Example_Calculations.py
 pytropd/__init__.py
 pytropd/functions.py
 pytropd/metrics.py
-pytropd/metrics_new.py
 pytropd/pygeode_metrics.py
 pytropd/pygtest.py
-pytropd/test.py
 pytropd/tutorial.py
 pytropd/xarray_metrics.py
 pytropd/xrtest.py
