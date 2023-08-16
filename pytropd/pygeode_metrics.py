@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import interpolate
-import pytropd as pyt
+#import pytropd as pyt
+import metrics as pyt
 
 import pygeode as pyg
 from pygeode.var import Var
@@ -20,6 +21,7 @@ def metrics_dataset(
   ) -> pyg.Dataset:
 
   """Return a dataset of the metrics"""
+  output_list = []
 
   metric_property_name = dict(edj=['u', 'Zonal wind'],
 			  olr=['olr','Outgoing longwave radiation'],
@@ -51,31 +53,36 @@ def metrics_dataset(
   # If none found, raise error.
   var, _ = extract_property(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
 
+  
   #nh hemisphere
   nh_data = chop_by_hemisphere(var,hem='nh')
-  nh_var = metric_var(nh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
-  
+  if nh_data != None: 
+    nh_var = metric_var(nh_data, p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
+    output_list.extend(nh_var)
+
   #sh hemisphere
   sh_data = chop_by_hemisphere(var, hem='sh')
-  sh_var = metric_var(sh_data, output='lat', p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
+  if sh_data != None: 
+    sh_var = metric_var(sh_data, p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
+    output_list.extend(sh_var)
  
   global_attrs = {
 		  "long_name": metric.upper() + " metric latitude",
 		  "units": "degrees",
 		  }
 
-  return pyg.Dataset(sh_var + nh_var, atts=global_attrs)
+  return pyg.Dataset(output_list, atts=global_attrs)
 
 
 def metric_var(
   X: pyg.Var,
-  output: str ='lat',  axis: Optional[int] = None,
+  axis: Optional[int] = None,
   p_axis_status: Optional[int] = None, 
   metric: str = None, 
   hem: str = 'nh', 
   pbar: Optional[int] = None,
   **params
-  ) ->  pyg.Var:
+  ) ->  list[pyg.Var]:
 
   '''Compute the metrics'''
   # Get the relevant metric function
@@ -85,10 +92,6 @@ def metric_var(
   method_used: str = params.get(
 	   "method", signature(metric_function).parameters["method"].default)
   
-  ovars = ['lat','values']
-  output = [o for o in output.split(',') if o in ovars]
-  if len(output) < 1: raise ValueError('No valid outputs are requested from metric calculation. Possible outputs are %s.' % str(ovars))
-
   xn = X.name if X.name != '' else 'X' # Note: could write:  xn = X.name or 'X'
 
   #Re-order axes so that Lat and pres are at the end
@@ -155,8 +158,15 @@ def metric_var(
 
   outview = View(oaxes)
 
+  # Decide what output has been requested
+  # Do we need the value of the metric?
+  metric_value_bool =  params.get('metric_value', False)
+  # Do we need the vertical position of the metric? STJ only at the moment
+  vertical_position_bool =  params.get('vertical_position', False)
+
   # Construct work arrays
   metric_lat= np.full(oview.shape, np.nan, 'd')
+  metric_pres= np.full(oview.shape, np.nan, 'd')
   metric_value = np.full(oview.shape, np.nan, 'd')
 
   
@@ -164,30 +174,42 @@ def metric_var(
   for outsl, (xdata,) in loopover([X], oview, inaxes, pbar=pbar):
     xdata = xdata.astype('d')
     
-    if method_used =='fit':
-      metric_lat[outsl], metric_value[outsl] = metric_function(xdata, lat_values, **params)
-    else:
-      metric_lat[outsl] = np.squeeze(np.array(metric_function(xdata, lat_values, **params)))
+    ##Vertical position of the metric is needed
+    #if params['vertical_position']:
+    #  metric_lat[outsl], metric_pres[outsl], metric_value[outsl] = metric_function(xdata, lat_values, **params)
+    #else:
+    #  metric_lat[outsl], metric_value[outsl] = np.squeeze(np.array(metric_function(xdata, lat_values, **params)))
+    metric_function_output = metric_function(xdata, lat_values, **params)
+    metric_lat[outsl] = metric_function_output['phi' + hem.upper()]
+    if vertical_position_bool: metric_pres[outsl] = metric_function_output['vertical_position' + hem.upper()]
+    if metric_value_bool: metric_value[outsl] = metric_function_output['metric_value' + hem.upper()]
+
 
   var_list_out = []
 
-  if 'lat' in output:
-    lat_attrs = {"long_name": metric.upper() + " metric latitude",
-          	 "unit": "degrees",
-	  	 "method_used:": method_used,
-	         }
-    metric_lat = Var(oaxes, values=metric_lat, name=hem + '_metric_lat', atts=lat_attrs)
-    var_list_out.append(metric_lat)
-  
-  if method_used == 'fit':
+  lat_attrs = {"long_name": metric.upper() + " metric latitude",
+        	 "unit": "degrees",
+        	 "method_used:": method_used,
+               }
+  metric_lat = Var(oaxes, values=metric_lat, name=hem + '_metric_lat', atts=lat_attrs)
+  var_list_out.append(metric_lat)
+
+  if metric_value_bool: 
     value_attrs = {"long_name": metric.upper() + " metric value",
           	 "unit": "m/s",
-	  	 "method_used:": method_used,
-	         }
+          	 "method_used:": method_used,
+                 }
     metric_value = Var(oaxes, values=metric_value, name=hem + '_metric_value', atts=value_attrs)
     var_list_out.append(metric_value)
-
-
+  
+  if vertical_position_bool:
+    pres_attrs = {"long_name": metric.upper() + " metric pressure",
+          	 "unit": "hPa",
+	  	 "method_used:": method_used,
+	         }
+    metric_pres = Var(oaxes, values=metric_pres, name=hem + '_metric_pres', atts=pres_attrs)
+    var_list_out.append(metric_pres)
+  
   pbar.update(100)
   return var_list_out
 

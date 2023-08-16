@@ -1,6 +1,9 @@
 from typing import Dict, List, Sequence, Any, Tuple, Union
 import xarray as xr
-import pytropd as pyt
+
+#import pytropd as pyt
+import metrics as pyt
+
 import numpy as np
 import logging
 from inspect import signature
@@ -56,7 +59,7 @@ class MetricAccessor:
 
         # we need to ensure Z is aligned properly with T when doing TropD_Metric_TPB and
         # method="cutoff"
-        metric_output: Union[xr.DataArray, Tuple[xr.DataArray, ...]]
+        #metric_output: Union[xr.DataArray, Tuple[xr.DataArray, ...]]
         if (self.metric_name == "tpb") and ("Z" in self.params):
             Z = self.params.pop("Z")
             try:

@@ -66,7 +66,10 @@ def find_nearest(
 
 # Converted to python by Paul Staten Jul.29.2017
 def TropD_Calculate_MaxLat(
-    F: np.ndarray, lat: np.ndarray, n: int = 6, axis: int = -1
+    F: np.ndarray, 
+    lat: np.ndarray, 
+    n: int = 6, 
+    axis: int = -1
 ) -> np.ndarray:
     """
     Find latitude of absolute maximum value for a given interval
@@ -170,6 +173,121 @@ def TropD_Calculate_MaxLat(
 
     return Ymax
 
+def TropD_Calculate_MaxPres(
+    F: np.ndarray, 
+    pres: np.ndarray, 
+    n: int = 6, 
+    axis: int = -1
+) -> np.ndarray:
+    """
+    Find pressure of absolute maximum value for a given interval
+
+    *Note*: assumes a smoothly varying function
+
+    Parameters
+    ----------
+    F : numpy.ndarray (dim1, ..., dimN-1, pres)
+        N-dimensional array w/ pres as specified axis (default last), data assumed
+        contingous with invalid data only on ends. interior nans are untested and will
+        prompt warning
+    pres : numpy.ndarray
+        pressure array
+    n : int, optional
+        rank of moment used to calculate the position of max value.
+            n = 1,2,4,6,8,... , by default 6
+    axis : int, optional
+        axis corresponding to pressure, by default -1
+
+    Returns
+    -------
+    numpy.ndarray (dim1, ..., dimN-1)
+        N-1 dimensional array of presure(s) of max values of F
+    """
+
+    # type casting
+    F = np.asarray(F).copy()
+    pres = np.asarray(pres)
+    n = int(n)
+    axis = int(axis)
+
+    # input checking
+    if n < 1:
+        raise ValueError("The smoothing parameter n must be >= 1")
+    if not np.isfinite(F).any():
+        raise ValueError(
+            "input field F has only NaN/inf values," " max pres cannot be computed"
+        )
+    if not F.shape[axis] == pres.size:
+        raise ValueError(
+            f"input field pres axis of size {F.shape[axis]} not "
+            f"aligned with pres coordinates of size {pres.size}"
+        )
+
+    # ensure pres axis is last
+    axes_list = list(range(F.ndim))
+    axes_list[axis], axes_list[-1] = axes_list[-1], axes_list[axis]
+    F = F.transpose(axes_list)
+
+    # map F to [0,1]
+    F -= np.nanmin(F, axis=-1)[..., None]
+    F /= np.nanmax(F, axis=-1)[..., None]
+
+    # Do integrations in log(pressure) coordinates. 
+    p_surface = 1013
+    z = -np.log(pres/p_surface)
+
+    # in order for this function to handle "jagged" arrays (such as time
+    # -varying domains, e.g. domains poleward/equatorward of another
+    # circulation feature), it will receive all data on the same grid,
+    # but with masked data outside the region of interest.
+    # However, simply filling with zeros produces extra boundary values
+    # in the integration, so we need to correct for this
+    if not np.isfinite(F).all():
+        F_filled = np.where(np.isfinite(F), F, 0.0)
+        # find edges of nan regions
+        nanbounds = np.diff(np.isfinite(F), axis=-1)
+        # ensure we only have one contiguous region
+        extra_nans_check = (nanbounds.sum(axis=-1) > 2.0).any()
+        interior_nans_check = (np.isfinite(F)[..., 0] & np.isfinite(F)[..., -1]).any()
+        if extra_nans_check or interior_nans_check:
+            warnings.warn(
+                "detected NaN/inf data located between valid data, "
+                "this may not be handled correctly",
+                stacklevel=2,
+                category=RuntimeWarning,
+            )
+
+        # now construct arrays which are zero everywhere except on the
+        # boundaries of nan regions. We can integrate these to correct for the
+        # extra data added by trapz at boundaries
+        pad = np.zeros_like(F[..., 0])[..., None]
+        rbounds = np.where(nanbounds & np.isfinite(F[..., 1:]), F[..., 1:], 0.0)
+        lbounds = np.where(nanbounds & np.isfinite(F[..., :-1]), F[..., :-1], 0.0)
+        bounds = np.concatenate([pad, rbounds], axis=-1) + np.concatenate(
+            [lbounds, pad], axis=-1
+        )
+        # now integrate and remove the extra boundary values added by trapz
+        nom = (
+            np.trapz(F_filled**n * z, z, axis=-1)
+            - np.trapz(bounds**n * z, z, axis=-1) / 2.0
+        )
+        denom = (
+            np.trapz(F_filled**n, z, axis=-1)
+            - np.trapz(bounds**n, z, axis=-1) / 2.0
+        )
+        # weighted integral to account for discrete grid
+        Zmax = nom / denom
+
+    # if the grid is normal, just go ahead and integrate
+    else:
+        # weighted integral to account for discrete grid
+        Zmax = np.trapz((F**n) * z, z, axis=-1) / np.trapz(F**n, z, axis=-1)
+    
+    #Find pressure level of maximum wind at each latitude
+    p_max = np.exp(-Zmax)*p_surface
+
+
+    return p_max
 
 def TropD_Calculate_Mon2Season(
     Fm: np.ndarray,
