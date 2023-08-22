@@ -25,10 +25,10 @@ from .metrics import (
     TropD_Metric_STJ,
     TropD_Metric_TPB,
     TropD_Metric_UAS,
-    TropD_Metric_CL,
-    TropD_Metric_TAL,
-    TropD_Metric_GWL,
-    TropD_Metric_ONESIGMA,
+    TropD_Metric_Strat_CL,
+    TropD_Metric_Strat_TAL,
+    TropD_Metric_Strat_GWL,
+    TropD_Metric_Strat_ONESIGMA,
 )
 from .functions import (
     TropD_Calculate_MaxLat,

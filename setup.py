@@ -10,7 +10,7 @@ with open(path.join(this_directory, "README.md")) as f:
 
 setup(
     name="pytropd",
-    version="3.12",
+    version="3.15",
     description="Calculation of metrics of tropical width",
     long_description=long_description,
     license="GPL-3",

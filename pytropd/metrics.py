@@ -19,7 +19,12 @@ from .functions import (
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
 )
-import .stratospheric_metrics as strat_metrics
+from .stratospheric_metrics import (
+    TropD_Metric_CL,
+    TropD_Metric_TAL,
+    TropD_Metric_GWL,
+    TropD_Metric_ONESIGMA,
+)
 
 # kappa = R_dry / Cp_dry
 KAPPA = 287.04 / 1005.7
@@ -1163,7 +1168,7 @@ def TropD_Metric_Strat_TAL(
     method: str = "default",
     **kwargs
 ) -> dict[str,np.ndarray]:
-    return strat_metrics.TropD_Metric_Strat_TAL(upwelling, lat, **kwargs)
+    return TropD_Metric_TAL(upwelling, lat, **kwargs)
   
 @hemisphere_handler
 def TropD_Metric_Strat_CL(
@@ -1172,7 +1177,7 @@ def TropD_Metric_Strat_CL(
     method: str = "extratropics",
     **kwargs
 ) -> dict[str,np.ndarray]:
-    return strat_metrics.TropD_Metric_Strat_CL(U, lat, method=method, **kwargs)
+    return TropD_Metric_CL(U, lat, method=method, **kwargs)
 
 @hemisphere_handler
 def TropD_Metric_Strat_GWL(
@@ -1182,7 +1187,7 @@ def TropD_Metric_Strat_GWL(
     method: str = "default",
     **kwargs
 ) -> dict[str,np.ndarray]:
-    return strat_metrics.TropD_Metric_Strat_GWL(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
+    return TropD_Metric_GWL(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
 
 @hemisphere_handler
 def TropD_Metric_Strat_ONESIGMA(
@@ -1192,7 +1197,7 @@ def TropD_Metric_Strat_ONESIGMA(
     method: str = "default",
     **kwargs
 ) -> dict[str,np.ndarray]:
-    return strat_metrics.TropD_Metric_Strat_1SIGMA(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
+    return TropD_Metric_ONESIGMA(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
   
 
 
