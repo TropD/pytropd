@@ -38,6 +38,7 @@ pytropd/functions.py
 pytropd/metrics.py
 pytropd/pygeode_metrics.py
 pytropd/pygtest.py
+pytropd/stratospheric_metrics.py
 pytropd/tutorial.py
 pytropd/xarray_metrics.py
 pytropd/xrtest.py

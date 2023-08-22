@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import interpolate
-#import pytropd as pyt
-import metrics as pyt
+import pytropd as pyt
+#import metrics as pyt
 
 import pygeode as pyg
 from pygeode.var import Var
