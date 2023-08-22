@@ -42,9 +42,17 @@ class MetricAccessor:
         method_used: str = self.params.get(
             "method", signature(metric_function).parameters["method"].default
         )
-        func_returns_vals = (self.metric_name in ["edj", "stj"]) and (
-            method_used == "fit"
-        )
+        
+        nreturns = 1
+        metric_value_bool = self.params.get('metric_value', False)
+        vertical_position_bool =  self.params.get('vertical_position', False)
+        if metric_value_bool: nreturns +=1
+        if vertical_position_bool: nreturns +=1
+
+        # we need to tell the metric functions that we will be returning to xarray
+        # because apply_ufunc only seems to want tuples
+        self.params['xarray_bool'] = True
+
         input_core_dims = [[self.lat_name]]
         # validate_data ensures self.pres_name is only defined if the metric
         # should accept it as an arg or kwarg
@@ -55,23 +63,23 @@ class MetricAccessor:
         nhems = int(has_nhem) + int(has_shem)
         if nhems == 0:
             raise ValueError("not enough latitudes were provided")
-        nreturns = 2 * nhems if func_returns_vals else nhems
+        nreturns_withhems = nreturns * nhems 
 
         # we need to ensure Z is aligned properly with T when doing TropD_Metric_TPB and
         # method="cutoff"
-        #metric_output: Union[xr.DataArray, Tuple[xr.DataArray, ...]]
+        metric_output: Union[xr.DataArray, Tuple[xr.DataArray, ...]]
         if (self.metric_name == "tpb") and ("Z" in self.params):
             Z = self.params.pop("Z")
             try:
                 metric_output = xr.apply_ufunc(
                     lambda data, Z, **kwargs: metric_function(data, Z=Z, **kwargs)[
-                        slice(None) if nreturns > 1 else 0
+                        slice(None) if nreturns_withhems > 1 else 0
                     ],
                     self.xarray_data,
                     Z,
                     kwargs=self.params,
                     input_core_dims=2 * input_core_dims,
-                    output_core_dims=nreturns * [[]],
+                    output_core_dims=nreturns_withhems * [[]],
                     # we might want to warn users when using dask as some pytropd functions
                     # still iterate over arrays under the hood, which is very slow with dask
                     dask="allowed",
@@ -82,12 +90,12 @@ class MetricAccessor:
         else:
             metric_output = xr.apply_ufunc(
                 metric_function
-                if nreturns != 1
+                if nreturns_withhems != 1
                 else lambda data, **kwargs: metric_function(data, **kwargs)[0],
                 self.xarray_data,
                 kwargs=self.params,
                 input_core_dims=input_core_dims,
-                output_core_dims=nreturns * [[]],
+                output_core_dims=nreturns_withhems * [[]],
                 # we might want to warn users when using dask as some pytropd functions
                 # still iterate over arrays under the hood, which is very slow with dask
                 dask="allowed",
@@ -125,25 +133,39 @@ class MetricAccessor:
             hemsph.append("SH")
         if has_nhem:
             hemsph.append("NH")
+
         metric_lats = metric_lats.expand_dims("method").assign_coords(
             hemsph=("hemsph", hemsph, hemsph_attrs),
             method=("method", [method_used], method_attrs),
-        )
+        ) 
 
-        if method_used == "fit":
-            metric_maxs = xr.concat(metric_output[nhems:], dim="hemsph")  # type: ignore
+        metric_outputs = [metric_lats,]
+        if metric_value_bool:
+            metric_maxs = xr.concat(metric_output[nhems:nhems*2], dim="hemsph")  # type: ignore
             metric_maxs.attrs = {
-                "long_name": self.metric_name.upper() + " metric max",
+                "long_name": self.metric_name.upper() + " metric value",
                 "unit": self._obj.attrs.get("unit", "m.s-1"),
             }
             metric_maxs = metric_maxs.expand_dims("method").assign_coords(
                 hemsph=("hemsph", hemsph, hemsph_attrs),
                 method=("method", [method_used], method_attrs),
             )
+            metric_outputs.append(metric_maxs)
 
-            return metric_lats, metric_maxs  # type: ignore
-        else:
-            return metric_lats
+        if vertical_position_bool:
+            metric_pres = xr.concat(metric_output[nhems*(nreturns-1):], dim="hemsph")  # type: ignore
+            metric_pres.attrs = {
+                "long_name": self.metric_name.upper() + " metric pressure",
+                "unit": self._obj.attrs.get("unit", "hPa"),
+            }
+            metric_pres = metric_pres.expand_dims("method").assign_coords(
+                hemsph=("hemsph", hemsph, hemsph_attrs),
+                method=("method", [method_used], method_attrs),
+            )
+            metric_outputs.append(metric_pres)
+
+        
+        return tuple(metric_outputs)
 
     def extract_property_name(self, property_name: List[str]) -> str:
         """

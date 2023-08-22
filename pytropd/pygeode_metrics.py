@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Tuple
 def metrics_dataset(
   dataset: pyg.Dataset, 
   metric: str, 
+  strat_bool: bool=False,
   **params
   ) -> pyg.Dataset:
 
@@ -32,6 +33,8 @@ def metrics_dataset(
 			  tpb=['T','Temperature'],
 			  uas=['uas','Surface wind'],
 			  gwl=['tracer','Tracer'],
+			  cl=['u','Zonal wind'],
+			  tal=['resw','Residual vertical velocity'],
 			  )
 
   p_axis_status = pressure_axis_status(metric)
@@ -57,13 +60,13 @@ def metrics_dataset(
   #nh hemisphere
   nh_data = chop_by_hemisphere(var,hem='nh')
   if nh_data != None: 
-    nh_var = metric_var(nh_data, p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
+    nh_var = metric_var(nh_data, strat_bool=strat_bool, p_axis_status=p_axis_status, metric=metric, hem='nh', **params)
     output_list.extend(nh_var)
 
   #sh hemisphere
   sh_data = chop_by_hemisphere(var, hem='sh')
   if sh_data != None: 
-    sh_var = metric_var(sh_data, p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
+    sh_var = metric_var(sh_data, strat_bool=strat_bool, p_axis_status=p_axis_status, metric=metric, hem='sh', **params)
     output_list.extend(sh_var)
  
   global_attrs = {
@@ -80,13 +83,17 @@ def metric_var(
   p_axis_status: Optional[int] = None, 
   metric: str = None, 
   hem: str = 'nh', 
+  strat_bool: bool=False,
   pbar: Optional[int] = None,
   **params
   ) ->  list[pyg.Var]:
 
   '''Compute the metrics'''
   # Get the relevant metric function
-  metric_function = getattr(pyt, 'TropD_Metric_' + metric.upper()) 
+  if strat_bool:
+      metric_function = getattr(pyt, 'TropD_Metric_Strat_' + metric.upper()) 
+  else:
+      metric_function = getattr(pyt, 'TropD_Metric_' + metric.upper()) 
 
   # if method not provided, get default method of metric_function
   method_used: str = params.get(
@@ -226,7 +233,7 @@ def pressure_axis_status(metric: str) -> int:
     return 1
   
   #metrics that can take a 2D variable as input but do not collapse pressure axis
-  elif metric in ['gwl', 'onesigma']:
+  elif metric in ['gwl', 'onesigma', 'cl', 'tal']:
     return 2
 
 def extract_property(
@@ -825,3 +832,26 @@ def pyg_uas(dataset: pyg.Dataset,**params) -> pyg.Dataset:
 
   return UAS_Dataset
 
+def pyg_onesigma(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  OneSigma_Dataset = metrics_dataset(dataset, metric='onesigma', strat_bool=True, **params)
+
+  return OneSigma_Dataset
+
+def pyg_gwl(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  GWL_Dataset = metrics_dataset(dataset, metric='gwl', strat_bool=True, **params)
+
+  return GWL_Dataset
+
+def pyg_tal(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  TAL_Dataset = metrics_dataset(dataset, metric='tal', strat_bool=True, **params)
+
+  return TAL_Dataset
+
+def pyg_cl(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  CL_Dataset = metrics_dataset(dataset, metric='cl', strat_bool=True, **params)
+
+  return CL_Dataset

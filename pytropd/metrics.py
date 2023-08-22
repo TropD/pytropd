@@ -18,6 +18,7 @@ from functions import (
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
 )
+import stratospheric_metrics as strat_metrics
 
 # kappa = R_dry / Cp_dry
 KAPPA = 287.04 / 1005.7
@@ -80,7 +81,8 @@ def hemisphere_handler(
             and `method="fit"`)
         """
         #We need to package things up as a tuple rather than a dict for xarray to be happy
-        returning_to_xarray_bool = kwargs.get('xarray_bool',False)
+        returning_to_xarray_bool = kwargs.pop('xarray_bool',False)
+        list_for_xarray = []
 
         kwargs.pop("hem", None)
         metric_value_bool = kwargs.get('metric_value', False)
@@ -156,7 +158,18 @@ def hemisphere_handler(
             if vertical_position_bool:
                 output_dict['vertical_positionNH'] = metric_func_output['vertical_position'] 
 
-        return output_dict
+        if returning_to_xarray_bool:
+           list_for_xarray.append(output_dict['phiSH'])
+           list_for_xarray.append(output_dict['phiNH'])
+           if metric_value_bool:
+               list_for_xarray.append(output_dict['metric_valueSH'])
+               list_for_xarray.append(output_dict['metric_valueNH'])
+           if vertical_position_bool:
+               list_for_xarray.append(output_dict['vertical_positionSH'])
+               list_for_xarray.append(output_dict['vertical_positionNH'])
+           return tuple(list_for_xarray)
+        else:
+           return output_dict
 
     return wrapped_metric_func
 
@@ -1142,151 +1155,191 @@ def TropD_Metric_UAS(
     return dict(phi=Phi)
 
 
-# ========================================
-# Stratospheric metrics
-# Written by Kasturi Shah - August 3 2020
-# converted to python by Alison Ming 8 April 2021
-# vectorized and refactored by Sam Smith 19 May 22
-
+@hemisphere_handler
+def TropD_Metric_Strat_TAL(
+    upwelling: np.ndarray, 
+    lat: np.ndarray, 
+    method: str = "default",
+    **kwargs
+) -> dict[str,np.ndarray]:
+    return strat_metrics.TropD_Metric_Strat_TAL(upwelling, lat, **kwargs)
+  
+@hemisphere_handler
+def TropD_Metric_Strat_CL(
+    U: np.ndarray, 
+    lat: np.ndarray, 
+    method: str = "extratropics",
+    **kwargs
+) -> dict[str,np.ndarray]:
+    return strat_metrics.TropD_Metric_Strat_CL(U, lat, method=method, **kwargs)
 
 @hemisphere_handler
-def Shah_2020_GWL(
+def TropD_Metric_Strat_GWL(
     tracer: np.ndarray, 
     lat: np.ndarray, 
-    zonal_mean_tracer=False
+    zonal_mean_tracer=False,
+    method: str = "default",
+    **kwargs
 ) -> dict[str,np.ndarray]:
-    """
-    Computes the gradient-weighted latitude (GWL) from tracer data
-    Reference: Shah et al., JGR-A, 2020
-    https://doi.org/10.1029/2020JD033081
-
-    Parameters
-    ==========
-    tracer : numpy.ndarray (..., lat [, lon])
-        N-dimensional array of tracer data for computing gradient. If
-        ``zonal_mean_tracer=False``, the last dimension should correspond to the
-        longitude axis, otherwise it should be the latitude axis
-    latitude : numpy.ndarray (lat,)
-        latitude array in degrees
-    zonal_mean_tracer : bool, optional
-        whether the input tracer data is zonally symmetric (True) or zonally-varying
-        (False) (i.e., has a longitude dimension), by default False
-
-    Returns
-    =======
-    tracer_steep_lat: numpy.ndarray
-        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of GWL latitudes in the
-        SH
-    """
-
-    tracer = np.asarray(tracer)
-    lat = np.asarray(lat).flatten()
-    if not zonal_mean_tracer:
-        tracer = tracer.swapaxes(-2, -1)
-    if lat.size != tracer.shape[-1]:
-        raise ValueError(
-            "input array 'lat' should be aligned with "
-            f"{'' if zonal_mean_tracer else 'second to '}last axis of tracer"
-        )
-    if lat[0] > lat[1]:
-        lat = lat[::-1]
-        tracer = tracer[..., ::-1]
-
-    phi_lat = np.radians(lat)
-    phi_mid_lat = 0.5 * (phi_lat[1:] + phi_lat[:-1])
-
-    # calculating gradients
-    grad_weight_lat = np.diff(tracer, axis=-1) / np.diff(phi_lat) * np.cos(phi_mid_lat)
-
-    # array of gradient weighted latitudes (...[,nlon])
-    GWL_lat = (phi_mid_lat * grad_weight_lat).sum(axis=-1) / grad_weight_lat.sum(
-        axis=-1
-    )
-    # area equivalent GWL width (in degrees)
-    if zonal_mean_tracer:
-        tracer_steep_lat = np.degrees(GWL_lat)
-    else:
-        tracer_steep_lat = np.degrees(np.arcsin(np.nanmean(np.sin(GWL_lat), axis=-1)))
-
-    return dict(phi=tracer_steep_lat)
-
+    return strat_metrics.TropD_Metric_Strat_GWL(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
 
 @hemisphere_handler
-def Shah_2020_1sigma(
+def TropD_Metric_Strat_ONESIGMA(
     tracer: np.ndarray,
     lat: np.ndarray,
     zonal_mean_tracer=False,
+    method: str = "default",
+    **kwargs
 ) -> dict[str,np.ndarray]:
-    r"""
-    Computes the one-sigma width from 3-D tracer data
-    Reference: Shah et al., JGR-A, 2020
-    https://doi.org/10.1029/2020JD033081
+    return strat_metrics.TropD_Metric_Strat_1SIGMA(tracer, lat, zonal_mean_tracer=zonal_mean_tracer,**kwargs)
+  
 
-    Parameters
-    ==========
-    tracer: numpy.ndarray (...,lat[, lon])
-        N-dimensional array of tracer data for computing 1:math:`\sigma`-width. If
-        ``zonal_mean_tracer=False``, the last dimension should correspond to the
-        longitude axis, otherwise it should be the latitude axis
-    latitude: numpy.ndarray (lat,)
-        array of latitudes in degrees (1-D). If not increasing, it will be sorted
-    zonal_mean_tracer : bool, optional
-        whether the input tracer data is zonally symmetric (True) or zonally-varying
-        (False) (i.e., has a longitude dimension), by default False
 
-    Returns
-    =======
-    tracer_sigma_lat: numpy.ndarray
-        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of
-        1:math:`\sigma`-widths in the NH
-    """
-
-    tracer = np.atleast_2d(tracer)
-    lat = np.asarray(lat).flatten()
-    if not zonal_mean_tracer:
-        tracer = tracer.swapaxes(-2, -1)
-    if lat.size != tracer.shape[-1]:
-        raise ValueError(
-            "input array 'lat' should be aligned with second to last axis of tracer"
-        )
-    if lat[0] > lat[1]:
-        lat = lat[::-1]
-        tracer = tracer[..., ::-1]
-
-    phi_lat = np.broadcast_to(np.radians(lat), tracer.shape)
-
-    # finding ranges of 70 degs latitude with largest tracer values
-    nlats_70deg = round(70.0 / (lat[1] - lat[0])) + 1
-    tracer_70deg_totals = fftconvolve(
-        np.where(np.isfinite(tracer), tracer, 0.0),
-        np.ones((tracer.ndim - 1) * (1,) + (nlats_70deg,)),
-        "valid",
-        axes=-1,
-    )
-    max_70deg_starts = np.argmax(tracer_70deg_totals, axis=-1)[..., None]
-    bands_70deg = (np.arange(lat.size) >= max_70deg_starts) & (
-        np.arange(lat.size) < max_70deg_starts + nlats_70deg
-    )
-    tracer_banded = np.ma.masked_where(~bands_70deg, tracer)
-    # mean and std of 70deg bands
-    mean_70deg = tracer_banded.mean(axis=-1).filled(0.0)
-    std_70deg = tracer_banded.std(axis=-1, ddof=1).filled(0.0)
-    threshold = (mean_70deg - std_70deg)[..., None]
-    sigma_width_lat = (
-        np.ma.masked_where(
-            ~((tracer < threshold) & (phi_lat > phi_lat[..., :1])),
-            phi_lat,
-            copy=False,
-        )
-        .min(axis=-1)
-        .filled(np.nan)
-    )
-    # area equivalent latitude (in degrees)
-    if zonal_mean_tracer:
-        tracer_sigma_lat = np.degrees(sigma_width_lat)
-    else:
-        tracer_sigma_lat = np.degrees(
-            np.arcsin(np.nanmean(np.sin(sigma_width_lat), axis=-1))
-        )
-
-    return dict(phi=tracer_sigma_lat)
+## ========================================
+## Stratospheric metrics
+## Written by Kasturi Shah - August 3 2020
+## converted to python by Alison Ming 8 April 2021
+## vectorized and refactored by Sam Smith 19 May 22
+#
+#
+#@hemisphere_handler
+#def Shah_2020_GWL(
+#    tracer: np.ndarray, 
+#    lat: np.ndarray, 
+#    zonal_mean_tracer=False
+#) -> dict[str,np.ndarray]:
+#    """
+#    Computes the gradient-weighted latitude (GWL) from tracer data
+#    Reference: Shah et al., JGR-A, 2020
+#    https://doi.org/10.1029/2020JD033081
+#
+#    Parameters
+#    ==========
+#    tracer : numpy.ndarray (..., lat [, lon])
+#        N-dimensional array of tracer data for computing gradient. If
+#        ``zonal_mean_tracer=False``, the last dimension should correspond to the
+#        longitude axis, otherwise it should be the latitude axis
+#    latitude : numpy.ndarray (lat,)
+#        latitude array in degrees
+#    zonal_mean_tracer : bool, optional
+#        whether the input tracer data is zonally symmetric (True) or zonally-varying
+#        (False) (i.e., has a longitude dimension), by default False
+#
+#    Returns
+#    =======
+#    tracer_steep_lat: numpy.ndarray
+#        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of GWL latitudes in the
+#        SH
+#    """
+#
+#    tracer = np.asarray(tracer)
+#    lat = np.asarray(lat).flatten()
+#    if not zonal_mean_tracer:
+#        tracer = tracer.swapaxes(-2, -1)
+#    if lat.size != tracer.shape[-1]:
+#        raise ValueError(
+#            "input array 'lat' should be aligned with "
+#            f"{'' if zonal_mean_tracer else 'second to '}last axis of tracer"
+#        )
+#    if lat[0] > lat[1]:
+#        lat = lat[::-1]
+#        tracer = tracer[..., ::-1]
+#
+#    phi_lat = np.radians(lat)
+#    phi_mid_lat = 0.5 * (phi_lat[1:] + phi_lat[:-1])
+#
+#    # calculating gradients
+#    grad_weight_lat = np.diff(tracer, axis=-1) / np.diff(phi_lat) * np.cos(phi_mid_lat)
+#
+#    # array of gradient weighted latitudes (...[,nlon])
+#    GWL_lat = (phi_mid_lat * grad_weight_lat).sum(axis=-1) / grad_weight_lat.sum(
+#        axis=-1
+#    )
+#    # area equivalent GWL width (in degrees)
+#    if zonal_mean_tracer:
+#        tracer_steep_lat = np.degrees(GWL_lat)
+#    else:
+#        tracer_steep_lat = np.degrees(np.arcsin(np.nanmean(np.sin(GWL_lat), axis=-1)))
+#
+#    return dict(phi=tracer_steep_lat)
+#
+#
+#@hemisphere_handler
+#def Shah_2020_1sigma(
+#    tracer: np.ndarray,
+#    lat: np.ndarray,
+#    zonal_mean_tracer=False,
+#) -> dict[str,np.ndarray]:
+#    """
+#    Computes the one-sigma width from 3-D tracer data
+#    Reference: Shah et al., JGR-A, 2020
+#    https://doi.org/10.1029/2020JD033081
+#
+#    Parameters
+#    ==========
+#    tracer: numpy.ndarray (...,lat[, lon])
+#        N-dimensional array of tracer data for computing 1:math:`\sigma`-width. If
+#        ``zonal_mean_tracer=False``, the last dimension should correspond to the
+#        longitude axis, otherwise it should be the latitude axis
+#    latitude: numpy.ndarray (lat,)
+#        array of latitudes in degrees (1-D). If not increasing, it will be sorted
+#    zonal_mean_tracer : bool, optional
+#        whether the input tracer data is zonally symmetric (True) or zonally-varying
+#        (False) (i.e., has a longitude dimension), by default False
+#
+#    Returns
+#    =======
+#    tracer_sigma_lat: numpy.ndarray
+#        N-2(N-1 for ``zonal_mean_tracer=True``) dimenional array of
+#        1:math:`\sigma`-widths in the NH
+#    """
+#
+#    tracer = np.atleast_2d(tracer)
+#    lat = np.asarray(lat).flatten()
+#    if not zonal_mean_tracer:
+#        tracer = tracer.swapaxes(-2, -1)
+#    if lat.size != tracer.shape[-1]:
+#        raise ValueError(
+#            "input array 'lat' should be aligned with second to last axis of tracer"
+#        )
+#    if lat[0] > lat[1]:
+#        lat = lat[::-1]
+#        tracer = tracer[..., ::-1]
+#
+#    phi_lat = np.broadcast_to(np.radians(lat), tracer.shape)
+#
+#    # finding ranges of 70 degs latitude with largest tracer values
+#    nlats_70deg = round(70.0 / (lat[1] - lat[0])) + 1
+#    tracer_70deg_totals = fftconvolve(
+#        np.where(np.isfinite(tracer), tracer, 0.0),
+#        np.ones((tracer.ndim - 1) * (1,) + (nlats_70deg,)),
+#        "valid",
+#        axes=-1,
+#    )
+#    max_70deg_starts = np.argmax(tracer_70deg_totals, axis=-1)[..., None]
+#    bands_70deg = (np.arange(lat.size) >= max_70deg_starts) & (
+#        np.arange(lat.size) < max_70deg_starts + nlats_70deg
+#    )
+#    tracer_banded = np.ma.masked_where(~bands_70deg, tracer)
+#    # mean and std of 70deg bands
+#    mean_70deg = tracer_banded.mean(axis=-1).filled(0.0)
+#    std_70deg = tracer_banded.std(axis=-1, ddof=1).filled(0.0)
+#    threshold = (mean_70deg - std_70deg)[..., None]
+#    sigma_width_lat = (
+#        np.ma.masked_where(
+#            ~((tracer < threshold) & (phi_lat > phi_lat[..., :1])),
+#            phi_lat,
+#            copy=False,
+#        )
+#        .min(axis=-1)
+#        .filled(np.nan)
+#    )
+#    # area equivalent latitude (in degrees)
+#    if zonal_mean_tracer:
+#        tracer_sigma_lat = np.degrees(sigma_width_lat)
+#    else:
+#        tracer_sigma_lat = np.degrees(
+#            np.arcsin(np.nanmean(np.sin(sigma_width_lat), axis=-1))
+#        )
+#
+#    return dict(phi=tracer_sigma_lat)
