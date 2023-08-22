@@ -19,7 +19,7 @@ from .functions import (
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
 )
-import stratospheric_metrics as strat_metrics
+import .stratospheric_metrics as strat_metrics
 
 # kappa = R_dry / Cp_dry
 KAPPA = 287.04 / 1005.7

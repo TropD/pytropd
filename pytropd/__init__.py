@@ -25,8 +25,10 @@ from .metrics import (
     TropD_Metric_STJ,
     TropD_Metric_TPB,
     TropD_Metric_UAS,
-    Shah_2020_GWL,
-    Shah_2020_1sigma,
+    TropD_Metric_CL,
+    TropD_Metric_TAL,
+    TropD_Metric_GWL,
+    TropD_Metric_ONESIGMA,
 )
 from .functions import (
     TropD_Calculate_MaxLat,
@@ -45,5 +47,9 @@ if pygeode_installed:
     from .pygeode_metrics import pyg_psi
     from .pygeode_metrics import pyg_stj
     from .pygeode_metrics import pyg_tpb
+    from .pygeode_metrics import pyg_cl
+    from .pygeode_metrics import pyg_tal
+    from .pygeode_metrics import pyg_gwl
+    from .pygeode_metrics import pyg_onesigma
 if xarray_installed:
     from .xarray_metrics import MetricAccessor
