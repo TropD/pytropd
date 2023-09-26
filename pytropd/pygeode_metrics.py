@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import interpolate
-import pytropd as pyt
-#import metrics as pyt
+#import pytropd as pyt
+import metrics as pyt
 
 import pygeode as pyg
 from pygeode.var import Var
@@ -55,7 +55,6 @@ def metrics_dataset(
   #otherwise, find check the name of the variable for the closest match
   # If none found, raise error.
   var, _ = extract_property(dataset, property_name=metric_property_name[metric], p_axis_status=p_axis_status)
-
   
   #nh hemisphere
   nh_data = chop_by_hemisphere(var,hem='nh')
@@ -107,14 +106,18 @@ def metric_var(
     has_pres_axis = 0
     lat_axis_index = X.whichaxis('Lat')
 
-    if X.hasaxis('Pres') and (p_axis_status==1):
+    if X.hasaxis('Pres') and (p_axis_status!=0):
       has_pres_axis = 1
     
       pres_axis_index = X.whichaxis('Pres')
       #out_order has lat, pres at the end
       out_order = [i for i in range(len(inaxes)) if i not in [pres_axis_index, lat_axis_index]]
-      out_order.append(lat_axis_index)
-      out_order.append(pres_axis_index)
+      if p_axis_status==1:
+        out_order.append(lat_axis_index)
+        out_order.append(pres_axis_index)
+      if p_axis_status==2:
+        out_order.append(pres_axis_index)
+        out_order.append(lat_axis_index)
     
     else:
       if p_axis_status==1:
@@ -145,8 +148,28 @@ def metric_var(
   oaxes = [a for i, a in enumerate(X.axes) if i not in riaxes]
   if not oaxes:
     new_const_axis = NamedAxis(values=np.arange(1),name='value')
-    X = X.extend(0, new_const_axis)
+    X = X.extend(len(X.axes), new_const_axis)
     oaxes.append(new_const_axis)
+    inaxes = list(X.axes)
+
+  # Decide what output has been requested
+  # Do we need the value of the metric?
+  metric_value_bool =  params.get('metric_value', False)
+  # Do we need the vertical position of the metric? STJ only at the moment
+  vertical_position_bool =  params.get('vertical_position', False)
+  if method_used == 'all_zero_crossings':
+    all_zero_crossings = True
+  else:
+    all_zero_crossings = False
+
+  # Construct work arrays
+  if all_zero_crossings:
+    if has_pres_axis==1: 
+      params['has_lev_axis'] = True
+    
+    crossing_number = NamedAxis(values=np.arange(3),name='crossing_number')
+    X = X.extend(0, crossing_number)
+    oaxes.insert(0,crossing_number)
     inaxes = list(X.axes)
 
   # Construct new variable
@@ -165,13 +188,6 @@ def metric_var(
 
   outview = View(oaxes)
 
-  # Decide what output has been requested
-  # Do we need the value of the metric?
-  metric_value_bool =  params.get('metric_value', False)
-  # Do we need the vertical position of the metric? STJ only at the moment
-  vertical_position_bool =  params.get('vertical_position', False)
-
-  # Construct work arrays
   metric_lat= np.full(oview.shape, np.nan, 'd')
   metric_pres= np.full(oview.shape, np.nan, 'd')
   metric_value = np.full(oview.shape, np.nan, 'd')
@@ -180,12 +196,6 @@ def metric_var(
   # Accumulate data
   for outsl, (xdata,) in loopover([X], oview, inaxes, pbar=pbar):
     xdata = xdata.astype('d')
-    
-    ##Vertical position of the metric is needed
-    #if params['vertical_position']:
-    #  metric_lat[outsl], metric_pres[outsl], metric_value[outsl] = metric_function(xdata, lat_values, **params)
-    #else:
-    #  metric_lat[outsl], metric_value[outsl] = np.squeeze(np.array(metric_function(xdata, lat_values, **params)))
     metric_function_output = metric_function(xdata, lat_values, **params)
     metric_lat[outsl] = metric_function_output['phi' + hem.upper()]
     if vertical_position_bool: metric_pres[outsl] = metric_function_output['vertical_position' + hem.upper()]
@@ -221,6 +231,126 @@ def metric_var(
   return var_list_out
 
 
+#wrappers for the helper functions in functions.py
+def functions_dataset(
+  dataset: pyg.Dataset, 
+  function_name: str, 
+  strat_bool: bool=False,
+  **params
+  ) -> pyg.Dataset:
+
+  """Return a dataset of the quantity calculated by helper function"""
+  output_list = []
+
+  # make sure data is a dataset not a var
+  if isinstance(dataset, pyg.Var): 
+    dataset = pyg.asdataset(dataset)
+
+  var = dataset.vars[0]
+  #nh hemisphere
+  nh_data = chop_by_hemisphere(var, hem='nh')
+  if nh_data != None: 
+    nh_var = function_var(nh_data, function_name=function_name, hem='nh', **params)
+    output_list.extend(nh_var)
+
+  #sh hemisphere
+  sh_data = chop_by_hemisphere(var, hem='sh')
+  if sh_data != None: 
+    sh_var = function_var(sh_data, function_name=function_name, hem='sh', **params)
+    output_list.extend(sh_var)
+ 
+  global_attrs = {
+		  "long_name": function.upper() + " value",
+		  "units": "degrees",
+		  }
+
+  return pyg.Dataset(output_list, atts=global_attrs)
+
+
+def function_var(
+  X: pyg.Var,
+  axis: Optional[int] = None,
+  function_name: str = None, 
+  hem: str = 'nh', 
+  collapsed_axis: Optional = None,
+  pbar: Optional[int] = None,
+  **params
+  ) ->  list[pyg.Var]:
+
+  '''Compute the function'''
+  # Get the relevant function
+  function = getattr(pyt, 'TropD_Calculate_' + function_name) 
+
+  xn = X.name if X.name != '' else 'X' # Note: could write:  xn = X.name or 'X'
+
+  #Re-order axes so that Lat and pres are at the end
+  inaxes = list(X.axes)
+  if X.hasaxis('Lat'):
+    has_pres_axis = 0
+    lat_axis_index = X.whichaxis('Lat')
+
+    if X.hasaxis('Pres'):
+      pres_axis_index = X.whichaxis('Pres')
+      #out_order has lat, pres at the end
+      out_order = [i for i in range(len(inaxes)) if i not in [pres_axis_index, lat_axis_index]]
+      out_order.append(lat_axis_index)
+      out_order.append(pres_axis_index)
+    
+  else: 
+    raise KeyError('<Lat> axis not found in', X)
+
+  #transpose axes in the order (Lat, Pres)
+  X = X.transpose(*out_order)
+
+  inaxes = list(X.axes)
+  if collapsed_axis:
+    collapsed_axis_id = X.whichaxis(collapsed_axis)
+    collapsed_axis_values = X.axes[collapsed_axis_id][:]
+    riaxes = [collapsed_axis_id]
+  else:
+    riaxe = []
+ 
+  #axis to be collapsed. 
+
+  #construct outaxes 
+  oaxes = [a for i, a in enumerate(X.axes) if i not in riaxes]
+  if not oaxes:
+    new_const_axis = NamedAxis(values=np.arange(1),name='value')
+    X = X.extend(0, new_const_axis)
+    oaxes.append(new_const_axis)
+    inaxes = list(X.axes)
+
+  # Construct new variable
+  if hem == 'nh':
+    name = function_name + '_nh_value'
+  else: 
+    name = function_name + '_sh_value'
+
+  oview = View(oaxes) 
+
+  if pbar is None:
+    from pygeode.progress import PBar
+    pbar = PBar(message='Computing ' + hem.upper())
+
+  outview = View(oaxes)
+
+  function_value = np.full(oview.shape, np.nan, 'd')
+  
+  # Accumulate data
+  for outsl, (xdata,) in loopover([X], oview, inaxes, pbar=pbar):
+    xdata = xdata.astype('d')
+    function_output = function(xdata, collapsed_axis_values, **params)
+    function_value[outsl] = function_output['value_' + hem.upper()]
+
+  var_list_out = []
+
+  lat_attrs = {"long_name": function_name + " value",
+               }
+  function_var = Var(oaxes, values=function_value, name=hem + '_value', atts=lat_attrs)
+  var_list_out.append(function_var)
+  
+  pbar.update(100)
+  return var_list_out
 
 def pressure_axis_status(metric: str) -> int:
   '''Decide if computation of metric requires a pressure axis'''
@@ -240,7 +370,7 @@ def extract_property(
   dataset: pyg.Dataset, 
   property_name: List[str], 
   p_axis_status: int
-  ) -> Tuple[pyg.Dataset,int]: 
+  ) -> Tuple[pyg.Var,int]: 
   '''
   Search the dataset for the name of the variable required by the metric
 
@@ -251,7 +381,7 @@ def extract_property(
 
   Returns
   -------
-	  pyg.Dataset with sanitised variable names for the metric
+	  pyg.Var with sanitised variable names for the metric
 	  int: 1 if property has been found, 0 otherwise
   '''
 
@@ -855,3 +985,35 @@ def pyg_cl(dataset: pyg.Dataset,**params) -> pyg.Dataset:
   CL_Dataset = metrics_dataset(dataset, metric='cl', strat_bool=True, **params)
 
   return CL_Dataset
+
+#Function wrappers
+def pyg_maxlat(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+  params['collapsed_axis'] = pyg.Lat
+  MaxLat_Dataset = functions_dataset(dataset, function_name='MaxLat', **params)
+
+  return MaxLat_Dataset
+
+def pyg_maxpres(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  params['collapsed_axis'] = pyg.Pres
+  MaxPres_Dataset = functions_dataset(dataset, function_name='MaxPres', **params)
+
+  return MaxPres_Dataset
+
+def pyg_streamfunction(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  StreamFunction_Dataset = functions_dataset(dataset, function_name='StreamFunction', **params)
+
+  return StreamFunction_Dataset
+
+def pyg_tropheight(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+  params['collapsed_axis'] = pyg.Pres
+  TropopauseHeight_Dataset = functions_dataset(dataset, function_name='TropopauseHeight', **params)
+
+  return TropopauseHeight_Dataset
+
+def pyg_coldpointheight(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  ColdPointHeight_Dataset = functions_dataset(dataset, function_name='ColdPointHeight', **params)
+
+  return ColdPointHeight_Dataset

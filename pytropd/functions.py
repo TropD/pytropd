@@ -286,7 +286,6 @@ def TropD_Calculate_MaxPres(
     #Find pressure level of maximum wind at each latitude
     p_max = np.exp(-Zmax)*p_surface
 
-
     return p_max
 
 def TropD_Calculate_Mon2Season(
@@ -387,6 +386,7 @@ def TropD_Calculate_StreamFunction(
     return psi
 
 
+
 @overload
 def TropD_Calculate_TropopauseHeight(
     T: np.ndarray, P: np.ndarray, Z: None
@@ -402,7 +402,10 @@ def TropD_Calculate_TropopauseHeight(
 
 
 def TropD_Calculate_TropopauseHeight(
-    T: np.ndarray, P: np.ndarray, Z: Optional[np.ndarray] = None
+    T: np.ndarray, 
+    P: np.ndarray, 
+    Z: Optional[np.ndarray] = None,
+    lapse_rate_threshold: Optional[float] = 2.0,
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Calculate the tropopause height in isobaric coordinates
@@ -468,7 +471,7 @@ def TropD_Calculate_TropopauseHeight(
     TI = interpT(PI)
     # points in upper troposphere where lapse rate is less then 2km
     trop_layer = (
-        (GI <= 2.0) & (PI < (550.0 * 100.0) ** KAPPA) & (PI > (75.0 * 100.0) ** KAPPA)
+        (GI <= lapse_rate_threshold) & (PI < (550.0 * 100.0) ** KAPPA) & (PI > (75.0 * 100.0) ** KAPPA)
     )
     Pt = np.full_like(T[..., 0], np.nan)
     # loop over each individual column
@@ -489,7 +492,7 @@ def TropD_Calculate_TropopauseHeight(
 
                 # if the lapse rate from the first point to 2km above
                 # (inclusive) is less than 2, we've found our tropopause
-                if (GI[icol + (slice(idx[c], idx2km + 1),)] <= 2.0).all():
+                if (GI[icol + (slice(idx[c], idx2km + 1),)] <= lapse_rate_threshold).all():
                     Pt[icol] = Pidx[c]
                     break
 
@@ -507,6 +510,35 @@ def TropD_Calculate_TropopauseHeight(
     else:
         return Pt
 
+def TropD_Calculate_ColdPointHeight(
+    T: np.ndarray, 
+    lev: np.ndarray, 
+    Z: None
+) -> np.ndarray:
+    """
+    Calculate the coldpoint height in isobaric coordinates
+
+    Follows the same method as for the tropopause height but set the lapse rate condition to
+    0 K/km
+
+    Parameters
+    ----------
+    T : numpy.ndarray (dim1, ..., dimN-1, lev)
+        N-dimensional temperature array
+    lev : numpy.ndarray (lev,)
+        pressure levels in hPa
+    Z : numpy.ndarray (same shape as T), optional
+        N-dimensional array to be interpolated at tropopause, such as
+        geopotential height (m) to yield tropopause height
+
+    Returns
+    -------
+    numpy.ndarray (dim1, ..., dimN-1)
+        the tropopause pressure in hPa
+    numpy.ndarray (dim1, ..., dimN-1), optional
+        returned if Z is provided. Corresponds to Z evaluated at the tropopause. If Z is geopotential height, it is tropopause altitude (m)
+    """
+    return TropD_Calculate_TropopauseHeight(T, lev, lapse_rate_threshold=0.0)
 
 # Converted to python by Paul Staten Jul.29.2017
 def TropD_Calculate_ZeroCrossing(

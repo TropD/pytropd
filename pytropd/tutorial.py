@@ -1,5 +1,5 @@
-import numpy as np
-from scipy.io import netcdf
+import numpy as np 
+from scipy.io import netcdf_file
 import os
 
 
@@ -8,13 +8,13 @@ def buildV():
     filename = os.path.join(dirname, "../ValidationData/va.nc")
     # 1) PSI -- Streamfunction zero crossing
     # read meridional velocity V(time,lat,lev), latitude and level
-    f_V = netcdf.netcdf_file(filename, "r")
-    V = f_V.variables["va"][:]
+    f_V = netcdf_file(filename, "r")
+    V = f_V.variables["va"][:].copy()
     # Change axes of V to be [time, lat, lev]
     V = np.transpose(V, (2, 1, 0))
     V = V[0, :, :]
-    lat = f_V.variables["lat"][:]
-    lev = f_V.variables["lev"][:]
+    lat = f_V.variables["lat"][:].copy()
+    lev = f_V.variables["lev"][:].copy()
     f_V.close()
 
     return lat, lev, V

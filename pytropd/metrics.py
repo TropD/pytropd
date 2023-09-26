@@ -10,8 +10,8 @@ from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
-#from functions import (
-from .functions import (
+from functions import (
+#from .functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
     TropD_Calculate_MaxPres,
@@ -19,7 +19,8 @@ from .functions import (
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
 )
-from .stratospheric_metrics import (
+from stratospheric_metrics import (
+#from .stratospheric_metrics import (
     TropD_Metric_CL,
     TropD_Metric_TAL,
     TropD_Metric_GWL,
