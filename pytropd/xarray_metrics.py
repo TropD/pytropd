@@ -1,8 +1,8 @@
 from typing import Dict, List, Sequence, Any, Tuple, Union
 import xarray as xr
 
-import pytropd as pyt
-#import metrics as pyt
+#import pytropd as pyt
+import metrics as pyt
 
 import numpy as np
 import logging
@@ -27,6 +27,7 @@ class MetricAccessor:
             psi=["v", "Meridional wind"],
             psl=["psl", "Sea level pressure"],
             stj=["u", "Zonal wind"],
+            stjv=["u", "Zonal wind"],
             tpb=["T", "Temperature"],
             uas=["uas", "Surface wind"],
         )
@@ -45,9 +46,10 @@ class MetricAccessor:
         
         nreturns = 1
         metric_value_bool = self.params.get('metric_value', False)
-        vertical_position_bool =  self.params.get('vertical_position', False)
+        #vertical_position_bool =  self.params.get('vertical_position', False)
         if metric_value_bool: nreturns +=1
-        if vertical_position_bool: nreturns +=1
+        #if vertical_position_bool: nreturns +=1
+        if self.metric_name.upper()=='STJV': nreturns +=1
 
         # we need to tell the metric functions that we will be returning to xarray
         # because apply_ufunc only seems to want tuples
@@ -139,20 +141,20 @@ class MetricAccessor:
             method=("method", [method_used], method_attrs),
         ) 
 
-        metric_outputs = [metric_lats,]
+        metric_outputs = [metric_lats.rename(self.metric_name + '_lat'),]
         if metric_value_bool:
-            metric_maxs = xr.concat(metric_output[nhems:nhems*2], dim="hemsph")  # type: ignore
-            metric_maxs.attrs = {
+            metric_values = xr.concat(metric_output[nhems:nhems*2], dim="hemsph")  # type: ignore
+            metric_values.attrs = {
                 "long_name": self.metric_name.upper() + " metric value",
                 "unit": self._obj.attrs.get("unit", "m.s-1"),
             }
-            metric_maxs = metric_maxs.expand_dims("method").assign_coords(
+            metric_values = metric_values.expand_dims("method").assign_coords(
                 hemsph=("hemsph", hemsph, hemsph_attrs),
                 method=("method", [method_used], method_attrs),
             )
-            metric_outputs.append(metric_maxs)
+            metric_outputs.append(metric_values.rename(self.metric_name + '_value'))
 
-        if vertical_position_bool:
+        if self.metric_name.upper()=="STJV":
             metric_pres = xr.concat(metric_output[nhems*(nreturns-1):], dim="hemsph")  # type: ignore
             metric_pres.attrs = {
                 "long_name": self.metric_name.upper() + " metric pressure",
@@ -162,10 +164,10 @@ class MetricAccessor:
                 hemsph=("hemsph", hemsph, hemsph_attrs),
                 method=("method", [method_used], method_attrs),
             )
-            metric_outputs.append(metric_pres)
+            metric_outputs.append(metric_pres.rename(self.metric_name + '_pres'))
 
         
-        return tuple(metric_outputs)
+        return xr.merge(metric_outputs, combine_attrs="drop_conflicts")
 
     def extract_property_name(self, property_name: List[str]) -> str:
         """
@@ -753,6 +755,82 @@ class MetricAccessor:
         """
 
         self.metric_name = "stj"
+        self.params = params
+        self.require_pres_axis = True
+        return self.compute_metrics()
+
+    def xr_stjv(self, **params) -> xr.DataArray:
+
+        """
+        TropD Subtropical Jet (STJ) vertical Metric
+
+        Finds the latitude of the (adjusted) maximum upper-level zonal-mean zonal wind
+
+        The :py:class:`Dataset` should contain one variable corresponding to zonal wind.
+        If multiple non-coordinate variables are in the dataset, this method attempts to
+        guess which field corresponds to zonal wind based on field's name. The
+        :py:class:`Dataset` should also contain a latitude-like dimension and a
+        pressure-like dimension.
+
+        Parameters
+        ----------
+        method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max"}, optional
+            Method for determing the latitude of the STJ maximum, by default
+            "adjusted_peak":
+
+            * "adjusted_peak": Latitude of maximum (smoothing parameter``n=30``) of [the
+                               zonal wind averaged between 100 and 400 hPa] minus [the
+                               zonal mean zonal wind at the level closest to 850hPa],
+                               poleward of 10 degrees and equatorward of the Eddy Driven
+                               Jet latitude
+            * "adjusted_max": Latitude of maximum (smoothing parameter ``n=6``) of [the
+                              zonal wind averaged between 100 and 400 hPa] minus [the
+                              zonal mean zonal wind at the level closest to 850hPa],
+                              poleward of 10 degrees and equatorward of the Eddy Driven
+                              Jet latitude
+
+        **kwargs : optional
+            additional keyword arguments for :py:func:`TropD_Calculate_MaxLat`
+
+
+        Returns
+        -------
+        STJ_metrics: xarray.DataArray
+            :py:class:`DataArray` of STJ metric latitudes with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes)
+        STJ_max : xarray.DataArray, conditional
+            :py:class:`DataArray` of STJ metric maxima with new dimensions
+            ``hemsph`` (SH latitudes, NH latitudes), returned if ``method="fit"``
+
+        Raises
+        ------
+        :py:class:`KeyError`:
+            If a latitude-like or pressure-like dimension cannot be identified in the
+            :py:class:`Dataset`
+
+        :py:class:`KeyError`:
+            If multiple variables are in the dataset and a variable corresponding to
+            zonal wind cannot be detected
+
+        Examples
+        --------
+        .. code-block:: python
+        >>> import xarray as xr
+        >>> import pytropd as pyt
+        >>> import matplotlib.pyplot as plt
+        >>> ds = xr.open_dataset("pytropd/ValidationData/ua.nc")
+        >>> time_index = date_range(
+        ...     start="1979-01-01", periods=pslds.time.size, freq="MS"
+        ... )
+        >>> ds = ds.assign_coords(time=time_index).resample(time='AS').mean()
+        >>> STJ_core = ds.pyt_metrics.xr_stj(method="core_max")
+        >>> STJ_adjusted = ds.pyt_metrics.xr_stj(method="adjusted_max")
+        >>> STJ_metrics = xr.concat([STJ_core,STJ_adjusted], dim='method')
+        >>> STJ_metrics.sel(hemsph="NH").plot.line(x='time')
+        >>> plt.show()
+        """
+
+        self.metric_name = "stjv"
         self.params = params
         self.require_pres_axis = True
         return self.compute_metrics()

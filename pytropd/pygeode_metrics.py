@@ -30,6 +30,7 @@ def metrics_dataset(
 			  psi=['v','Meridional wind'],
 			  psl=['psl','Sea level pressure'],
 			  stj=['u','Zonal wind'],
+			  stjv=['u','Zonal wind'],
 			  tpb=['T','Temperature'],
 			  uas=['uas','Surface wind'],
 			  gwl=['tracer','Tracer'],
@@ -155,8 +156,8 @@ def metric_var(
   # Decide what output has been requested
   # Do we need the value of the metric?
   metric_value_bool =  params.get('metric_value', False)
-  # Do we need the vertical position of the metric? STJ only at the moment
-  vertical_position_bool =  params.get('vertical_position', False)
+  ## Do we need the vertical position of the metric? STJ only at the moment
+  #vertical_position_bool =  params.get('vertical_position', False)
   if method_used == 'all_zero_crossings':
     all_zero_crossings = True
   else:
@@ -198,7 +199,8 @@ def metric_var(
     xdata = xdata.astype('d')
     metric_function_output = metric_function(xdata, lat_values, **params)
     metric_lat[outsl] = metric_function_output['phi' + hem.upper()]
-    if vertical_position_bool: metric_pres[outsl] = metric_function_output['vertical_position' + hem.upper()]
+    if metric.upper()=="STJV":
+      metric_pres[outsl] = metric_function_output['level' + hem.upper()]
     if metric_value_bool: metric_value[outsl] = metric_function_output['metric_value' + hem.upper()]
 
 
@@ -219,7 +221,7 @@ def metric_var(
     metric_value = Var(oaxes, values=metric_value, name=hem + '_metric_value', atts=value_attrs)
     var_list_out.append(metric_value)
   
-  if vertical_position_bool:
+  if metric.upper()=="STJV":
     pres_attrs = {"long_name": metric.upper() + " metric pressure",
           	 "unit": "hPa",
 	  	 "method_used:": method_used,
@@ -359,7 +361,7 @@ def pressure_axis_status(metric: str) -> int:
     return 0
 
   #metrics that takes a 2D variable as input
-  elif metric in ['psi','stj','tpb']:
+  elif metric in ['psi','stj','stjv','tpb']:
     return 1
   
   #metrics that can take a 2D variable as input but do not collapse pressure axis
@@ -852,6 +854,16 @@ def pyg_stj(dataset: pyg.Dataset,**params) -> pyg.Dataset:
   STJ_Dataset = metrics_dataset(dataset, metric='stj', **params)
 
   return STJ_Dataset
+
+def pyg_stjv(dataset: pyg.Dataset,**params) -> pyg.Dataset:
+
+  '''TropD Eddy Driven Jet (STJ) vertical metric
+	   
+  '''
+
+  STJV_Dataset = metrics_dataset(dataset, metric='stjv', **params)
+
+  return STJV_Dataset
 
 def pyg_tpb(dataset: pyg.Dataset,**params) -> pyg.Dataset:
 

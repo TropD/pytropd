@@ -93,8 +93,8 @@ def hemisphere_handler(
 
         kwargs.pop("hem", None)
         metric_value_bool = kwargs.get('metric_value', False)
-        # Do we need the vertical position of the metric? STJ only at the moment
-        vertical_position_bool = kwargs.get('vertical_position', False)
+        ## Do we need the vertical position of the metric? STJ only at the moment
+        #vertical_position_bool = kwargs.get('vertical_position', False)
 
 
 
@@ -106,7 +106,7 @@ def hemisphere_handler(
         # is last
         has_extra_dim = False
         # these all require vertically-resolved data
-        if metric_code in ["STJ", "TPB", "PSI"]:
+        if metric_code in ["STJ", "STJV", "TPB", "PSI"]:
             has_extra_dim = True
         # these take it optionally, so we need to figure out if it was provided, either as
         # an arg (it will be third positional and probably the only arg in args) or kwarg
@@ -144,10 +144,14 @@ def hemisphere_handler(
                     **kwargs,
                 )
             output_dict['phiSH'] = -metric_func_output['phi']
+            if metric_code=="STJV": 
+                output_dict['levelSH'] = metric_func_output['level']
+                
             if metric_value_bool:
                 output_dict['metric_valueSH'] = metric_func_output['metric_value'] * (-1.0 if metric_code == "PSI" else 1.0)
-            if vertical_position_bool:
-                output_dict['vertical_positionSH'] = metric_func_output['vertical_position'] 
+            
+            #if vertical_position_bool:
+            #    output_dict['vertical_positionSH'] = metric_func_output['vertical_position'] 
 
 
         if (lat > 20.0).any():
@@ -159,21 +163,23 @@ def hemisphere_handler(
                 kwargs["Z"] = Z[tuple(NHarr_mask)]
             metric_func_output = metric_func(arr[tuple(NHarr_mask)], lat[NHmask], *args, **kwargs)
             output_dict['phiNH'] = metric_func_output['phi']
+            if metric_code=="STJV": 
+                output_dict['levelNH'] = metric_func_output['level']
 
             if metric_value_bool:
                 output_dict['metric_valueNH'] = metric_func_output['metric_value']               
-            if vertical_position_bool:
-                output_dict['vertical_positionNH'] = metric_func_output['vertical_position'] 
+            #if vertical_position_bool:
+            #    output_dict['vertical_positionNH'] = metric_func_output['vertical_position'] 
 
         if returning_to_xarray_bool:
-           list_for_xarray.append(output_dict['phiSH'])
-           list_for_xarray.append(output_dict['phiNH'])
+           if (lat < -20.0).any(): list_for_xarray.append(output_dict['phiSH'])
+           if (lat > 20.0).any(): list_for_xarray.append(output_dict['phiNH'])
            if metric_value_bool:
-               list_for_xarray.append(output_dict['metric_valueSH'])
-               list_for_xarray.append(output_dict['metric_valueNH'])
-           if vertical_position_bool:
-               list_for_xarray.append(output_dict['vertical_positionSH'])
-               list_for_xarray.append(output_dict['vertical_positionNH'])
+               if (lat < -20.0).any(): list_for_xarray.append(output_dict['metric_valueSH'])
+               if (lat > 20.0).any(): list_for_xarray.append(output_dict['metric_valueNH'])
+           if metric_code=="STJV": 
+               list_for_xarray.append(output_dict['levelSH'])
+               list_for_xarray.append(output_dict['levelNH'])
            return tuple(list_for_xarray)
         else:
            return output_dict
@@ -829,7 +835,7 @@ def TropD_Metric_STJ(
         U = U[None, ...]
     lat = np.asarray(lat)
     lev = np.asarray(lev)
-    vertical_position_bool = max_kwargs.pop('vertical_position', False)
+    #vertical_position_bool = max_kwargs.pop('vertical_position', False)
     metric_value_bool = max_kwargs.pop('metric_value', False)
     
     if U.shape[-2:] != (lat.size, lev.size):
@@ -862,16 +868,16 @@ def TropD_Metric_STJ(
     if ("adjusted" in method) or method == "fit":  # adjusted_peak, adjusted_max methods
         idx_850 = find_nearest(lev, 850)
         u = u_int - U[..., idx_850]
-        #If vertical location of STJ is requested
-        if vertical_position_bool:
-          u_vert = U[..., layer_400_to_100]-U[..., idx_850][...,None]
-          u_vert_masked = u_vert[...,lat_mask,:]
+        ##If vertical location of STJ is requested
+        #if vertical_position_bool:
+        #  u_vert = U[..., layer_400_to_100]-U[..., idx_850][...,None]
+        #  u_vert_masked = u_vert[...,lat_mask,:]
     else:  # core_peak, core_max methods
         u = u_int
-        #If vertical location of STJ is requested
-        if vertical_position_bool:
-          u_vert = U[..., layer_400_to_100]
-          u_vert_masked = u_vert[...,lat_mask,:]
+        ##If vertical location of STJ is requested
+        #if vertical_position_bool:
+        #  u_vert = U[..., layer_400_to_100]
+        #  u_vert_masked = u_vert[...,lat_mask,:]
 
     u_masked = u[..., lat_mask]
 
@@ -896,23 +902,22 @@ def TropD_Metric_STJ(
         
         i_lat_max = [np.abs(lat_masked-Phi.flat[i]).argmin() for i in range(np.size(Phi))] 
         
-        if vertical_position_bool:
-            u_vert_flat = u_vert_masked.reshape(-1, lat_masked.size, lev_masked.size)
-            Pres_locations = TropD_Calculate_MaxPres(u_vert_flat, lev_masked , **max_kwargs)
-           
-            Umax = np.zeros(u.shape[:-1])
-            P = np.zeros(u.shape[:-1])
-            # Pressure level of max wind in the vertical at the location of the STJ in latitude
-            for i in range(len(i_lat_max)):
-              phi_ind = np.unravel_index(i, u.shape[:-1])
-              pres_max_wind = Pres_locations[i, i_lat_max[i]]
-              P[phi_ind] = pres_max_wind 
-              if metric_value_bool:
-                i_pres_max = np.abs(lev_masked-pres_max_wind).argmin() 
-                Umax[phi_ind] = u_vert_flat[i,i_lat_max[i], i_pres_max]
-           
-
-        elif metric_value_bool:
+        #if vertical_position_bool:
+        #    u_vert_flat = u_vert_masked.reshape(-1, lat_masked.size, lev_masked.size)
+        #    Pres_locations = TropD_Calculate_MaxPres(u_vert_flat, lev_masked , **max_kwargs)
+        #   
+        #    Umax = np.zeros(u.shape[:-1])
+        #    P = np.zeros(u.shape[:-1])
+        #    # Pressure level of max wind in the vertical at the location of the STJ in latitude
+        #    for i in range(len(i_lat_max)):
+        #      phi_ind = np.unravel_index(i, u.shape[:-1])
+        #      pres_max_wind = Pres_locations[i, i_lat_max[i]]
+        #      P[phi_ind] = pres_max_wind 
+        #      if metric_value_bool:
+        #        i_pres_max = np.abs(lev_masked-pres_max_wind).argmin() 
+        #        Umax[phi_ind] = u_vert_flat[i,i_lat_max[i], i_pres_max]
+        #elif metric_value_bool:
+        if metric_value_bool:
             Umax = np.zeros(u.shape[:-1])
             for i in range(len(i_lat_max)):
                 phi_ind = np.unravel_index(i, u.shape[:-1])
@@ -925,8 +930,8 @@ def TropD_Metric_STJ(
         Umax = np.zeros(u.shape[:-1])
         P = np.zeros(u.shape[:-1])
         
-        if vertical_position_bool:
-            u_vert_flat = u_vert_masked.reshape(-1, lat_masked.size, lev_masked.size)
+        #if vertical_position_bool:
+        #    u_vert_flat = u_vert_masked.reshape(-1, lat_masked.size, lev_masked.size)
 
         for i, Uh in enumerate(u_flat):
             Im = np.nanargmax(Uh)
@@ -950,36 +955,190 @@ def TropD_Metric_STJ(
             # value at vertex is (4ac-b**2)/(4a)
             Umax[phi_ind] = (4.0 * p[2] * p[0] - p[1] * p[1]) / 4.0 / p[2]
 
-            if vertical_position_bool:
-                i_lat_max = np.abs(lat_masked-Phi[phi_ind]).argmin()
-                #vertical profile of the wind at the location of stj in lat
-                Uv = u_vert_flat[i,i_lat_max,:].squeeze()
+            #if vertical_position_bool:
+            #    i_lat_max = np.abs(lat_masked-Phi[phi_ind]).argmin()
+            #    #vertical profile of the wind at the location of stj in lat
+            #    Uv = u_vert_flat[i,i_lat_max,:].squeeze()
 
-                Im_v = np.nanargmax(Uv)
+            #    Im_v = np.nanargmax(Uv)
 
-                if Im_v == 0 or Im_v == Uv.size - 1:
-                    P[phi_ind] = lev_masked[Im_v]
-                    continue
+            #    if Im_v == 0 or Im_v == Uv.size - 1:
+            #        P[phi_ind] = lev_masked[Im_v]
+            #        continue
 
-                if n_fit > Im_v or n_fit > Uv.size - Im_v + 1:
-                    N_v = np.min(Im_v, Uv.size - Im_v + 1)
-                else:
-                    N_v = n_fit
-                p_v = polynomial.polyfit(
-                    lev_masked[Im_v - N_v : Im_v + N_v + 1], Uv[Im_v - N_v : Im_v + N_v + 1], deg=2
-                )
-                # vertex of quadratic ax**2+bx+c is at -b/2a
-                # p_v[0] + p_V[1]*x + p_v[2]*x**2
-                P[phi_ind] = -p_v[1] / (2.0 * p_v[2])
-                if metric_value_bool:
-                    # value at vertex is (4ac-b**2)/(4a)
-                    Umax[phi_ind] = (4.0 * p_v[2] * p_v[0] - p_v[1] * p_v[1]) / 4.0 / p_v[2]
+            #    if n_fit > Im_v or n_fit > Uv.size - Im_v + 1:
+            #        N_v = np.min(Im_v, Uv.size - Im_v + 1)
+            #    else:
+            #        N_v = n_fit
+            #    p_v = polynomial.polyfit(
+            #        lev_masked[Im_v - N_v : Im_v + N_v + 1], Uv[Im_v - N_v : Im_v + N_v + 1], deg=2
+            #    )
+            #    # vertex of quadratic ax**2+bx+c is at -b/2a
+            #    # p_v[0] + p_V[1]*x + p_v[2]*x**2
+            #    P[phi_ind] = -p_v[1] / (2.0 * p_v[2])
+            #    if metric_value_bool:
+            #        # value at vertex is (4ac-b**2)/(4a)
+            #        Umax[phi_ind] = (4.0 * p_v[2] * p_v[0] - p_v[1] * p_v[1]) / 4.0 / p_v[2]
     
     output_dict['phi'] = Phi
-    if vertical_position_bool: output_dict['vertical_position'] = P
+    #if vertical_position_bool: output_dict['vertical_position'] = P
     if metric_value_bool:  output_dict['metric_value'] = Umax
     return output_dict
                 
+
+@hemisphere_handler
+def TropD_Metric_STJV(
+    U: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray,
+    method: str = "default",
+    n_fit: int = 1,
+    **kwargs,
+) -> dict[str,np.ndarray]:
+    #TODO: Amend fit to adjusted_fit for consistency. Deprecate and add warning
+    """
+    TropD Subtropical Jet Vertical (STJV) Metric
+
+    Latitude of the (adjusted) maximum upper-level zonal-mean zonal wind
+
+    Parameters
+    ----------
+    U : numpy.ndarray (dim1,...,lat,lev,)
+        N-dimensional zonal-mean zonal wind
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray (lev,)
+        vertical level array in hPa
+    method : {"adjusted_peak", "adjusted_max", "core_peak", "core_max", "fit"}, optional
+        Method for determing the latitude of the STJV maximum, by default "adjusted_peak":
+
+        * "adjusted": Latitude of maximum of [the
+                          zonal wind averaged between 100 and 400 hPa] minus [the zonal
+                           mean zonal wind at the level closest to 850hPa], poleward of
+                           10 degrees and equatorward of the Eddy Driven Jet latitude
+        * "default": Latitude of maximum of the zonal
+                       wind averaged between 100 and 400 hPa, poleward of 10 degrees and
+                       equatorward of 60 degrees
+
+    **kwargs : optional
+        additional keyword arguments 
+        "metric_value": bool, default .False.. Determines if STJV strength is returned
+
+        "interp_max": bool, default .False.. If True, linearly interpolate to find STJV strength. 
+        Requires that metric_value=.True.
+
+
+    Returns
+    -------
+    Dict:
+    'phi' : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional latitudes of the STJ
+    'level' : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional pressure level of the STJ
+    'metric_value' : numpy.ndarray (dim1, ..., dimN-2), conditional
+        N-2 dimensional  STJ strength
+    """
+
+    U = np.asarray(U) #(time, lev, lat)
+    if U.ndim < 3:
+        U = U[None, ...]
+    lat = np.asarray(lat)
+    lev = np.asarray(lev)
+    
+    if U.shape[-2:] != (lat.size, lev.size):
+        raise ValueError(
+            f"last axes of U had shape {U.shape[-2:]},"
+            f" not aligned with grid shape {lat.size, lev.size}"
+        )
+    
+    metric_value_bool = kwargs.pop('metric_value', False)
+    interp_max_bool = kwargs.pop('interp_max', False)
+   
+    #order latitudes from eq to pole
+    if lat[0] > lat[1]:
+        lat = lat[::-1]
+        U = U[...,::-1,:]
+    
+    layer_400_to_100 = (lev >= 100) & (lev <= 400)
+    
+    eq_boundary = kwargs.pop("tropical_boundary", 10.0)
+    polar_boundary = kwargs.pop("polar_boundary", 60.0)
+    lat_mask = (lat > eq_boundary) & (lat < polar_boundary)
+    lat_masked = lat[lat_mask]
+    lev_masked = lev[layer_400_to_100]
+    u_masked_lev = U[...,layer_400_to_100]
+    u_masked = u_masked_lev[...,lat_mask,:]
+    
+    #find latitude of STJ
+    # Pressure weighted vertical mean of U
+    if lev_masked.size > 1:
+        u_int = np.trapz(u_masked, lev_masked, axis=-1) / (
+            lev_masked[-1] - lev_masked[0]
+        )
+    else:
+        u_int = u_masked
+
+    output_dict = {}
+    
+    if ("adjusted" in method):  # adjusted methods
+        idx_850 = find_nearest(lev, 850)
+        u_integrated = u_int - U[...,lat_mask,idx_850]
+    else:  # default
+        u_integrated = u_int
+
+    u_int_masked = u_integrated
+
+    if "adjusted" in method:  # adjusted
+        edj_metric_dict = TropD_Metric_EDJ(U, lat, lev)
+        #get the latitude metric from edj metric dict
+        Phi_EDJ = edj_metric_dict[list(edj_metric_dict.keys())[0]]
+        lat_before_EDJ = lat_masked < Phi_EDJ[..., None]
+        u_int_masked = np.where(lat_before_EDJ, u_integrated, np.nan)
+
+    u_int_flat = u_int_masked.reshape(-1, lat_masked.size)
+    du_int_dlat = np.gradient(u_int_flat, axis=-1)
+    
+    Phi = TropD_Calculate_ZeroCrossing(du_int_dlat, lat_masked)
+    
+    output_dict['phi'] = Phi
+
+    u_flat = u_masked.reshape(-1, *u_masked.shape[-2:])
+    
+    #interpolate zonal wind to the latitude of STJ
+    u_new_flat = np.zeros([u_flat.shape[0],u_flat.shape[2]])
+    for i in range(u_flat.shape[0]):
+        u_new_flat[i,:] = interp1d(lat_masked, u_flat[i,:,:], axis=-2)(Phi[i])
+    
+    u_at_stjlat = u_new_flat.reshape([*u_masked.shape[:-2],len(lev_masked)])
+    
+    p_surface = 1013
+    z = -np.log(lev_masked/p_surface)
+    du_dlev = np.gradient(u_at_stjlat, z, axis=-1)
+    
+    lev_max = TropD_Calculate_ZeroCrossing(du_dlev, lev_masked)
+     
+    #interpolated zonal wind at latitude of STJ to level of STJ max
+    if metric_value_bool:
+        u_max_flat = np.zeros(u_flat.shape[0])
+        for i in range(u_flat.shape[0]):
+            if interp_max_bool:
+                z_max = -np.log(lev_max[i]/p_surface)
+                u_max_flat[i] = interp1d(z, u_new_flat[i,:], axis=-1)(z_max)
+            else:
+                #nearest grid point to lat max
+                i_lat_max = np.abs(lat_masked-Phi[i]).argmin()
+                i_lev_max = np.abs(lev_masked-lev_max[i]).argmin()
+                u_max_flat[i] = u_flat[i,i_lat_max,i_lev_max].squeeze()
+
+        Umax = u_max_flat.reshape([*u_masked.shape[:-2],])
+        
+
+    output_dict['level'] = lev_max
+    if metric_value_bool:  output_dict['metric_value'] = Umax
+
+    return output_dict
+
+
 
 @hemisphere_handler
 def TropD_Metric_TPB(
