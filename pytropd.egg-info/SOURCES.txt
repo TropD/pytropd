@@ -36,6 +36,7 @@ pytropd/TropD_Example_Calculations.py
 pytropd/__init__.py
 pytropd/functions.py
 pytropd/metrics.py
+pytropd/metrics1.py
 pytropd/pygeode_metrics.py
 pytropd/pygtest.py
 pytropd/stratospheric_metrics.py

@@ -23,6 +23,7 @@ from .metrics import (
     TropD_Metric_PSI,
     TropD_Metric_PSL,
     TropD_Metric_STJ,
+    TropD_Metric_STJV,
     TropD_Metric_TPB,
     TropD_Metric_UAS,
     TropD_Metric_Strat_CL,
@@ -46,6 +47,7 @@ if pygeode_installed:
     from .pygeode_metrics import pyg_uas
     from .pygeode_metrics import pyg_psi
     from .pygeode_metrics import pyg_stj
+    from .pygeode_metrics import pyg_stjv
     from .pygeode_metrics import pyg_tpb
     from .pygeode_metrics import pyg_cl
     from .pygeode_metrics import pyg_tal
