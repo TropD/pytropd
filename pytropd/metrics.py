@@ -85,7 +85,7 @@ def hemisphere_handler(
         # is last
         has_extra_dim = False
         # these all require vertically-resolved data
-        if metric_code in ["STJ", "TPB", "PSI"]:
+        if metric_code in ["STJ", "TPB", "PSI", "Streamfunction"]:
             has_extra_dim = True
         # these take it optionally, so we need to figure out if it was provided, either as
         # an arg (it will be third positional and probably the only arg in args) or kwarg
@@ -113,11 +113,14 @@ def hemisphere_handler(
                 SHarr_mask.append(slice(None))
             if Z is not None:
                 kwargs["Z"] = Z[tuple(SHarr_mask)]
+            
+            print(f"arr shape: {np.array(arr).shape}, SHarr_mask shape: {np.array(SHarr_mask).shape}")
+
             Phi_list.append(
                 metric_func(
                     # for the TropD_Metric_PSI, it takes meridional wind. In order to
                     # make meridional wind in the SH like the NH, we have to flip the sign
-                    arr[tuple(SHarr_mask)] * (-1.0 if metric_code == "PSI" else 1.0),
+                    arr[tuple(SHarr_mask)] * (-1.0 if metric_code == "PSI" or metric_code == "Streamfunction" else 1.0),
                     -lat[SHmask],
                     *args,
                     **kwargs,
@@ -673,7 +676,6 @@ def TropD_Metric_Streamfunction(
     Psi = np.asarray(Psi)
     lat = np.asarray(lat)
     lev = np.asarray(lev)
-
     # make latitude vector monotonically increasing
     if lat[-1] < lat[0]:
         Psi = Psi[..., ::-1, :]
@@ -686,6 +688,12 @@ def TropD_Metric_Streamfunction(
     elif method == "Psi_300_700":
         # Use Psi averaged between the 300 and 700 hPa level
         layer_700_to_300 = (lev <= 700.0) & (lev >= 300.0)
+        P = np.trapz(
+            Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
+        )
+    elif method == "Psi_700_950":
+        # Use Psi averaged between the 300 and 700 hPa level
+        layer_700_to_300 = (lev <= 950.0) & (lev >= 700.0)
         P = np.trapz(
             Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
         )
@@ -731,7 +739,7 @@ def TropD_Metric_Streamfunction(
         )
 
     return Phi
-    
+
 @hemisphere_handler
 def TropD_Metric_PSL(
     ps: np.ndarray, lat: np.ndarray, method: str = "peak", **maxlat_kwargs
