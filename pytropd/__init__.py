@@ -21,6 +21,7 @@ from .metrics import (
     TropD_Metric_OLR,
     TropD_Metric_PE,
     TropD_Metric_PSI,
+    TropD_Metric_Streamfunction,
     TropD_Metric_PSL,
     TropD_Metric_STJ,
     TropD_Metric_TPB,
