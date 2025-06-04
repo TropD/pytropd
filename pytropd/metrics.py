@@ -7,7 +7,6 @@ from functools import wraps
 from inspect import signature
 import numpy as np
 from numpy.polynomial import polynomial
-from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
 from .functions import (
@@ -586,7 +585,12 @@ def TropD_Metric_PSI(
         )
     elif method == "Psi_500_Int":
         # Use integrated Psi from p=0 to level nearest to 500 hPa
-        PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
+        try:
+            from scipy.integrate import cumtrapz
+            PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
+        except:
+            from scipy.integrate import cumulative_trapezoid
+            PPsi = cumulative_trapezoid(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
         P = PPsi[..., find_nearest(lev, 500.0)]
     elif method == "Psi_Int":
         # Use vertical mean of Psi
