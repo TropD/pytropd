@@ -691,12 +691,6 @@ def TropD_Metric_Streamfunction(
         P = np.trapz(
             Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
         )
-    elif method == "Psi_700_950":
-        # Use Psi averaged between the 300 and 700 hPa level
-        layer_700_to_300 = (lev <= 950.0) & (lev >= 700.0)
-        P = np.trapz(
-            Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
-        )
     elif method == "Psi_500_Int":
         # Use integrated Psi from p=0 to level nearest to 500 hPa
         PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
