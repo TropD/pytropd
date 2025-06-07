@@ -4,7 +4,12 @@
 from typing import Callable, List, Optional, Tuple, Union, overload
 import warnings
 import numpy as np
-from scipy.integrate import cumtrapz
+Flag_cumtrapz = False
+try:
+    from scipy.integrate import cumtrapz
+    Flag_cumtrapz = True
+except:
+    from scipy.integrate import cumulative_trapezoid
 from scipy.interpolate import interp1d
 
 EARTH_RADIUS = 6371220.0
@@ -260,12 +265,18 @@ def TropD_Calculate_StreamFunction(
     V = np.where(np.isfinite(V), V, 0)
     cos_lat = np.cos(lat * np.pi / 180.0)[:, None]
     # cumtrapz: if F(x) = int f(x) dx, return F(x) - F(x[0])
-    psi = (
-        cumtrapz(V, lev * 100.0, axis=-1, initial=0.0)
-        * (EARTH_RADIUS / GRAV * 2.0 * np.pi)
-        * cos_lat
-    )
-
+    if Flag_cumtrapz:
+        psi = (
+            cumtrapz(V, lev * 100.0, axis=-1, initial=0.0)
+            * (EARTH_RADIUS / GRAV * 2.0 * np.pi)
+            * cos_lat
+        )
+    else:
+        psi = (
+            cumulative_trapezoid(V, lev * 100.0, axis=-1, initial=0.0)
+            * (EARTH_RADIUS / GRAV * 2.0 * np.pi)
+            * cos_lat
+        )
     return psi
 
 
