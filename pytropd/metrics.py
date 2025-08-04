@@ -1194,7 +1194,7 @@ def TropD_Metric_TPB(
         N-2 dimensional latitudes of the tropopause break
     """
 
-    metric_value_bool = kwargs.pop('metric_value', False)
+    metric_value_bool = maxlat_kwargs.pop('metric_value', False)
 
     T = np.asarray(T)
     lat = np.asarray(lat)
@@ -1242,16 +1242,18 @@ def TropD_Metric_TPB(
         Phi = TropD_Calculate_ZeroCrossing(F[..., mask] - Cutoff, lat[mask])
 
     if metric_value_bool:
-        F_value = np.zeros(F.shape[:-1])
-        F_flat = F.reshape(-1, lat.size)
-        i_lat = [np.abs(lat-Phi.flat[i]).argmin() for i in range(np.size(Phi))] 
+        Pt_value = np.zeros(Pt.shape[:-1])
+        Pt_flat = Pt.reshape(-1, *Pt.shape[-1:])
+        i_lat_max = [np.abs(lat-Phi.flat[i]).argmin() for i in range(np.size(Phi))] 
 
         for i in range(len(i_lat_max)):
-            phi_ind = np.unravel_index(i, F.shape[:-1])
-            F_value[phi_ind] = F_flat[i,i_lat_max[i]]
-        return dict(phi=Phi, metric_value=F_value)
+            phi_ind = np.unravel_index(i, Pt.shape[:-1])
+            Pt_value[phi_ind] = Pt_flat[i,i_lat_max[i]]
+        return dict(phi=Phi, metric_value=Pt_value)
     else:
         return dict(phi=Phi)
+                                
+        
 
 
 @hemisphere_handler
