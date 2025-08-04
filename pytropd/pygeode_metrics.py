@@ -126,6 +126,7 @@ def metric_var(
   
   riaxes = [lataxis]
   if p_axis_status==1:
+    X = X.sorted(pres=1)
     presaxis = X.whichaxis('Pres')
     lev = X.axes[presaxis][:]
     params['lev'] = lev
