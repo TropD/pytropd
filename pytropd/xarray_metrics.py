@@ -297,6 +297,8 @@ class MetricAccessor:
             self.metric_name in ["edj", "uas"]
             and (self.pres_name in self.xarray_data.dims)
         ):
+            #sort pressures to run from top to surface
+            xarray_data = xarray_data.sortby(self.pres_name)
             pressure: np.ndarray = xarray_data[self.pres_name].values
             self.params["lev"] = pressure
         # otherwise don't use it if it is present

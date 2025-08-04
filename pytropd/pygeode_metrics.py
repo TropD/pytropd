@@ -141,6 +141,8 @@ def metric_var(
   riaxes = [lataxis]
   if p_axis_status==1:
     presaxis = X.whichaxis('Pres')
+
+    X = X.sorted(pres=1)
     lev = X.axes[presaxis][:]
     params['lev'] = lev
     riaxes.append(presaxis)
