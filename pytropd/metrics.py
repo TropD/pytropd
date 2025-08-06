@@ -7,7 +7,6 @@ from functools import wraps
 from inspect import signature
 import numpy as np
 from numpy.polynomial import polynomial
-from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
 from .functions import (
@@ -85,7 +84,7 @@ def hemisphere_handler(
         # is last
         has_extra_dim = False
         # these all require vertically-resolved data
-        if metric_code in ["STJ", "TPB", "PSI"]:
+        if metric_code in ["STJ", "TPB", "PSI", "Streamfunction"]:
             has_extra_dim = True
         # these take it optionally, so we need to figure out if it was provided, either as
         # an arg (it will be third positional and probably the only arg in args) or kwarg
@@ -113,11 +112,14 @@ def hemisphere_handler(
                 SHarr_mask.append(slice(None))
             if Z is not None:
                 kwargs["Z"] = Z[tuple(SHarr_mask)]
+            
+            print(f"arr shape: {np.array(arr).shape}, SHarr_mask shape: {np.array(SHarr_mask).shape}")
+
             Phi_list.append(
                 metric_func(
                     # for the TropD_Metric_PSI, it takes meridional wind. In order to
                     # make meridional wind in the SH like the NH, we have to flip the sign
-                    arr[tuple(SHarr_mask)] * (-1.0 if metric_code == "PSI" else 1.0),
+                    arr[tuple(SHarr_mask)] * (-1.0 if metric_code == "PSI" or metric_code == "Streamfunction" else 1.0),
                     -lat[SHmask],
                     *args,
                     **kwargs,
@@ -586,7 +588,12 @@ def TropD_Metric_PSI(
         )
     elif method == "Psi_500_Int":
         # Use integrated Psi from p=0 to level nearest to 500 hPa
-        PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
+        try:
+            from scipy.integrate import cumtrapz
+            PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
+        except:
+            from scipy.integrate import cumulative_trapezoid
+            PPsi = cumulative_trapezoid(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
         P = PPsi[..., find_nearest(lev, 500.0)]
     elif method == "Psi_Int":
         # Use vertical mean of Psi
@@ -627,6 +634,112 @@ def TropD_Metric_PSI(
 
     return Phi
 
+@hemisphere_handler
+def TropD_Metric_Streamfunction(
+    Psi: np.ndarray,
+    lat: np.ndarray,
+    lev: np.ndarray,
+    method: str = "Psi_500",
+    lat_uncertainty: float = 0.0,
+) -> np.ndarray:
+    """
+    TropD Mass Streamfunction (PSI) Metric
+
+    Latitude of the subtropical zero crossing of the meridional mass streamfunction
+
+    Parameters
+    ----------
+    Psi : numpy.ndarray (dim1, ..., lat, lev)
+        N-dimensional zonal-mean Mass Streamfunction
+    lat : numpy.ndarray (lat,)
+        latitude array
+    lev : numpy.ndarray (lev,)
+        vertical level array in hPa
+    method : {"Psi_500", "Psi_500_10Perc", "Psi_300_700", "Psi_500_Int", "Psi_Int"},
+    optional
+        Method of determining which Psi zero crossing to return, by default "Psi_500":
+
+        * "Psi_500": Zero crossing of the streamfunction (Psi) at 500hPa
+        * "Psi_500_10Perc": Crossing of 10% of the extremum value of Psi in each
+                            hemisphere at the 500hPa level
+        * "Psi_300_700": Zero crossing of Psi vertically averaged between the 300hPa
+                         and 700 hPa levels
+        * "Psi_500_Int": Zero crossing of the vertically-integrated Psi at 500 hPa
+        * "Psi_Int" : Zero crossing of the column-averaged Psi
+
+    lat_uncertainty : float, optional
+        The minimal distance allowed between the adjacent zero crossings, same units as
+        lat, by default 0.0. e.g., for ``lat_uncertainty=10``, this function will return
+        NaN if another zero crossing is within 10 degrees of the most equatorward
+        zero crossing.
+
+    Returns
+    -------
+    Phi : numpy.ndarray (dim1, ..., dimN-2)
+        N-2 dimensional latitudes of the Psi zero crossing
+    """
+
+    # type casting/input checking
+    Psi = np.asarray(Psi)
+    lat = np.asarray(lat)
+    lev = np.asarray(lev)
+    # make latitude vector monotonically increasing
+    if lat[-1] < lat[0]:
+        Psi = Psi[..., ::-1, :]
+        lat = lat[::-1]
+    cos_lat = np.cos(lat * np.pi / 180.0)[:, None]
+
+    if (method == "Psi_500") or (method == "Psi_500_10Perc"):
+        # Use Psi at the level nearest to 500 hPa
+        P = Psi[..., find_nearest(lev, 500.0)]
+    elif method == "Psi_300_700":
+        # Use Psi averaged between the 300 and 700 hPa level
+        layer_700_to_300 = (lev <= 700.0) & (lev >= 300.0)
+        P = np.trapz(
+            Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
+        )
+    elif method == "Psi_500_Int":
+        # Use integrated Psi from p=0 to level nearest to 500 hPa
+        PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
+        P = PPsi[..., find_nearest(lev, 500.0)]
+    elif method == "Psi_Int":
+        # Use vertical mean of Psi
+        P = np.trapz(Psi * cos_lat, 100.0 * lev, axis=-1)
+    else:
+        raise ValueError("unrecognized method ", method)
+
+    # define regions of interest
+    subpolar_boundary = 30.0
+    polar_boundary = 60.0
+    mask = (lat > 0) & (lat < polar_boundary)
+    subpolar_mask = (lat > 0) & (lat < subpolar_boundary)
+    # split into hemispheres
+    lat_masked = lat[mask]
+
+    # 1. Find latitude of maximal (minimal) tropical Psi in the  (SH)
+    Pmax_lat_masked = TropD_Calculate_MaxLat(P[..., subpolar_mask], lat[subpolar_mask])
+
+    # 2. Find latitude of minimal (maximal) subtropical Psi in the  (SH)
+    # poleward of tropical max (min)
+    # define region poleward and Psi in region
+    lat_after_Pmax = lat_masked >= Pmax_lat_masked[..., None]
+    Plat_after_Pmax = np.where(lat_after_Pmax, P[..., mask], np.nan)
+
+    Pmin_lat_masked = TropD_Calculate_MaxLat(-Plat_after_Pmax, lat_masked)
+
+    # 3. Find the zero crossing between the above latitudes
+    lat_in_between = (lat_masked <= Pmin_lat_masked[..., None]) & lat_after_Pmax
+    Plat_in_between = np.where(lat_in_between, P[..., mask], np.nan)
+
+    if method == "Psi_500_10Perc":
+        Pmax = P[..., subpolar_mask].max(axis=-1)[..., None]
+        Phi = TropD_Calculate_ZeroCrossing(Plat_in_between - 0.1 * Pmax, lat_masked)
+    else:
+        Phi = TropD_Calculate_ZeroCrossing(
+            Plat_in_between, lat_masked, lat_uncertainty=lat_uncertainty
+        )
+
+    return Phi
 
 @hemisphere_handler
 def TropD_Metric_PSL(
