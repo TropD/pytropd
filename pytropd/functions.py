@@ -168,6 +168,7 @@ def TropD_Calculate_MaxLat(
         # weighted integral to account for discrete grid
         Ymax = np.trapz((F**n) * lat, lat, axis=-1) / np.trapz(F**n, lat, axis=-1)
 
+
     return Ymax
 
 

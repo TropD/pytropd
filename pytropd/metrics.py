@@ -10,13 +10,16 @@ from numpy.polynomial import polynomial
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
-from .functions import (
+from functions import (
     find_nearest,
     TropD_Calculate_MaxLat,
     TropD_Calculate_StreamFunction,
     TropD_Calculate_TropopauseHeight,
     TropD_Calculate_ZeroCrossing,
 )
+
+import pdb
+import matplotlib.pyplot as plt
 
 # kappa = R_dry / Cp_dry
 KAPPA = 287.04 / 1005.7
@@ -511,6 +514,8 @@ def TropD_Metric_PE(
 
     return Phi
 
+def random_fn():
+    print('test')
 
 @hemisphere_handler
 def TropD_Metric_PSI(
@@ -579,11 +584,21 @@ def TropD_Metric_PSI(
         # Use Psi at the level nearest to 500 hPa
         P = Psi[..., find_nearest(lev, 500.0)]
     elif method == "Psi_300_700":
-        # Use Psi averaged between the 300 and 700 hPa level
+        #Compute the mass weighted average of Psi in between 700 and 300 hPa 
+
         layer_700_to_300 = (lev <= 700.0) & (lev >= 300.0)
-        P = np.trapz(
-            Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
-        )
+        #P = np.trapz(
+        #    Psi[..., layer_700_to_300] * cos_lat, lev[layer_700_to_300] * 100.0, axis=-1
+        #)
+
+        #As the zero crossing is the key outcome you could drop the division by the layer thickness.
+        #The term cos_lat is not needed.  
+        #The integral is from 300 down to 700. But lev array is from 700 up to 300.
+        #Add -1 out the front to reverse the integral from 700 up to 300.
+        layer_thickness = (700-300)*100. #Pa
+        P = -np.trapz(Psi[:,layer_700_to_300], 
+                      lev[layer_700_to_300]* 100, axis=1) / layer_thickness
+                
     elif method == "Psi_500_Int":
         # Use integrated Psi from p=0 to level nearest to 500 hPa
         PPsi = cumtrapz(Psi * cos_lat, 100.0 * lev, axis=-1, initial=0.0)
@@ -604,7 +619,6 @@ def TropD_Metric_PSI(
 
     # 1. Find latitude of maximal (minimal) tropical Psi in the  (SH)
     Pmax_lat_masked = TropD_Calculate_MaxLat(P[..., subpolar_mask], lat[subpolar_mask])
-
     # 2. Find latitude of minimal (maximal) subtropical Psi in the  (SH)
     # poleward of tropical max (min)
     # define region poleward and Psi in region
